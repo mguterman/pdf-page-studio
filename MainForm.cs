@@ -304,7 +304,7 @@ public sealed partial class MainForm : Form
 
     private void UnitTypeComboBox_SelectedIndexChanged(object? sender, EventArgs e)
     {
-        if (_isBinding || !Enum.TryParse<UnitType>(unitTypeComboBox.Text, out var newUnit) || newUnit == _project.UnitType)
+        if (_isBinding || !Enum.TryParse<UnitType>(projectUnitTypeComboBox.Text, out var newUnit) || newUnit == _project.UnitType)
         {
             return;
         }
@@ -827,7 +827,7 @@ public sealed partial class MainForm : Form
         var action = GetSelectedAction();
         var hasAction = action != null;
         propertiesTitleLabel.Visible = hasAction;
-        actionPropertiesPanel.Visible = hasAction;
+        actionPropertiesScrollPanel.Visible = hasAction;
         actionNameTextBox.Enabled = hasAction;
         actionTypeComboBox.Enabled = hasAction;
         pageFilterTypeComboBox.Enabled = hasAction;
@@ -1129,7 +1129,6 @@ public sealed partial class MainForm : Form
     private void SyncUnitCombos()
     {
         projectUnitTypeComboBox.SelectedItem = _project.UnitType.ToString();
-        unitTypeComboBox.SelectedItem = _project.UnitType.ToString();
     }
 
     private static float? ConvertUnitValue(float? value, float factor)

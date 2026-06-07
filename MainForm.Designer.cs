@@ -51,9 +51,8 @@ partial class MainForm
     private Button moveActionDownButton;
     private ListBox actionsListBox;
     private Label propertiesTitleLabel;
+    private Panel actionPropertiesScrollPanel;
     private TableLayoutPanel actionPropertiesPanel;
-    private Label unitTypeLabel;
-    private ComboBox unitTypeComboBox;
     private Label actionTypeLabel;
     private ComboBox actionTypeComboBox;
     private Label actionNameLabel;
@@ -160,9 +159,8 @@ partial class MainForm
         moveActionDownButton = new Button();
         actionsListBox = new ListBox();
         propertiesTitleLabel = new Label();
+        actionPropertiesScrollPanel = new Panel();
         actionPropertiesPanel = new TableLayoutPanel();
-        unitTypeLabel = new Label();
-        unitTypeComboBox = new ComboBox();
         actionTypeLabel = new Label();
         actionTypeComboBox = new ComboBox();
         actionNameLabel = new Label();
@@ -216,6 +214,7 @@ partial class MainForm
         actionsPanel.SuspendLayout();
         previewModePanel.SuspendLayout();
         actionButtonsPanel.SuspendLayout();
+        actionPropertiesScrollPanel.SuspendLayout();
         actionPropertiesPanel.SuspendLayout();
         anchorPanel.SuspendLayout();
         mainStatusStrip.SuspendLayout();
@@ -471,7 +470,7 @@ partial class MainForm
         actionsPanel.Controls.Add(actionButtonsPanel, 0, 2);
         actionsPanel.Controls.Add(actionsListBox, 0, 3);
         actionsPanel.Controls.Add(propertiesTitleLabel, 0, 4);
-        actionsPanel.Controls.Add(actionPropertiesPanel, 0, 5);
+        actionsPanel.Controls.Add(actionPropertiesScrollPanel, 0, 5);
         actionsPanel.Dock = DockStyle.Fill;
         actionsPanel.Name = "actionsPanel";
         actionsPanel.Padding = new Padding(12);
@@ -585,66 +584,58 @@ partial class MainForm
         propertiesTitleLabel.Text = "Properties";
         propertiesTitleLabel.TextAlign = ContentAlignment.MiddleLeft;
 
+        actionPropertiesScrollPanel.AutoScroll = true;
+        actionPropertiesScrollPanel.Controls.Add(actionPropertiesPanel);
+        actionPropertiesScrollPanel.Dock = DockStyle.Fill;
+        actionPropertiesScrollPanel.Name = "actionPropertiesScrollPanel";
+        actionPropertiesScrollPanel.TabIndex = 4;
+
         actionPropertiesPanel.ColumnCount = 2;
         actionPropertiesPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96F));
         actionPropertiesPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        actionPropertiesPanel.Controls.Add(unitTypeLabel, 0, 0);
-        actionPropertiesPanel.Controls.Add(unitTypeComboBox, 1, 0);
-        actionPropertiesPanel.Controls.Add(actionTypeLabel, 0, 1);
-        actionPropertiesPanel.Controls.Add(actionTypeComboBox, 1, 1);
-        actionPropertiesPanel.Controls.Add(actionNameLabel, 0, 2);
-        actionPropertiesPanel.Controls.Add(actionNameTextBox, 1, 2);
-        actionPropertiesPanel.Controls.Add(pageFilterTypeLabel, 0, 3);
-        actionPropertiesPanel.Controls.Add(pageFilterTypeComboBox, 1, 3);
-        actionPropertiesPanel.Controls.Add(pageFilterRangeLabel, 0, 4);
-        actionPropertiesPanel.Controls.Add(pageFilterRangeTextBox, 1, 4);
-        actionPropertiesPanel.Controls.Add(leftLabel, 0, 5);
-        actionPropertiesPanel.Controls.Add(leftTextBox, 1, 5);
-        actionPropertiesPanel.Controls.Add(topLabel, 0, 6);
-        actionPropertiesPanel.Controls.Add(topTextBox, 1, 6);
-        actionPropertiesPanel.Controls.Add(rightLabel, 0, 7);
-        actionPropertiesPanel.Controls.Add(rightTextBox, 1, 7);
-        actionPropertiesPanel.Controls.Add(bottomLabel, 0, 8);
-        actionPropertiesPanel.Controls.Add(bottomTextBox, 1, 8);
-        actionPropertiesPanel.Controls.Add(targetedWidthLabel, 0, 9);
-        actionPropertiesPanel.Controls.Add(targetedWidthTextBox, 1, 9);
-        actionPropertiesPanel.Controls.Add(targetedHeightLabel, 0, 10);
-        actionPropertiesPanel.Controls.Add(targetedHeightTextBox, 1, 10);
-        actionPropertiesPanel.Controls.Add(proportionalLabel, 0, 11);
-        actionPropertiesPanel.Controls.Add(proportionalCheckBox, 1, 11);
-        actionPropertiesPanel.Controls.Add(anchorLabel, 0, 12);
-        actionPropertiesPanel.Controls.Add(anchorPanel, 1, 12);
-        actionPropertiesPanel.Controls.Add(rulerColorLabel, 0, 13);
-        actionPropertiesPanel.Controls.Add(rulerColorTextBox, 1, 13);
-        actionPropertiesPanel.Controls.Add(rulerStyleLabel, 0, 14);
-        actionPropertiesPanel.Controls.Add(rulerStyleComboBox, 1, 14);
-        actionPropertiesPanel.Controls.Add(rulerValueModeLabel, 0, 15);
-        actionPropertiesPanel.Controls.Add(rulerValueModeComboBox, 1, 15);
-        actionPropertiesPanel.Controls.Add(rulerOrientationLabel, 0, 16);
-        actionPropertiesPanel.Controls.Add(rulerOrientationComboBox, 1, 16);
-        actionPropertiesPanel.Controls.Add(rulerPositionLabel, 0, 17);
-        actionPropertiesPanel.Controls.Add(rulerPositionTextBox, 1, 17);
+        actionPropertiesPanel.Controls.Add(actionTypeLabel, 0, 0);
+        actionPropertiesPanel.Controls.Add(actionTypeComboBox, 1, 0);
+        actionPropertiesPanel.Controls.Add(actionNameLabel, 0, 1);
+        actionPropertiesPanel.Controls.Add(actionNameTextBox, 1, 1);
+        actionPropertiesPanel.Controls.Add(pageFilterTypeLabel, 0, 2);
+        actionPropertiesPanel.Controls.Add(pageFilterTypeComboBox, 1, 2);
+        actionPropertiesPanel.Controls.Add(pageFilterRangeLabel, 0, 3);
+        actionPropertiesPanel.Controls.Add(pageFilterRangeTextBox, 1, 3);
+        actionPropertiesPanel.Controls.Add(leftLabel, 0, 4);
+        actionPropertiesPanel.Controls.Add(leftTextBox, 1, 4);
+        actionPropertiesPanel.Controls.Add(topLabel, 0, 5);
+        actionPropertiesPanel.Controls.Add(topTextBox, 1, 5);
+        actionPropertiesPanel.Controls.Add(rightLabel, 0, 6);
+        actionPropertiesPanel.Controls.Add(rightTextBox, 1, 6);
+        actionPropertiesPanel.Controls.Add(bottomLabel, 0, 7);
+        actionPropertiesPanel.Controls.Add(bottomTextBox, 1, 7);
+        actionPropertiesPanel.Controls.Add(targetedWidthLabel, 0, 8);
+        actionPropertiesPanel.Controls.Add(targetedWidthTextBox, 1, 8);
+        actionPropertiesPanel.Controls.Add(targetedHeightLabel, 0, 9);
+        actionPropertiesPanel.Controls.Add(targetedHeightTextBox, 1, 9);
+        actionPropertiesPanel.Controls.Add(proportionalLabel, 0, 10);
+        actionPropertiesPanel.Controls.Add(proportionalCheckBox, 1, 10);
+        actionPropertiesPanel.Controls.Add(anchorLabel, 0, 11);
+        actionPropertiesPanel.Controls.Add(anchorPanel, 1, 11);
+        actionPropertiesPanel.Controls.Add(rulerColorLabel, 0, 12);
+        actionPropertiesPanel.Controls.Add(rulerColorTextBox, 1, 12);
+        actionPropertiesPanel.Controls.Add(rulerStyleLabel, 0, 13);
+        actionPropertiesPanel.Controls.Add(rulerStyleComboBox, 1, 13);
+        actionPropertiesPanel.Controls.Add(rulerValueModeLabel, 0, 14);
+        actionPropertiesPanel.Controls.Add(rulerValueModeComboBox, 1, 14);
+        actionPropertiesPanel.Controls.Add(rulerOrientationLabel, 0, 15);
+        actionPropertiesPanel.Controls.Add(rulerOrientationComboBox, 1, 15);
+        actionPropertiesPanel.Controls.Add(rulerPositionLabel, 0, 16);
+        actionPropertiesPanel.Controls.Add(rulerPositionTextBox, 1, 16);
         actionPropertiesPanel.Dock = DockStyle.Top;
         actionPropertiesPanel.Name = "actionPropertiesPanel";
-        actionPropertiesPanel.RowCount = 20;
-        for (var rowIndex = 0; rowIndex < 19; rowIndex++)
+        actionPropertiesPanel.RowCount = 18;
+        for (var rowIndex = 0; rowIndex < 17; rowIndex++)
         {
-            actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, rowIndex == 12 ? 78F : 34F));
+            actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, rowIndex == 11 ? 78F : 34F));
         }
         actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         actionPropertiesPanel.TabIndex = 4;
-
-        unitTypeLabel.AutoSize = true;
-        unitTypeLabel.Dock = DockStyle.Fill;
-        unitTypeLabel.Name = "unitTypeLabel";
-        unitTypeLabel.Text = "Units";
-        unitTypeLabel.TextAlign = ContentAlignment.MiddleLeft;
-
-        unitTypeComboBox.Dock = DockStyle.Fill;
-        unitTypeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        unitTypeComboBox.Items.AddRange(new object[] { "Inch", "Cm" });
-        unitTypeComboBox.Name = "unitTypeComboBox";
-        unitTypeComboBox.SelectedIndexChanged += UnitTypeComboBox_SelectedIndexChanged;
 
         actionTypeLabel.AutoSize = true;
         actionTypeLabel.Dock = DockStyle.Fill;
@@ -805,6 +796,7 @@ partial class MainForm
         previewModePanel.ResumeLayout(false);
         previewModePanel.PerformLayout();
         actionButtonsPanel.ResumeLayout(false);
+        actionPropertiesScrollPanel.ResumeLayout(false);
         actionPropertiesPanel.ResumeLayout(false);
         actionPropertiesPanel.PerformLayout();
         anchorPanel.ResumeLayout(false);
