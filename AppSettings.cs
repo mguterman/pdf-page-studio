@@ -7,6 +7,7 @@ public sealed class AppSettings
     private const int MaxRecentProjects = 5;
 
     public List<string> RecentProjects { get; set; } = [];
+    public string LastPdfFolder { get; set; } = "";
 
     public static AppSettings Load()
     {

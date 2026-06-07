@@ -81,6 +81,8 @@ public sealed partial class MainForm : Form
         }
 
         _project.PdfFilePath = dialog.FileName;
+        _settings.LastPdfFolder = Path.GetDirectoryName(dialog.FileName) ?? "";
+        _settings.Save();
         MarkDirty();
         LoadPdfFromProject();
     }
@@ -1309,6 +1311,11 @@ public sealed partial class MainForm : Form
 
     private string GetInitialPdfFolder()
     {
+        if (Directory.Exists(_settings.LastPdfFolder))
+        {
+            return _settings.LastPdfFolder;
+        }
+
         if (!string.IsNullOrWhiteSpace(_project.PdfFilePath))
         {
             var pdfFolder = Path.GetDirectoryName(_project.PdfFilePath);
