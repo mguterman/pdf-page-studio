@@ -17,6 +17,9 @@ partial class MainForm
     private ToolStripMenuItem englishLanguageMenuItem;
     private ToolStripMenuItem russianLanguageMenuItem;
     private ToolStripMenuItem hebrewLanguageMenuItem;
+    private ToolStripMenuItem settingsMenuItem;
+    private ToolStripMenuItem inchUnitMenuItem;
+    private ToolStripMenuItem centimeterUnitMenuItem;
     private Panel mainContentPanel;
     private TableLayoutPanel projectInfoPanel;
     private Label projectNameLabel;
@@ -129,6 +132,9 @@ partial class MainForm
         englishLanguageMenuItem = new ToolStripMenuItem();
         russianLanguageMenuItem = new ToolStripMenuItem();
         hebrewLanguageMenuItem = new ToolStripMenuItem();
+        settingsMenuItem = new ToolStripMenuItem();
+        inchUnitMenuItem = new ToolStripMenuItem();
+        centimeterUnitMenuItem = new ToolStripMenuItem();
         mainContentPanel = new Panel();
         projectInfoPanel = new TableLayoutPanel();
         projectNameLabel = new Label();
@@ -228,7 +234,7 @@ partial class MainForm
         mainStatusStrip.SuspendLayout();
         SuspendLayout();
 
-        mainMenuStrip.Items.AddRange(new ToolStripItem[] { fileMenuItem, languageMenuItem });
+        mainMenuStrip.Items.AddRange(new ToolStripItem[] { fileMenuItem, settingsMenuItem, languageMenuItem });
         mainMenuStrip.Location = new Point(0, 0);
         mainMenuStrip.Name = "mainMenuStrip";
         mainMenuStrip.Size = new Size(1100, 24);
@@ -301,6 +307,21 @@ partial class MainForm
         hebrewLanguageMenuItem.Size = new Size(180, 22);
         hebrewLanguageMenuItem.Text = TranslationService.T("language.hebrew");
         hebrewLanguageMenuItem.Click += HebrewLanguageMenuItem_Click;
+
+        settingsMenuItem.DropDownItems.AddRange(new ToolStripItem[] { inchUnitMenuItem, centimeterUnitMenuItem });
+        settingsMenuItem.Name = "settingsMenuItem";
+        settingsMenuItem.Size = new Size(61, 20);
+        settingsMenuItem.Text = TranslationService.T("menu.settings");
+
+        inchUnitMenuItem.Name = "inchUnitMenuItem";
+        inchUnitMenuItem.Size = new Size(180, 22);
+        inchUnitMenuItem.Text = TranslationService.T("enum.unit.Inch");
+        inchUnitMenuItem.Click += InchUnitMenuItem_Click;
+
+        centimeterUnitMenuItem.Name = "centimeterUnitMenuItem";
+        centimeterUnitMenuItem.Size = new Size(180, 22);
+        centimeterUnitMenuItem.Text = TranslationService.T("enum.unit.Cm");
+        centimeterUnitMenuItem.Click += CentimeterUnitMenuItem_Click;
 
         mainContentPanel.Controls.Add(pdfWorkspacePanel);
         mainContentPanel.Controls.Add(projectInfoPanel);

@@ -14,6 +14,7 @@
   <data name="menu.saveAs" xml:space="preserve"><value>Сохранить &amp;как...</value></data>
   <data name="menu.addPdf" xml:space="preserve"><value>Добавить &amp;PDF файл...</value></data>
   <data name="menu.openRecent" xml:space="preserve"><value>Открыть &amp;недавний проект</value></data>
+  <data name="menu.settings" xml:space="preserve"><value>&amp;Настройки</value></data>
   <data name="menu.language" xml:space="preserve"><value>&amp;Язык</value></data>
   <data name="language.english" xml:space="preserve"><value>Английский</value></data>
   <data name="language.russian" xml:space="preserve"><value>Русский</value></data>
@@ -100,7 +101,7 @@
   <data name="error.pageRangeStart" xml:space="preserve"><value>Начало диапазона должно быть положительным номером страницы.</value></data>
   <data name="error.pageRangeEnd" xml:space="preserve"><value>Конец диапазона должен быть пустым или больше/равен началу.</value></data>
   <data name="enum.unit.Inch" xml:space="preserve"><value>Дюймы</value></data>
-  <data name="enum.unit.Cm" xml:space="preserve"><value>См</value></data>
+  <data name="enum.unit.Cm" xml:space="preserve"><value>Сантиметры</value></data>
   <data name="enum.action.Trim" xml:space="preserve"><value>Обрезать</value></data>
   <data name="enum.action.Expand" xml:space="preserve"><value>Расширить</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>Изменить размер</value></data>

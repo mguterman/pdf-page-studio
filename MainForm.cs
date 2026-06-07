@@ -82,6 +82,16 @@ public sealed partial class MainForm : Form
         ChangeLanguage("he");
     }
 
+    private void InchUnitMenuItem_Click(object? sender, EventArgs e)
+    {
+        ChangeProjectUnit(UnitType.Inch);
+    }
+
+    private void CentimeterUnitMenuItem_Click(object? sender, EventArgs e)
+    {
+        ChangeProjectUnit(UnitType.Cm);
+    }
+
     private void AddPdfFileMenuItem_Click(object? sender, EventArgs e)
     {
         using var dialog = new OpenFileDialog
@@ -170,6 +180,9 @@ public sealed partial class MainForm : Form
         saveProjectAsMenuItem.Text = TranslationService.T("menu.saveAs");
         addPdfFileMenuItem.Text = TranslationService.T("menu.addPdf");
         openRecentProjectMenuItem.Text = TranslationService.T("menu.openRecent");
+        settingsMenuItem.Text = TranslationService.T("menu.settings");
+        inchUnitMenuItem.Text = TranslationService.T("enum.unit.Inch");
+        centimeterUnitMenuItem.Text = TranslationService.T("enum.unit.Cm");
         languageMenuItem.Text = TranslationService.T("menu.language");
         englishLanguageMenuItem.Text = TranslationService.T("language.english");
         russianLanguageMenuItem.Text = TranslationService.T("language.russian");
@@ -231,8 +244,9 @@ public sealed partial class MainForm : Form
         ConfigureEnumCombo(actionTypeComboBox, "enum.action.", GetSelectedAction()?.Type ?? PdfActionType.Trim);
         ConfigureEnumCombo(pageFilterTypeComboBox, "enum.pageFilter.", GetSelectedAction()?.PageFilter?.Type ?? PageFilterType.Any);
         ConfigureEnumCombo(rulerStyleComboBox, "enum.rulerStyle.", GetSelectedAction()?.Style ?? RulerStyle.Solid);
-        ConfigureEnumCombo(rulerValueModeComboBox, "enum.rulerMode.", GetSelectedAction()?.RulerValueMode ?? RulerValueMode.Percent);
+        ConfigureRulerValueModeCombo(GetSelectedAction()?.RulerValueMode ?? RulerValueMode.Percent);
         ConfigureEnumCombo(rulerOrientationComboBox, "enum.rulerOrientation.", GetSelectedAction()?.Orientation ?? RulerOrientation.Vertical);
+        SyncUnitControls();
 
         _isBinding = false;
         BindSelectedAction();
@@ -460,15 +474,27 @@ public sealed partial class MainForm : Form
             return;
         }
 
+        ChangeProjectUnit(newUnit);
+    }
+
+    private void ChangeProjectUnit(UnitType newUnit)
+    {
+        if (newUnit == _project.UnitType)
+        {
+            return;
+        }
+
         var oldUnit = _project.UnitType;
         _project.UnitType = newUnit;
         ConvertProjectUnits(oldUnit, newUnit);
         MarkDirty();
-        SyncUnitCombos();
+        _isBinding = true;
+        SyncUnitControls();
+        _isBinding = false;
         BindSelectedAction();
         if (_pdfDocument != null)
         {
-            UpdatePageSizeLabel(_pdfDocument.PageSizes[_pageIndex]);
+            RenderCurrentPage();
         }
     }
 
@@ -615,8 +641,14 @@ public sealed partial class MainForm : Form
 
         if (TryGetSelectedEnum(rulerValueModeComboBox, out RulerValueMode mode))
         {
+            if (action.RulerValueMode != mode)
+            {
+                action.Position = ConvertRulerPosition(action, mode);
+            }
+
             action.RulerValueMode = mode;
             MarkDirty();
+            BindSelectedAction();
             RefreshCurrentPagePreview();
         }
     }
@@ -1415,6 +1447,7 @@ public sealed partial class MainForm : Form
         var hasAnchor = type == PdfActionType.Zoom;
         var hasRuler = type == PdfActionType.AddRuler;
 
+        ArrangeActionEditorRows(type);
         SetEditorRowVisible(leftLabel, leftNumericBox, hasMargins);
         SetEditorRowVisible(topLabel, topNumericBox, hasMargins);
         SetEditorRowVisible(rightLabel, rightNumericBox, hasMargins);
@@ -1430,6 +1463,31 @@ public sealed partial class MainForm : Form
         SetEditorRowVisible(rulerPositionLabel, rulerPositionNumericBox, hasRuler);
         actionPropertiesPanel.PerformLayout();
         actionPropertiesScrollPanel.PerformLayout();
+    }
+
+    private void ArrangeActionEditorRows(PdfActionType? type)
+    {
+        if (type == PdfActionType.AddRuler)
+        {
+            SetEditorRow(rulerOrientationLabel, rulerOrientationComboBox, 4);
+            SetEditorRow(rulerPositionLabel, rulerPositionNumericBox, 5);
+            SetEditorRow(rulerValueModeLabel, rulerValueModeComboBox, 6);
+            SetEditorRow(rulerStyleLabel, rulerStyleComboBox, 7);
+            SetEditorRow(rulerColorLabel, rulerColorTextBox, 8);
+            return;
+        }
+
+        SetEditorRow(rulerColorLabel, rulerColorTextBox, 12);
+        SetEditorRow(rulerStyleLabel, rulerStyleComboBox, 13);
+        SetEditorRow(rulerValueModeLabel, rulerValueModeComboBox, 14);
+        SetEditorRow(rulerOrientationLabel, rulerOrientationComboBox, 15);
+        SetEditorRow(rulerPositionLabel, rulerPositionNumericBox, 16);
+    }
+
+    private void SetEditorRow(Control label, Control editor, int rowIndex)
+    {
+        actionPropertiesPanel.SetRow(label, rowIndex);
+        actionPropertiesPanel.SetRow(editor, rowIndex);
     }
 
     private void SetEditorRowVisible(Control label, Control editor, bool visible)
@@ -1510,9 +1568,20 @@ public sealed partial class MainForm : Form
         }
     }
 
-    private void SyncUnitCombos()
+    private void SyncUnitControls()
     {
         SelectEnum(projectUnitTypeComboBox, _project.UnitType);
+        inchUnitMenuItem.Checked = _project.UnitType == UnitType.Inch;
+        centimeterUnitMenuItem.Checked = _project.UnitType == UnitType.Cm;
+        if (GetSelectedAction() is { } action)
+        {
+            ConfigureRulerValueModeCombo(action.RulerValueMode);
+        }
+    }
+
+    private void SyncUnitCombos()
+    {
+        SyncUnitControls();
     }
 
     private static void ConfigureEnumCombo<TEnum>(ComboBox comboBox, string keyPrefix, TEnum selectedValue)
@@ -1527,6 +1596,121 @@ public sealed partial class MainForm : Form
         }
 
         SelectEnum(comboBox, selectedValue);
+    }
+
+    private void ConfigureRulerValueModeCombo(RulerValueMode selectedValue)
+    {
+        rulerValueModeComboBox.DisplayMember = nameof(EnumComboItem<RulerValueMode>.Text);
+        rulerValueModeComboBox.ValueMember = nameof(EnumComboItem<RulerValueMode>.Value);
+        rulerValueModeComboBox.Items.Clear();
+        rulerValueModeComboBox.Items.Add(new EnumComboItem<RulerValueMode>(RulerValueMode.Percent, TranslationService.T("enum.rulerMode.Percent")));
+        rulerValueModeComboBox.Items.Add(new EnumComboItem<RulerValueMode>(RulerValueMode.Unit, TranslationService.T("enum.unit." + _project.UnitType)));
+        SelectEnum(rulerValueModeComboBox, selectedValue);
+    }
+
+    private float? ConvertRulerPosition(ProjectAction action, RulerValueMode newMode)
+    {
+        var value = action.Position ?? 0;
+        var dimension = GetRulerReferenceDimension(action);
+        if (dimension <= 0)
+        {
+            return Round(value);
+        }
+
+        return newMode == RulerValueMode.Unit
+            ? Round(dimension * value / 100f)
+            : Round(value / dimension * 100f);
+    }
+
+    private float GetRulerReferenceDimension(ProjectAction rulerAction)
+    {
+        if (_pdfDocument == null)
+        {
+            return 0;
+        }
+
+        var pageSizePoints = GetPageSizeBeforeAction(rulerAction);
+        var dimensionPoints = rulerAction.Orientation == RulerOrientation.Vertical
+            ? pageSizePoints.Width
+            : pageSizePoints.Height;
+        var dimensionInches = dimensionPoints / 72f;
+        return _project.UnitType == UnitType.Cm ? dimensionInches * 2.54f : dimensionInches;
+    }
+
+    private SizeF GetPageSizeBeforeAction(ProjectAction targetAction)
+    {
+        if (_pdfDocument == null)
+        {
+            return SizeF.Empty;
+        }
+
+        var pageSizePoints = _pdfDocument.PageSizes[_pageIndex];
+        var pageNumber = _pageIndex + 1;
+        foreach (var action in _project.Actions)
+        {
+            if (ReferenceEquals(action, targetAction))
+            {
+                break;
+            }
+
+            if (!PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber))
+            {
+                continue;
+            }
+
+            ApplyPageSizeChange(action, ref pageSizePoints);
+        }
+
+        return pageSizePoints;
+    }
+
+    private void ApplyPageSizeChange(ProjectAction action, ref SizeF pageSizePoints)
+    {
+        switch (action.Type)
+        {
+            case PdfActionType.Trim:
+                pageSizePoints = new SizeF(
+                    Math.Max(1, pageSizePoints.Width - UnitValueToPoints(action.Left) - UnitValueToPoints(action.Right)),
+                    Math.Max(1, pageSizePoints.Height - UnitValueToPoints(action.Top) - UnitValueToPoints(action.Bottom)));
+                break;
+            case PdfActionType.Expand:
+                pageSizePoints = new SizeF(
+                    pageSizePoints.Width + UnitValueToPoints(action.Left) + UnitValueToPoints(action.Right),
+                    pageSizePoints.Height + UnitValueToPoints(action.Top) + UnitValueToPoints(action.Bottom));
+                break;
+            case PdfActionType.Resize:
+                ApplyResizePageSizeChange(action, ref pageSizePoints);
+                break;
+        }
+    }
+
+    private void ApplyResizePageSizeChange(ProjectAction action, ref SizeF pageSizePoints)
+    {
+        var currentWidthInches = pageSizePoints.Width / 72f;
+        var currentHeightInches = pageSizePoints.Height / 72f;
+        float? targetWidthInches = action.TargetedWidth is > 0 ? UnitValueToInches(action.TargetedWidth.Value) : null;
+        float? targetHeightInches = action.TargetedHeight is > 0 ? UnitValueToInches(action.TargetedHeight.Value) : null;
+
+        if ((targetWidthInches == null || targetWidthInches <= 0) && (targetHeightInches == null || targetHeightInches <= 0))
+        {
+            return;
+        }
+
+        if (action.Proportional != false)
+        {
+            if ((targetWidthInches == null || targetWidthInches <= 0) && targetHeightInches > 0)
+            {
+                targetWidthInches = currentWidthInches * targetHeightInches.Value / currentHeightInches;
+            }
+            else if ((targetHeightInches == null || targetHeightInches <= 0) && targetWidthInches > 0)
+            {
+                targetHeightInches = currentHeightInches * targetWidthInches.Value / currentWidthInches;
+            }
+        }
+
+        targetWidthInches = targetWidthInches is > 0 ? targetWidthInches : currentWidthInches;
+        targetHeightInches = targetHeightInches is > 0 ? targetHeightInches : currentHeightInches;
+        pageSizePoints = new SizeF(targetWidthInches.Value * 72f, targetHeightInches.Value * 72f);
     }
 
     private static bool TryGetSelectedEnum<TEnum>(ComboBox comboBox, out TEnum value)

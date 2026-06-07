@@ -14,6 +14,7 @@
   <data name="menu.saveAs" xml:space="preserve"><value>שמור &amp;בשם...</value></data>
   <data name="menu.addPdf" xml:space="preserve"><value>הוסף קובץ &amp;PDF...</value></data>
   <data name="menu.openRecent" xml:space="preserve"><value>פתח פרויקט &amp;אחרון</value></data>
+  <data name="menu.settings" xml:space="preserve"><value>&amp;הגדרות</value></data>
   <data name="menu.language" xml:space="preserve"><value>&amp;שפה</value></data>
   <data name="language.english" xml:space="preserve"><value>אנגלית</value></data>
   <data name="language.russian" xml:space="preserve"><value>רוסית</value></data>
@@ -100,7 +101,7 @@
   <data name="error.pageRangeStart" xml:space="preserve"><value>תחילת הטווח חייבת להיות מספר עמוד חיובי.</value></data>
   <data name="error.pageRangeEnd" xml:space="preserve"><value>סוף הטווח חייב להיות ריק או גדול/שווה להתחלה.</value></data>
   <data name="enum.unit.Inch" xml:space="preserve"><value>אינץ'</value></data>
-  <data name="enum.unit.Cm" xml:space="preserve"><value>ס&quot;מ</value></data>
+  <data name="enum.unit.Cm" xml:space="preserve"><value>סנטימטרים</value></data>
   <data name="enum.action.Trim" xml:space="preserve"><value>חיתוך</value></data>
   <data name="enum.action.Expand" xml:space="preserve"><value>הרחבה</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>שינוי גודל</value></data>
