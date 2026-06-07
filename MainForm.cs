@@ -203,6 +203,7 @@ public sealed partial class MainForm : Form
         MarkDirty();
         RefreshActions(Math.Min(index, _project.Actions.Count - 1));
         UpdateStatus("Action deleted.");
+        RefreshCurrentPagePreview();
     }
 
     private void MoveActionUpButton_Click(object? sender, EventArgs e)
@@ -217,6 +218,7 @@ public sealed partial class MainForm : Form
         MarkDirty();
         RefreshActions(index - 1);
         UpdateStatus("Action moved up.");
+        RefreshCurrentPagePreview();
     }
 
     private void MoveActionDownButton_Click(object? sender, EventArgs e)
@@ -231,12 +233,35 @@ public sealed partial class MainForm : Form
         MarkDirty();
         RefreshActions(index + 1);
         UpdateStatus("Action moved down.");
+        RefreshCurrentPagePreview();
     }
 
     private void ActionsListBox_SelectedIndexChanged(object? sender, EventArgs e)
     {
         BindSelectedAction();
         UpdateActionButtons();
+        if (!_isBinding && _project.PreviewApplyMode == PreviewApplyMode.UntilCurrent)
+        {
+            RefreshCurrentPagePreview();
+        }
+    }
+
+    private void PreviewModeRadioButton_CheckedChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding)
+        {
+            return;
+        }
+
+        var mode = untilCurrentRadioButton.Checked ? PreviewApplyMode.UntilCurrent : PreviewApplyMode.ApplyAll;
+        if (_project.PreviewApplyMode == mode)
+        {
+            return;
+        }
+
+        _project.PreviewApplyMode = mode;
+        MarkDirty();
+        RefreshCurrentPagePreview();
     }
 
     private void ActionNameTextBox_TextChanged(object? sender, EventArgs e)
@@ -249,6 +274,7 @@ public sealed partial class MainForm : Form
         action.Name = actionNameTextBox.Text;
         MarkDirty();
         RefreshActions(actionsListBox.SelectedIndex);
+        RefreshCurrentPagePreview();
     }
 
     private void UnitTypeComboBox_SelectedIndexChanged(object? sender, EventArgs e)
@@ -283,6 +309,7 @@ public sealed partial class MainForm : Form
             ApplyActionDefaults(action, overwriteName: true);
             MarkDirty();
             RefreshActions(actionsListBox.SelectedIndex);
+            RefreshCurrentPagePreview();
         }
     }
 
@@ -297,6 +324,7 @@ public sealed partial class MainForm : Form
         {
             action.PageFilter.Type = type;
             MarkDirty();
+            RefreshCurrentPagePreview();
         }
     }
 
@@ -316,6 +344,7 @@ public sealed partial class MainForm : Form
         action.PageFilter.Range = ranges;
         MarkDirty();
         UpdateStatus("Page filter updated.");
+        RefreshCurrentPagePreview();
     }
 
     private void ActionNumberTextBox_TextChanged(object? sender, EventArgs e)
@@ -342,6 +371,7 @@ public sealed partial class MainForm : Form
         else return;
 
         MarkDirty();
+        RefreshCurrentPagePreview();
     }
 
     private void ProportionalCheckBox_CheckedChanged(object? sender, EventArgs e)
@@ -353,6 +383,7 @@ public sealed partial class MainForm : Form
 
         action.Proportional = proportionalCheckBox.Checked;
         MarkDirty();
+        RefreshCurrentPagePreview();
     }
 
     private void AnchorRadioButton_CheckedChanged(object? sender, EventArgs e)
@@ -375,6 +406,7 @@ public sealed partial class MainForm : Form
             _ => (AnchorHorizontal.Center, AnchorVertical.Center),
         };
         MarkDirty();
+        RefreshCurrentPagePreview();
     }
 
     private void RulerColorTextBox_TextChanged(object? sender, EventArgs e)
@@ -386,6 +418,7 @@ public sealed partial class MainForm : Form
 
         action.Color = rulerColorTextBox.Text;
         MarkDirty();
+        RefreshCurrentPagePreview();
     }
 
     private void RulerStyleComboBox_SelectedIndexChanged(object? sender, EventArgs e)
@@ -399,6 +432,7 @@ public sealed partial class MainForm : Form
         {
             action.Style = style;
             MarkDirty();
+            RefreshCurrentPagePreview();
         }
     }
 
@@ -413,6 +447,7 @@ public sealed partial class MainForm : Form
         {
             action.RulerValueMode = mode;
             MarkDirty();
+            RefreshCurrentPagePreview();
         }
     }
 
@@ -427,6 +462,7 @@ public sealed partial class MainForm : Form
         {
             action.Orientation = orientation;
             MarkDirty();
+            RefreshCurrentPagePreview();
         }
     }
 
@@ -522,6 +558,8 @@ public sealed partial class MainForm : Form
         projectNameTextBox.Text = _project.Name;
         projectDescriptionTextBox.Text = _project.Description;
         SyncUnitCombos();
+        applyAllRadioButton.Checked = _project.PreviewApplyMode == PreviewApplyMode.ApplyAll;
+        untilCurrentRadioButton.Checked = _project.PreviewApplyMode == PreviewApplyMode.UntilCurrent;
         _isBinding = false;
         RefreshActions(actionsListBox.SelectedIndex);
     }
@@ -593,6 +631,17 @@ public sealed partial class MainForm : Form
         pdfPageViewer.SetPage(image);
         UpdatePdfNavigation();
         UpdatePageSizeLabel(pageSize);
+        UpdatePreviewStatus();
+    }
+
+    private void RefreshCurrentPagePreview()
+    {
+        if (_pdfDocument == null)
+        {
+            return;
+        }
+
+        RenderCurrentPage();
     }
 
     private void GoToPageFromTextBox()
@@ -683,6 +732,7 @@ public sealed partial class MainForm : Form
         MarkDirty();
         RefreshActions(index);
         UpdateStatus("Action added.");
+        RefreshCurrentPagePreview();
     }
 
     private void ShowAddActionMenu(Control owner, int insertIndex)
@@ -794,6 +844,31 @@ public sealed partial class MainForm : Form
         deleteActionButton.Enabled = hasSelection;
         moveActionUpButton.Enabled = hasSelection && selectedIndex > 0;
         moveActionDownButton.Enabled = hasSelection && selectedIndex < _project.Actions.Count - 1;
+    }
+
+    private void UpdatePreviewStatus()
+    {
+        if (_pdfDocument == null)
+        {
+            return;
+        }
+
+        var count = GetPreviewActionCount();
+        var label = _project.PreviewApplyMode == PreviewApplyMode.UntilCurrent
+            ? $"Preview: actions through selected ({count})"
+            : $"Preview: all actions ({count})";
+        UpdateStatus(label);
+    }
+
+    private int GetPreviewActionCount()
+    {
+        if (_project.PreviewApplyMode == PreviewApplyMode.ApplyAll)
+        {
+            return _project.Actions.Count;
+        }
+
+        var selectedIndex = actionsListBox.SelectedIndex;
+        return selectedIndex < 0 ? 0 : Math.Min(selectedIndex + 1, _project.Actions.Count);
     }
 
     private ProjectAction? GetSelectedAction()

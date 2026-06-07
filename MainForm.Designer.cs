@@ -37,6 +37,9 @@ partial class MainForm
     private PdfPageViewer pdfPageViewer;
     private TableLayoutPanel actionsPanel;
     private Label actionsTitleLabel;
+    private FlowLayoutPanel previewModePanel;
+    private RadioButton applyAllRadioButton;
+    private RadioButton untilCurrentRadioButton;
     private FlowLayoutPanel actionButtonsPanel;
     private Button addActionButton;
     private Button insertBeforeActionButton;
@@ -141,6 +144,9 @@ partial class MainForm
         pdfPageViewer = new PdfPageViewer();
         actionsPanel = new TableLayoutPanel();
         actionsTitleLabel = new Label();
+        previewModePanel = new FlowLayoutPanel();
+        applyAllRadioButton = new RadioButton();
+        untilCurrentRadioButton = new RadioButton();
         actionButtonsPanel = new FlowLayoutPanel();
         addActionButton = new Button();
         insertBeforeActionButton = new Button();
@@ -204,6 +210,7 @@ partial class MainForm
         pdfWorkspacePanel.SuspendLayout();
         pdfNavigationToolStrip.SuspendLayout();
         actionsPanel.SuspendLayout();
+        previewModePanel.SuspendLayout();
         actionButtonsPanel.SuspendLayout();
         actionPropertiesPanel.SuspendLayout();
         anchorPanel.SuspendLayout();
@@ -438,15 +445,17 @@ partial class MainForm
         actionsPanel.ColumnCount = 1;
         actionsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         actionsPanel.Controls.Add(actionsTitleLabel, 0, 0);
-        actionsPanel.Controls.Add(actionButtonsPanel, 0, 1);
-        actionsPanel.Controls.Add(actionsListBox, 0, 2);
-        actionsPanel.Controls.Add(propertiesTitleLabel, 0, 3);
-        actionsPanel.Controls.Add(actionPropertiesPanel, 0, 4);
+        actionsPanel.Controls.Add(previewModePanel, 0, 1);
+        actionsPanel.Controls.Add(actionButtonsPanel, 0, 2);
+        actionsPanel.Controls.Add(actionsListBox, 0, 3);
+        actionsPanel.Controls.Add(propertiesTitleLabel, 0, 4);
+        actionsPanel.Controls.Add(actionPropertiesPanel, 0, 5);
         actionsPanel.Dock = DockStyle.Fill;
         actionsPanel.Name = "actionsPanel";
         actionsPanel.Padding = new Padding(12);
-        actionsPanel.RowCount = 5;
+        actionsPanel.RowCount = 6;
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 74F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 52F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
@@ -460,6 +469,32 @@ partial class MainForm
         actionsTitleLabel.TabIndex = 0;
         actionsTitleLabel.Text = "Actions";
         actionsTitleLabel.TextAlign = ContentAlignment.MiddleLeft;
+
+        previewModePanel.Controls.Add(applyAllRadioButton);
+        previewModePanel.Controls.Add(untilCurrentRadioButton);
+        previewModePanel.Dock = DockStyle.Fill;
+        previewModePanel.Name = "previewModePanel";
+        previewModePanel.TabIndex = 1;
+        previewModePanel.WrapContents = false;
+
+        applyAllRadioButton.AutoSize = true;
+        applyAllRadioButton.Checked = true;
+        applyAllRadioButton.Name = "applyAllRadioButton";
+        applyAllRadioButton.Size = new Size(68, 19);
+        applyAllRadioButton.TabIndex = 0;
+        applyAllRadioButton.TabStop = true;
+        applyAllRadioButton.Text = "Apply All";
+        applyAllRadioButton.UseVisualStyleBackColor = true;
+        applyAllRadioButton.CheckedChanged += PreviewModeRadioButton_CheckedChanged;
+
+        untilCurrentRadioButton.AutoSize = true;
+        untilCurrentRadioButton.Margin = new Padding(12, 3, 3, 3);
+        untilCurrentRadioButton.Name = "untilCurrentRadioButton";
+        untilCurrentRadioButton.Size = new Size(90, 19);
+        untilCurrentRadioButton.TabIndex = 1;
+        untilCurrentRadioButton.Text = "Until Current";
+        untilCurrentRadioButton.UseVisualStyleBackColor = true;
+        untilCurrentRadioButton.CheckedChanged += PreviewModeRadioButton_CheckedChanged;
 
         actionButtonsPanel.Controls.Add(addActionButton);
         actionButtonsPanel.Controls.Add(insertBeforeActionButton);
@@ -744,6 +779,8 @@ partial class MainForm
         pdfNavigationToolStrip.PerformLayout();
         actionsPanel.ResumeLayout(false);
         actionsPanel.PerformLayout();
+        previewModePanel.ResumeLayout(false);
+        previewModePanel.PerformLayout();
         actionButtonsPanel.ResumeLayout(false);
         actionPropertiesPanel.ResumeLayout(false);
         actionPropertiesPanel.PerformLayout();

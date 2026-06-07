@@ -6,6 +6,7 @@ public sealed class PdfPageStudioProject
     public string Description { get; set; } = "";
     public string PdfFilePath { get; set; } = "";
     public UnitType UnitType { get; set; } = UnitType.Inch;
+    public PreviewApplyMode PreviewApplyMode { get; set; } = PreviewApplyMode.ApplyAll;
     public List<ProjectAction> Actions { get; set; } = [];
 }
 
@@ -95,4 +96,10 @@ public enum RulerOrientation
 {
     Vertical,
     Horizontal,
+}
+
+public enum PreviewApplyMode
+{
+    ApplyAll,
+    UntilCurrent,
 }
