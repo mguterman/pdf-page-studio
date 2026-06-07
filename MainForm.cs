@@ -172,12 +172,122 @@ public sealed partial class MainForm : Form
         MarkDirty();
     }
 
+    private void AddActionButton_Click(object? sender, EventArgs e)
+    {
+        InsertAction(_project.Actions.Count);
+    }
+
+    private void InsertBeforeActionButton_Click(object? sender, EventArgs e)
+    {
+        var index = actionsListBox.SelectedIndex >= 0 ? actionsListBox.SelectedIndex : 0;
+        InsertAction(index);
+    }
+
+    private void InsertAfterActionButton_Click(object? sender, EventArgs e)
+    {
+        var index = actionsListBox.SelectedIndex >= 0 ? actionsListBox.SelectedIndex + 1 : _project.Actions.Count;
+        InsertAction(index);
+    }
+
+    private void DeleteActionButton_Click(object? sender, EventArgs e)
+    {
+        var index = actionsListBox.SelectedIndex;
+        if (index < 0 || index >= _project.Actions.Count)
+        {
+            return;
+        }
+
+        _project.Actions.RemoveAt(index);
+        MarkDirty();
+        RefreshActions(Math.Min(index, _project.Actions.Count - 1));
+        UpdateStatus("Action deleted.");
+    }
+
+    private void MoveActionUpButton_Click(object? sender, EventArgs e)
+    {
+        var index = actionsListBox.SelectedIndex;
+        if (index <= 0 || index >= _project.Actions.Count)
+        {
+            return;
+        }
+
+        (_project.Actions[index - 1], _project.Actions[index]) = (_project.Actions[index], _project.Actions[index - 1]);
+        MarkDirty();
+        RefreshActions(index - 1);
+        UpdateStatus("Action moved up.");
+    }
+
+    private void MoveActionDownButton_Click(object? sender, EventArgs e)
+    {
+        var index = actionsListBox.SelectedIndex;
+        if (index < 0 || index >= _project.Actions.Count - 1)
+        {
+            return;
+        }
+
+        (_project.Actions[index + 1], _project.Actions[index]) = (_project.Actions[index], _project.Actions[index + 1]);
+        MarkDirty();
+        RefreshActions(index + 1);
+        UpdateStatus("Action moved down.");
+    }
+
+    private void ActionsListBox_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        BindSelectedAction();
+        UpdateActionButtons();
+    }
+
+    private void ActionNameTextBox_TextChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        action.Name = actionNameTextBox.Text;
+        MarkDirty();
+        RefreshActions(actionsListBox.SelectedIndex);
+    }
+
+    private void PageFilterTypeComboBox_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        if (Enum.TryParse<PageFilterType>(pageFilterTypeComboBox.Text, out var type))
+        {
+            action.PageFilter.Type = type;
+            MarkDirty();
+        }
+    }
+
+    private void PageFilterRangeTextBox_TextChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        if (!TryParsePageRanges(pageFilterRangeTextBox.Text, out var ranges, out var error))
+        {
+            UpdateStatus(error);
+            return;
+        }
+
+        action.PageFilter.Range = ranges;
+        MarkDirty();
+        UpdateStatus("Page filter updated.");
+    }
+
     private void OpenProject(string path)
     {
         try
         {
             var json = File.ReadAllText(path);
             _project = JsonSerializer.Deserialize<PdfPageStudioProject>(json, _jsonOptions) ?? new PdfPageStudioProject();
+            NormalizeProject();
             _projectPath = path;
             _isDirty = false;
             _settings.AddRecentProject(path);
@@ -258,10 +368,12 @@ public sealed partial class MainForm : Form
 
     private void BindProject()
     {
+        NormalizeProject();
         _isBinding = true;
         projectNameTextBox.Text = _project.Name;
         projectDescriptionTextBox.Text = _project.Description;
         _isBinding = false;
+        RefreshActions(actionsListBox.SelectedIndex);
     }
 
     private void InitializePdfRendering()
@@ -389,6 +501,185 @@ public sealed partial class MainForm : Form
         projectInfoPanel.Visible = false;
         pdfWorkspacePanel.Visible = true;
         pdfWorkspacePanel.BringToFront();
+    }
+
+    private void InsertAction(int index)
+    {
+        var action = new ProjectAction();
+        index = Math.Clamp(index, 0, _project.Actions.Count);
+        _project.Actions.Insert(index, action);
+        MarkDirty();
+        RefreshActions(index);
+        UpdateStatus("Action added.");
+    }
+
+    private void NormalizeProject()
+    {
+        _project.Actions ??= [];
+        foreach (var action in _project.Actions)
+        {
+            if (string.IsNullOrWhiteSpace(action.Id))
+            {
+                action.Id = Guid.NewGuid().ToString("N");
+            }
+
+            if (string.IsNullOrWhiteSpace(action.Type))
+            {
+                action.Type = "NewAction";
+            }
+
+            if (string.IsNullOrWhiteSpace(action.Name))
+            {
+                action.Name = "New Action";
+            }
+
+            action.PageFilter ??= new PageFilter();
+            action.PageFilter.Range ??= [];
+        }
+    }
+
+    private void RefreshActions(int selectedIndex)
+    {
+        _isBinding = true;
+        actionsListBox.Items.Clear();
+        for (var index = 0; index < _project.Actions.Count; index++)
+        {
+            actionsListBox.Items.Add(FormatActionListItem(index, _project.Actions[index]));
+        }
+
+        if (_project.Actions.Count > 0)
+        {
+            actionsListBox.SelectedIndex = Math.Clamp(selectedIndex, 0, _project.Actions.Count - 1);
+        }
+
+        _isBinding = false;
+        BindSelectedAction();
+        UpdateActionButtons();
+    }
+
+    private void BindSelectedAction()
+    {
+        _isBinding = true;
+        var action = GetSelectedAction();
+        var hasAction = action != null;
+        actionNameTextBox.Enabled = hasAction;
+        pageFilterTypeComboBox.Enabled = hasAction;
+        pageFilterRangeTextBox.Enabled = hasAction;
+
+        if (action == null)
+        {
+            actionNameTextBox.Text = "";
+            pageFilterTypeComboBox.SelectedIndex = -1;
+            pageFilterRangeTextBox.Text = "";
+            _isBinding = false;
+            return;
+        }
+
+        action.PageFilter ??= new PageFilter();
+        actionNameTextBox.Text = action.Name;
+        pageFilterTypeComboBox.SelectedItem = action.PageFilter.Type.ToString();
+        pageFilterRangeTextBox.Text = FormatPageRanges(action.PageFilter.Range);
+        _isBinding = false;
+    }
+
+    private void UpdateActionButtons()
+    {
+        var selectedIndex = actionsListBox.SelectedIndex;
+        var hasSelection = selectedIndex >= 0 && selectedIndex < _project.Actions.Count;
+        insertBeforeActionButton.Enabled = hasSelection || _project.Actions.Count == 0;
+        insertAfterActionButton.Enabled = hasSelection || _project.Actions.Count == 0;
+        deleteActionButton.Enabled = hasSelection;
+        moveActionUpButton.Enabled = hasSelection && selectedIndex > 0;
+        moveActionDownButton.Enabled = hasSelection && selectedIndex < _project.Actions.Count - 1;
+    }
+
+    private ProjectAction? GetSelectedAction()
+    {
+        var index = actionsListBox.SelectedIndex;
+        return index >= 0 && index < _project.Actions.Count ? _project.Actions[index] : null;
+    }
+
+    private static string FormatActionListItem(int index, ProjectAction action)
+    {
+        return $"{index + 1}. {action.Name} ({FormatPageFilter(action.PageFilter)})";
+    }
+
+    private static string FormatPageFilter(PageFilter? filter)
+    {
+        if (filter == null)
+        {
+            return "All pages";
+        }
+
+        var range = filter.Range.Count == 0 ? "All pages" : FormatPageRanges(filter.Range);
+        return filter.Type == PageFilterType.Any ? range : $"{range}, {filter.Type}";
+    }
+
+    private static string FormatPageRanges(IReadOnlyList<PageFilterRange> ranges)
+    {
+        if (ranges.Count == 0)
+        {
+            return "";
+        }
+
+        return string.Join(", ", ranges.Select(range =>
+            range.End == null
+                ? $"{range.Start}-"
+                : range.Start == range.End.Value
+                    ? range.Start.ToString()
+                    : $"{range.Start}-{range.End.Value}"));
+    }
+
+    private static bool TryParsePageRanges(string text, out List<PageFilterRange> ranges, out string error)
+    {
+        ranges = [];
+        error = "";
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return true;
+        }
+
+        var parts = text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var part in parts)
+        {
+            var dashIndex = part.IndexOf('-', StringComparison.Ordinal);
+            if (dashIndex < 0)
+            {
+                if (!int.TryParse(part, out var page) || page < 1)
+                {
+                    error = "Page range must use positive page numbers.";
+                    return false;
+                }
+
+                ranges.Add(new PageFilterRange { Start = page, End = page });
+                continue;
+            }
+
+            var startText = part[..dashIndex].Trim();
+            var endText = part[(dashIndex + 1)..].Trim();
+            if (!int.TryParse(startText, out var start) || start < 1)
+            {
+                error = "Page range start must be a positive page number.";
+                return false;
+            }
+
+            int? end = null;
+            if (!string.IsNullOrWhiteSpace(endText))
+            {
+                if (!int.TryParse(endText, out var parsedEnd) || parsedEnd < start)
+                {
+                    error = "Page range end must be empty or greater than/equal to start.";
+                    return false;
+                }
+
+                end = parsedEnd;
+            }
+
+            ranges.Add(new PageFilterRange { Start = start, End = end });
+        }
+
+        return true;
     }
 
     private void RefreshRecentProjectsMenu()
