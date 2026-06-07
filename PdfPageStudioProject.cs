@@ -4,4 +4,5 @@ public sealed class PdfPageStudioProject
 {
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
+    public string PdfFilePath { get; set; } = "";
 }

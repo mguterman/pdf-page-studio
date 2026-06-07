@@ -1,4 +1,5 @@
 using System.Text.Json;
+using PdfiumViewer;
 
 namespace PdfPageStudio;
 
@@ -8,7 +9,10 @@ public sealed partial class MainForm : Form
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
     private readonly AppSettings _settings;
     private PdfPageStudioProject _project = new();
+    private PdfDocument? _pdfDocument;
     private string? _projectPath;
+    private int _pageIndex;
+    private float _zoomFactor = 1f;
     private bool _isDirty;
     private bool _isBinding;
 
@@ -16,8 +20,10 @@ public sealed partial class MainForm : Form
     {
         _settings = AppSettings.Load();
         InitializeComponent();
+        InitializePdfRendering();
         RefreshRecentProjectsMenu();
         BindProject();
+        LoadPdfFromProject();
         UpdateTitle();
         UpdateStatus("Ready.");
     }
@@ -56,6 +62,94 @@ public sealed partial class MainForm : Form
         SaveProjectAs();
     }
 
+    private void AddPdfFileMenuItem_Click(object? sender, EventArgs e)
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Title = "Add PDF File",
+            Filter = "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*",
+            CheckFileExists = true,
+            InitialDirectory = GetInitialPdfFolder(),
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        _project.PdfFilePath = dialog.FileName;
+        MarkDirty();
+        LoadPdfFromProject();
+    }
+
+    private void PreviousPageButton_Click(object? sender, EventArgs e)
+    {
+        if (_pdfDocument == null || _pageIndex == 0)
+        {
+            return;
+        }
+
+        _pageIndex--;
+        RenderCurrentPage();
+    }
+
+    private void NextPageButton_Click(object? sender, EventArgs e)
+    {
+        if (_pdfDocument == null || _pageIndex >= _pdfDocument.PageCount - 1)
+        {
+            return;
+        }
+
+        _pageIndex++;
+        RenderCurrentPage();
+    }
+
+    private void PageNumberTextBox_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.KeyCode != Keys.Enter)
+        {
+            return;
+        }
+
+        e.SuppressKeyPress = true;
+        GoToPageFromTextBox();
+    }
+
+    private void PageNumberTextBox_Leave(object? sender, EventArgs e)
+    {
+        GoToPageFromTextBox();
+    }
+
+    private void ZoomOutButton_Click(object? sender, EventArgs e)
+    {
+        _zoomFactor = Math.Max(0.1f, _zoomFactor / 1.25f);
+        pdfPageViewer.CustomZoom = _zoomFactor;
+        fitPageButton.Checked = false;
+        fitWidthButton.Checked = false;
+    }
+
+    private void ZoomInButton_Click(object? sender, EventArgs e)
+    {
+        _zoomFactor = Math.Min(6f, _zoomFactor * 1.25f);
+        pdfPageViewer.CustomZoom = _zoomFactor;
+        fitPageButton.Checked = false;
+        fitWidthButton.Checked = false;
+    }
+
+    private void FitWidthButton_Click(object? sender, EventArgs e)
+    {
+        pdfPageViewer.ZoomMode = PdfZoomMode.FitWidth;
+        fitWidthButton.Checked = true;
+        fitPageButton.Checked = false;
+    }
+
+    private void FitPageButton_Click(object? sender, EventArgs e)
+    {
+        pdfPageViewer.ZoomMode = PdfZoomMode.FitPage;
+        fitPageButton.Checked = true;
+        fitWidthButton.Checked = false;
+    }
+
     private void ProjectNameTextBox_TextChanged(object? sender, EventArgs e)
     {
         if (_isBinding)
@@ -89,6 +183,7 @@ public sealed partial class MainForm : Form
             _settings.AddRecentProject(path);
             _settings.Save();
             BindProject();
+            LoadPdfFromProject();
             RefreshRecentProjectsMenu();
             UpdateTitle();
             UpdateStatus("Opened: " + path);
@@ -169,6 +264,133 @@ public sealed partial class MainForm : Form
         _isBinding = false;
     }
 
+    private void InitializePdfRendering()
+    {
+        try
+        {
+            PdfiumNativeLoader.EnsureLoaded();
+        }
+        catch (Exception ex)
+        {
+            addPdfFileMenuItem.Enabled = false;
+            SetPdfToolbarEnabled(false);
+            MessageBox.Show(this, ex.Message, "PDF preview initialization failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void LoadPdfFromProject()
+    {
+        _pdfDocument?.Dispose();
+        _pdfDocument = null;
+        _pageIndex = 0;
+        pdfPageViewer.SetPage(null);
+        SetPdfToolbarEnabled(false);
+
+        if (string.IsNullOrWhiteSpace(_project.PdfFilePath))
+        {
+            ShowProjectInfo();
+            return;
+        }
+
+        if (!File.Exists(_project.PdfFilePath))
+        {
+            ShowProjectInfo();
+            UpdateStatus("PDF file not found: " + _project.PdfFilePath);
+            return;
+        }
+
+        try
+        {
+            _pdfDocument = PdfDocument.Load(_project.PdfFilePath);
+            ShowPdfWorkspace();
+            SetPdfToolbarEnabled(true);
+            FitPageButton_Click(this, EventArgs.Empty);
+            RenderCurrentPage();
+            UpdateStatus("PDF loaded: " + _project.PdfFilePath);
+        }
+        catch (Exception ex)
+        {
+            ShowProjectInfo();
+            MessageBox.Show(this, ex.Message, "PDF load failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateStatus("PDF load failed.");
+        }
+    }
+
+    private void RenderCurrentPage()
+    {
+        if (_pdfDocument == null)
+        {
+            return;
+        }
+
+        var pageSize = _pdfDocument.PageSizes[_pageIndex];
+        const float renderDpi = 144f;
+        var width = Math.Max(1, (int)Math.Round(pageSize.Width / 72f * renderDpi));
+        var height = Math.Max(1, (int)Math.Round(pageSize.Height / 72f * renderDpi));
+        var image = _pdfDocument.Render(_pageIndex, width, height, renderDpi, renderDpi, PdfRenderFlags.Annotations);
+        pdfPageViewer.SetPage(image);
+        UpdatePdfNavigation();
+    }
+
+    private void GoToPageFromTextBox()
+    {
+        if (_pdfDocument == null)
+        {
+            return;
+        }
+
+        if (!int.TryParse(pageNumberTextBox.Text, out var pageNumber))
+        {
+            UpdatePdfNavigation();
+            return;
+        }
+
+        pageNumber = Math.Clamp(pageNumber, 1, _pdfDocument.PageCount);
+        if (pageNumber - 1 == _pageIndex)
+        {
+            UpdatePdfNavigation();
+            return;
+        }
+
+        _pageIndex = pageNumber - 1;
+        RenderCurrentPage();
+    }
+
+    private void UpdatePdfNavigation()
+    {
+        var hasDocument = _pdfDocument != null;
+        pageNumberTextBox.Text = hasDocument ? (_pageIndex + 1).ToString() : "";
+        pageCountLabel.Text = hasDocument ? $"of {_pdfDocument!.PageCount}" : "of 0";
+        previousPageButton.Enabled = hasDocument && _pageIndex > 0;
+        nextPageButton.Enabled = hasDocument && _pageIndex < _pdfDocument!.PageCount - 1;
+    }
+
+    private void SetPdfToolbarEnabled(bool enabled)
+    {
+        pageNumberTextBox.Enabled = enabled;
+        zoomOutButton.Enabled = enabled;
+        zoomInButton.Enabled = enabled;
+        fitWidthButton.Enabled = enabled;
+        fitPageButton.Enabled = enabled;
+        previousPageButton.Enabled = false;
+        nextPageButton.Enabled = false;
+        pageCountLabel.Text = enabled && _pdfDocument != null ? $"of {_pdfDocument.PageCount}" : "of 0";
+    }
+
+    private void ShowProjectInfo()
+    {
+        pdfWorkspacePanel.Visible = false;
+        projectInfoPanel.Visible = true;
+        projectInfoPanel.BringToFront();
+    }
+
+    private void ShowPdfWorkspace()
+    {
+        projectInfoPanel.Visible = false;
+        pdfWorkspacePanel.Visible = true;
+        pdfWorkspacePanel.BringToFront();
+    }
+
     private void RefreshRecentProjectsMenu()
     {
         openRecentProjectMenuItem.DropDownItems.Clear();
@@ -228,6 +450,7 @@ public sealed partial class MainForm : Form
             return;
         }
 
+        _pdfDocument?.Dispose();
         base.OnFormClosing(e);
     }
 
@@ -296,6 +519,20 @@ public sealed partial class MainForm : Form
         }
 
         return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+    }
+
+    private string GetInitialPdfFolder()
+    {
+        if (!string.IsNullOrWhiteSpace(_project.PdfFilePath))
+        {
+            var pdfFolder = Path.GetDirectoryName(_project.PdfFilePath);
+            if (Directory.Exists(pdfFolder))
+            {
+                return pdfFolder;
+            }
+        }
+
+        return GetInitialProjectFolder();
     }
 
     private string GetDefaultProjectFileName()
