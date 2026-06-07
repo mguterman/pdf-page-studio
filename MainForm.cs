@@ -372,27 +372,21 @@ public sealed partial class MainForm : Form
         RefreshCurrentPagePreview();
     }
 
-    private void ActionNumberTextBox_TextChanged(object? sender, EventArgs e)
+    private void ActionNumberNumericBox_ValueChanged(object? sender, EventArgs e)
     {
-        if (_isBinding || GetSelectedAction() is not { } action || sender is not TextBox textBox)
+        if (_isBinding || GetSelectedAction() is not { } action || sender is not NumericUpDown numericBox)
         {
             return;
         }
 
-        if (!TryReadNullableFloat(textBox.Text, out var value))
-        {
-            UpdateStatus("Use a decimal number or leave the field empty.");
-            return;
-        }
-
-        value = Round(value);
-        if (textBox == leftTextBox) action.Left = value;
-        else if (textBox == topTextBox) action.Top = value;
-        else if (textBox == rightTextBox) action.Right = value;
-        else if (textBox == bottomTextBox) action.Bottom = value;
-        else if (textBox == targetedWidthTextBox) action.TargetedWidth = value;
-        else if (textBox == targetedHeightTextBox) action.TargetedHeight = value;
-        else if (textBox == rulerPositionTextBox) action.Position = value;
+        var value = (float)numericBox.Value;
+        if (numericBox == leftNumericBox) action.Left = value;
+        else if (numericBox == topNumericBox) action.Top = value;
+        else if (numericBox == rightNumericBox) action.Right = value;
+        else if (numericBox == bottomNumericBox) action.Bottom = value;
+        else if (numericBox == targetedWidthNumericBox) action.TargetedWidth = ZeroToNull(value);
+        else if (numericBox == targetedHeightNumericBox) action.TargetedHeight = ZeroToNull(value);
+        else if (numericBox == rulerPositionNumericBox) action.Position = value;
         else return;
 
         MarkDirty();
@@ -652,10 +646,11 @@ public sealed partial class MainForm : Form
         const float renderDpi = 144f;
         var width = Math.Max(1, (int)Math.Round(pageSize.Width / 72f * renderDpi));
         var height = Math.Max(1, (int)Math.Round(pageSize.Height / 72f * renderDpi));
-        var image = _pdfDocument.Render(_pageIndex, width, height, renderDpi, renderDpi, PdfRenderFlags.Annotations);
-        pdfPageViewer.SetPage(image);
+        using var image = _pdfDocument.Render(_pageIndex, width, height, renderDpi, renderDpi, PdfRenderFlags.Annotations);
+        var previewImage = ApplyPreviewActions(image, pageSize, renderDpi, out var previewPageSize);
+        pdfPageViewer.SetPage(previewImage);
         UpdatePdfNavigation();
-        UpdatePageSizeLabel(pageSize);
+        UpdatePageSizeLabel(previewPageSize);
         UpdatePreviewStatus();
     }
 
@@ -850,18 +845,18 @@ public sealed partial class MainForm : Form
         actionNameTextBox.Text = action.Name;
         pageFilterTypeComboBox.SelectedItem = action.PageFilter.Type.ToString();
         pageFilterRangeTextBox.Text = FormatPageRanges(action.PageFilter.Range);
-        leftTextBox.Text = FormatNullableFloat(action.Left);
-        topTextBox.Text = FormatNullableFloat(action.Top);
-        rightTextBox.Text = FormatNullableFloat(action.Right);
-        bottomTextBox.Text = FormatNullableFloat(action.Bottom);
-        targetedWidthTextBox.Text = FormatNullableFloat(action.TargetedWidth);
-        targetedHeightTextBox.Text = FormatNullableFloat(action.TargetedHeight);
+        leftNumericBox.Value = FloatToDecimal(action.Left);
+        topNumericBox.Value = FloatToDecimal(action.Top);
+        rightNumericBox.Value = FloatToDecimal(action.Right);
+        bottomNumericBox.Value = FloatToDecimal(action.Bottom);
+        targetedWidthNumericBox.Value = FloatToDecimal(action.TargetedWidth);
+        targetedHeightNumericBox.Value = FloatToDecimal(action.TargetedHeight);
         proportionalCheckBox.Checked = action.Proportional ?? true;
         rulerColorTextBox.Text = action.Color;
         rulerStyleComboBox.SelectedItem = action.Style.ToString();
         rulerValueModeComboBox.SelectedItem = action.RulerValueMode.ToString();
         rulerOrientationComboBox.SelectedItem = action.Orientation.ToString();
-        rulerPositionTextBox.Text = FormatNullableFloat(action.Position);
+        rulerPositionNumericBox.Value = FloatToDecimal(action.Position);
         SelectAnchorButton(action.AnchorHorizontal, action.AnchorVertical);
         UpdateActionEditorVisibility(action);
         _isBinding = false;
@@ -901,6 +896,237 @@ public sealed partial class MainForm : Form
 
         var selectedIndex = actionsListBox.SelectedIndex;
         return selectedIndex < 0 ? 0 : Math.Min(selectedIndex + 1, _project.Actions.Count);
+    }
+
+    private Bitmap ApplyPreviewActions(Image originalImage, SizeF originalPageSizePoints, float dpi, out SizeF previewPageSizePoints)
+    {
+        var current = new Bitmap(originalImage);
+        previewPageSizePoints = originalPageSizePoints;
+        var actionCount = GetPreviewActionCount();
+        var pageNumber = _pageIndex + 1;
+
+        for (var index = 0; index < actionCount; index++)
+        {
+            var action = _project.Actions[index];
+            if (!PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber))
+            {
+                continue;
+            }
+
+            var next = ApplyPreviewAction(current, action, dpi, ref previewPageSizePoints);
+            if (!ReferenceEquals(next, current))
+            {
+                current.Dispose();
+                current = next;
+            }
+        }
+
+        return current;
+    }
+
+    private Bitmap ApplyPreviewAction(Bitmap source, ProjectAction action, float dpi, ref SizeF pageSizePoints)
+    {
+        return action.Type switch
+        {
+            PdfActionType.Trim => ApplyTrimPreview(source, action, dpi, ref pageSizePoints),
+            PdfActionType.Expand => ApplyExpandPreview(source, action, dpi, ref pageSizePoints),
+            PdfActionType.Resize => ApplyResizePreview(source, action, dpi, ref pageSizePoints),
+            PdfActionType.Zoom => ApplyZoomPreview(source, action),
+            PdfActionType.AddRuler => ApplyRulerPreview(source, action, dpi),
+            _ => new Bitmap(source),
+        };
+    }
+
+    private Bitmap ApplyTrimPreview(Bitmap source, ProjectAction action, float dpi, ref SizeF pageSizePoints)
+    {
+        var left = ToPixels(action.Left, dpi);
+        var top = ToPixels(action.Top, dpi);
+        var right = ToPixels(action.Right, dpi);
+        var bottom = ToPixels(action.Bottom, dpi);
+        left = Math.Clamp(left, 0, Math.Max(0, source.Width - 1));
+        top = Math.Clamp(top, 0, Math.Max(0, source.Height - 1));
+        right = Math.Clamp(right, 0, Math.Max(0, source.Width - left - 1));
+        bottom = Math.Clamp(bottom, 0, Math.Max(0, source.Height - top - 1));
+
+        var width = Math.Max(1, source.Width - left - right);
+        var height = Math.Max(1, source.Height - top - bottom);
+        var result = CreateCanvas(width, height);
+        using var graphics = Graphics.FromImage(result);
+        ConfigureHighQuality(graphics);
+        graphics.DrawImage(source, new Rectangle(-left, -top, source.Width, source.Height));
+
+        pageSizePoints = new SizeF(
+            Math.Max(1, pageSizePoints.Width - UnitValueToPoints(action.Left) - UnitValueToPoints(action.Right)),
+            Math.Max(1, pageSizePoints.Height - UnitValueToPoints(action.Top) - UnitValueToPoints(action.Bottom)));
+        return result;
+    }
+
+    private Bitmap ApplyExpandPreview(Bitmap source, ProjectAction action, float dpi, ref SizeF pageSizePoints)
+    {
+        var left = ToPixels(action.Left, dpi);
+        var top = ToPixels(action.Top, dpi);
+        var right = ToPixels(action.Right, dpi);
+        var bottom = ToPixels(action.Bottom, dpi);
+        var width = Math.Max(1, source.Width + left + right);
+        var height = Math.Max(1, source.Height + top + bottom);
+        var result = CreateCanvas(width, height);
+        using var graphics = Graphics.FromImage(result);
+        ConfigureHighQuality(graphics);
+        graphics.DrawImage(source, new Rectangle(left, top, source.Width, source.Height));
+
+        pageSizePoints = new SizeF(
+            pageSizePoints.Width + UnitValueToPoints(action.Left) + UnitValueToPoints(action.Right),
+            pageSizePoints.Height + UnitValueToPoints(action.Top) + UnitValueToPoints(action.Bottom));
+        return result;
+    }
+
+    private Bitmap ApplyResizePreview(Bitmap source, ProjectAction action, float dpi, ref SizeF pageSizePoints)
+    {
+        var currentWidthInches = pageSizePoints.Width / 72f;
+        var currentHeightInches = pageSizePoints.Height / 72f;
+        float? targetWidthInches = action.TargetedWidth is > 0 ? UnitValueToInches(action.TargetedWidth.Value) : null;
+        float? targetHeightInches = action.TargetedHeight is > 0 ? UnitValueToInches(action.TargetedHeight.Value) : null;
+
+        if ((targetWidthInches == null || targetWidthInches <= 0) && (targetHeightInches == null || targetHeightInches <= 0))
+        {
+            return new Bitmap(source);
+        }
+
+        if (action.Proportional != false)
+        {
+            if ((targetWidthInches == null || targetWidthInches <= 0) && targetHeightInches > 0)
+            {
+                targetWidthInches = currentWidthInches * targetHeightInches.Value / currentHeightInches;
+            }
+            else if ((targetHeightInches == null || targetHeightInches <= 0) && targetWidthInches > 0)
+            {
+                targetHeightInches = currentHeightInches * targetWidthInches.Value / currentWidthInches;
+            }
+        }
+
+        targetWidthInches = targetWidthInches is > 0 ? targetWidthInches : currentWidthInches;
+        targetHeightInches = targetHeightInches is > 0 ? targetHeightInches : currentHeightInches;
+        var width = Math.Max(1, (int)Math.Round(targetWidthInches.Value * dpi));
+        var height = Math.Max(1, (int)Math.Round(targetHeightInches.Value * dpi));
+        var result = CreateCanvas(width, height);
+        using var graphics = Graphics.FromImage(result);
+        ConfigureHighQuality(graphics);
+        graphics.DrawImage(source, new Rectangle(0, 0, width, height));
+        pageSizePoints = new SizeF(targetWidthInches.Value * 72f, targetHeightInches.Value * 72f);
+        return result;
+    }
+
+    private Bitmap ApplyZoomPreview(Bitmap source, ProjectAction action)
+    {
+        var widthPercent = action.TargetedWidth;
+        var heightPercent = action.TargetedHeight;
+        if ((widthPercent == null || widthPercent <= 0) && (heightPercent == null || heightPercent <= 0))
+        {
+            return new Bitmap(source);
+        }
+
+        if (action.Proportional != false)
+        {
+            if ((widthPercent == null || widthPercent <= 0) && heightPercent > 0)
+            {
+                widthPercent = heightPercent;
+            }
+            else if ((heightPercent == null || heightPercent <= 0) && widthPercent > 0)
+            {
+                heightPercent = widthPercent;
+            }
+        }
+
+        var scaleX = Math.Max(0.001f, (widthPercent ?? 100f) / 100f);
+        var scaleY = Math.Max(0.001f, (heightPercent ?? 100f) / 100f);
+        var contentWidth = Math.Max(1, (int)Math.Round(source.Width * scaleX));
+        var contentHeight = Math.Max(1, (int)Math.Round(source.Height * scaleY));
+        var x = GetAnchorOffset(source.Width, contentWidth, action.AnchorHorizontal);
+        var y = GetAnchorOffset(source.Height, contentHeight, action.AnchorVertical);
+        var result = CreateCanvas(source.Width, source.Height);
+        using var graphics = Graphics.FromImage(result);
+        ConfigureHighQuality(graphics);
+        graphics.DrawImage(source, new Rectangle(x, y, contentWidth, contentHeight));
+        return result;
+    }
+
+    private Bitmap ApplyRulerPreview(Bitmap source, ProjectAction action, float dpi)
+    {
+        var result = new Bitmap(source);
+        var color = ParseColor(action.Color);
+        using var graphics = Graphics.FromImage(result);
+        using var pen = new Pen(color, 2f);
+        if (action.Style == RulerStyle.Dotted)
+        {
+            pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+        }
+
+        var position = action.Position ?? 0;
+        if (action.Orientation == RulerOrientation.Vertical)
+        {
+            var x = action.RulerValueMode == RulerValueMode.Percent
+                ? (int)Math.Round(source.Width * position / 100f)
+                : ToPixels(position, dpi);
+            x = Math.Clamp(x, 0, source.Width - 1);
+            graphics.DrawLine(pen, x, 0, x, source.Height);
+        }
+        else
+        {
+            var y = action.RulerValueMode == RulerValueMode.Percent
+                ? (int)Math.Round(source.Height * position / 100f)
+                : ToPixels(position, dpi);
+            y = Math.Clamp(y, 0, source.Height - 1);
+            graphics.DrawLine(pen, 0, y, source.Width, y);
+        }
+
+        return result;
+    }
+
+    private static int GetAnchorOffset(int canvasSize, int contentSize, AnchorHorizontal anchor)
+    {
+        return anchor switch
+        {
+            AnchorHorizontal.Left => 0,
+            AnchorHorizontal.Right => canvasSize - contentSize,
+            _ => (canvasSize - contentSize) / 2,
+        };
+    }
+
+    private static int GetAnchorOffset(int canvasSize, int contentSize, AnchorVertical anchor)
+    {
+        return anchor switch
+        {
+            AnchorVertical.Top => 0,
+            AnchorVertical.Bottom => canvasSize - contentSize,
+            _ => (canvasSize - contentSize) / 2,
+        };
+    }
+
+    private static Bitmap CreateCanvas(int width, int height)
+    {
+        var bitmap = new Bitmap(width, height);
+        using var graphics = Graphics.FromImage(bitmap);
+        graphics.Clear(Color.White);
+        return bitmap;
+    }
+
+    private static void ConfigureHighQuality(Graphics graphics)
+    {
+        graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+        graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+    }
+
+    private static Color ParseColor(string color)
+    {
+        try
+        {
+            return ColorTranslator.FromHtml(string.IsNullOrWhiteSpace(color) ? "#FF0000" : color);
+        }
+        catch
+        {
+            return Color.Red;
+        }
     }
 
     private ProjectAction? GetSelectedAction()
@@ -1044,19 +1270,19 @@ public sealed partial class MainForm : Form
         var hasAnchor = type == PdfActionType.Zoom;
         var hasRuler = type == PdfActionType.AddRuler;
 
-        SetEditorRowVisible(leftLabel, leftTextBox, hasMargins);
-        SetEditorRowVisible(topLabel, topTextBox, hasMargins);
-        SetEditorRowVisible(rightLabel, rightTextBox, hasMargins);
-        SetEditorRowVisible(bottomLabel, bottomTextBox, hasMargins);
-        SetEditorRowVisible(targetedWidthLabel, targetedWidthTextBox, hasTargetSize);
-        SetEditorRowVisible(targetedHeightLabel, targetedHeightTextBox, hasTargetSize);
+        SetEditorRowVisible(leftLabel, leftNumericBox, hasMargins);
+        SetEditorRowVisible(topLabel, topNumericBox, hasMargins);
+        SetEditorRowVisible(rightLabel, rightNumericBox, hasMargins);
+        SetEditorRowVisible(bottomLabel, bottomNumericBox, hasMargins);
+        SetEditorRowVisible(targetedWidthLabel, targetedWidthNumericBox, hasTargetSize);
+        SetEditorRowVisible(targetedHeightLabel, targetedHeightNumericBox, hasTargetSize);
         SetEditorRowVisible(proportionalLabel, proportionalCheckBox, hasProportional);
         SetEditorRowVisible(anchorLabel, anchorPanel, hasAnchor);
         SetEditorRowVisible(rulerColorLabel, rulerColorTextBox, hasRuler);
         SetEditorRowVisible(rulerStyleLabel, rulerStyleComboBox, hasRuler);
         SetEditorRowVisible(rulerValueModeLabel, rulerValueModeComboBox, hasRuler);
         SetEditorRowVisible(rulerOrientationLabel, rulerOrientationComboBox, hasRuler);
-        SetEditorRowVisible(rulerPositionLabel, rulerPositionTextBox, hasRuler);
+        SetEditorRowVisible(rulerPositionLabel, rulerPositionNumericBox, hasRuler);
         actionPropertiesPanel.PerformLayout();
         actionPropertiesScrollPanel.PerformLayout();
     }
@@ -1069,18 +1295,18 @@ public sealed partial class MainForm : Form
 
     private void ClearActionParameterInputs()
     {
-        leftTextBox.Text = "";
-        topTextBox.Text = "";
-        rightTextBox.Text = "";
-        bottomTextBox.Text = "";
-        targetedWidthTextBox.Text = "";
-        targetedHeightTextBox.Text = "";
+        leftNumericBox.Value = 0;
+        topNumericBox.Value = 0;
+        rightNumericBox.Value = 0;
+        bottomNumericBox.Value = 0;
+        targetedWidthNumericBox.Value = 0;
+        targetedHeightNumericBox.Value = 0;
         proportionalCheckBox.Checked = true;
         rulerColorTextBox.Text = "";
         rulerStyleComboBox.SelectedIndex = -1;
         rulerValueModeComboBox.SelectedIndex = -1;
         rulerOrientationComboBox.SelectedIndex = -1;
-        rulerPositionTextBox.Text = "";
+        rulerPositionNumericBox.Value = 0;
     }
 
     private void SelectAnchorButton(AnchorHorizontal horizontal, AnchorVertical vertical)
@@ -1138,38 +1364,44 @@ public sealed partial class MainForm : Form
         return value == null ? null : Round(value.Value * factor);
     }
 
-    private static bool TryReadNullableFloat(string text, out float? value)
+    private int ToPixels(float? value, float dpi)
     {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            value = null;
-            return true;
-        }
-
-        if (float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) ||
-            float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out parsed))
-        {
-            value = parsed;
-            return true;
-        }
-
-        value = null;
-        return false;
+        return ToPixels(value ?? 0, dpi);
     }
 
-    private static float? Round(float? value)
+    private int ToPixels(float value, float dpi)
     {
-        return value == null ? null : Round(value.Value);
+        return Math.Max(0, (int)Math.Round(UnitValueToInches(value) * dpi));
+    }
+
+    private float UnitValueToPoints(float? value)
+    {
+        return UnitValueToInches(value) * 72f;
+    }
+
+    private float UnitValueToInches(float? value)
+    {
+        return UnitValueToInches(value ?? 0);
+    }
+
+    private float UnitValueToInches(float value)
+    {
+        return _project.UnitType == UnitType.Cm ? value / 2.54f : value;
+    }
+
+    private static float? ZeroToNull(float value)
+    {
+        return Math.Abs(value) < 0.0001f ? null : Round(value);
+    }
+
+    private static decimal FloatToDecimal(float? value)
+    {
+        return (decimal)Round(value ?? 0);
     }
 
     private static float Round(float value)
     {
         return (float)Math.Round(value, 3, MidpointRounding.AwayFromZero);
-    }
-
-    private static string FormatNullableFloat(float? value)
-    {
-        return value == null ? "" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
     }
 
     private static JsonSerializerOptions CreateJsonOptions()

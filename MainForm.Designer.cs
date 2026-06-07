@@ -62,17 +62,17 @@ partial class MainForm
     private Label pageFilterRangeLabel;
     private TextBox pageFilterRangeTextBox;
     private Label leftLabel;
-    private TextBox leftTextBox;
+    private NumericUpDown leftNumericBox;
     private Label topLabel;
-    private TextBox topTextBox;
+    private NumericUpDown topNumericBox;
     private Label rightLabel;
-    private TextBox rightTextBox;
+    private NumericUpDown rightNumericBox;
     private Label bottomLabel;
-    private TextBox bottomTextBox;
+    private NumericUpDown bottomNumericBox;
     private Label targetedWidthLabel;
-    private TextBox targetedWidthTextBox;
+    private NumericUpDown targetedWidthNumericBox;
     private Label targetedHeightLabel;
-    private TextBox targetedHeightTextBox;
+    private NumericUpDown targetedHeightNumericBox;
     private Label proportionalLabel;
     private CheckBox proportionalCheckBox;
     private Label anchorLabel;
@@ -95,7 +95,7 @@ partial class MainForm
     private Label rulerOrientationLabel;
     private ComboBox rulerOrientationComboBox;
     private Label rulerPositionLabel;
-    private TextBox rulerPositionTextBox;
+    private NumericUpDown rulerPositionNumericBox;
     private StatusStrip mainStatusStrip;
     private ToolStripStatusLabel statusLabel;
 
@@ -170,17 +170,17 @@ partial class MainForm
         pageFilterRangeLabel = new Label();
         pageFilterRangeTextBox = new TextBox();
         leftLabel = new Label();
-        leftTextBox = new TextBox();
+        leftNumericBox = new NumericUpDown();
         topLabel = new Label();
-        topTextBox = new TextBox();
+        topNumericBox = new NumericUpDown();
         rightLabel = new Label();
-        rightTextBox = new TextBox();
+        rightNumericBox = new NumericUpDown();
         bottomLabel = new Label();
-        bottomTextBox = new TextBox();
+        bottomNumericBox = new NumericUpDown();
         targetedWidthLabel = new Label();
-        targetedWidthTextBox = new TextBox();
+        targetedWidthNumericBox = new NumericUpDown();
         targetedHeightLabel = new Label();
-        targetedHeightTextBox = new TextBox();
+        targetedHeightNumericBox = new NumericUpDown();
         proportionalLabel = new Label();
         proportionalCheckBox = new CheckBox();
         anchorLabel = new Label();
@@ -203,7 +203,7 @@ partial class MainForm
         rulerOrientationLabel = new Label();
         rulerOrientationComboBox = new ComboBox();
         rulerPositionLabel = new Label();
-        rulerPositionTextBox = new TextBox();
+        rulerPositionNumericBox = new NumericUpDown();
         mainStatusStrip = new StatusStrip();
         statusLabel = new ToolStripStatusLabel();
         mainMenuStrip.SuspendLayout();
@@ -604,17 +604,17 @@ partial class MainForm
         actionPropertiesPanel.Controls.Add(pageFilterRangeLabel, 0, 3);
         actionPropertiesPanel.Controls.Add(pageFilterRangeTextBox, 1, 3);
         actionPropertiesPanel.Controls.Add(leftLabel, 0, 4);
-        actionPropertiesPanel.Controls.Add(leftTextBox, 1, 4);
+        actionPropertiesPanel.Controls.Add(leftNumericBox, 1, 4);
         actionPropertiesPanel.Controls.Add(topLabel, 0, 5);
-        actionPropertiesPanel.Controls.Add(topTextBox, 1, 5);
+        actionPropertiesPanel.Controls.Add(topNumericBox, 1, 5);
         actionPropertiesPanel.Controls.Add(rightLabel, 0, 6);
-        actionPropertiesPanel.Controls.Add(rightTextBox, 1, 6);
+        actionPropertiesPanel.Controls.Add(rightNumericBox, 1, 6);
         actionPropertiesPanel.Controls.Add(bottomLabel, 0, 7);
-        actionPropertiesPanel.Controls.Add(bottomTextBox, 1, 7);
+        actionPropertiesPanel.Controls.Add(bottomNumericBox, 1, 7);
         actionPropertiesPanel.Controls.Add(targetedWidthLabel, 0, 8);
-        actionPropertiesPanel.Controls.Add(targetedWidthTextBox, 1, 8);
+        actionPropertiesPanel.Controls.Add(targetedWidthNumericBox, 1, 8);
         actionPropertiesPanel.Controls.Add(targetedHeightLabel, 0, 9);
-        actionPropertiesPanel.Controls.Add(targetedHeightTextBox, 1, 9);
+        actionPropertiesPanel.Controls.Add(targetedHeightNumericBox, 1, 9);
         actionPropertiesPanel.Controls.Add(proportionalLabel, 0, 10);
         actionPropertiesPanel.Controls.Add(proportionalCheckBox, 1, 10);
         actionPropertiesPanel.Controls.Add(anchorLabel, 0, 11);
@@ -628,7 +628,7 @@ partial class MainForm
         actionPropertiesPanel.Controls.Add(rulerOrientationLabel, 0, 15);
         actionPropertiesPanel.Controls.Add(rulerOrientationComboBox, 1, 15);
         actionPropertiesPanel.Controls.Add(rulerPositionLabel, 0, 16);
-        actionPropertiesPanel.Controls.Add(rulerPositionTextBox, 1, 16);
+        actionPropertiesPanel.Controls.Add(rulerPositionNumericBox, 1, 16);
         actionPropertiesPanel.Dock = DockStyle.Top;
         actionPropertiesPanel.Name = "actionPropertiesPanel";
         actionPropertiesPanel.RowCount = 17;
@@ -691,17 +691,17 @@ partial class MainForm
         pageFilterRangeTextBox.TextChanged += PageFilterRangeTextBox_TextChanged;
 
         ConfigureEditorLabel(leftLabel, "Left");
-        ConfigureEditorTextBox(leftTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorNumericBox(leftNumericBox, ActionNumberNumericBox_ValueChanged);
         ConfigureEditorLabel(topLabel, "Top");
-        ConfigureEditorTextBox(topTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorNumericBox(topNumericBox, ActionNumberNumericBox_ValueChanged);
         ConfigureEditorLabel(rightLabel, "Right");
-        ConfigureEditorTextBox(rightTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorNumericBox(rightNumericBox, ActionNumberNumericBox_ValueChanged);
         ConfigureEditorLabel(bottomLabel, "Bottom");
-        ConfigureEditorTextBox(bottomTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorNumericBox(bottomNumericBox, ActionNumberNumericBox_ValueChanged);
         ConfigureEditorLabel(targetedWidthLabel, "Width");
-        ConfigureEditorTextBox(targetedWidthTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorNumericBox(targetedWidthNumericBox, ActionNumberNumericBox_ValueChanged);
         ConfigureEditorLabel(targetedHeightLabel, "Height");
-        ConfigureEditorTextBox(targetedHeightTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorNumericBox(targetedHeightNumericBox, ActionNumberNumericBox_ValueChanged);
 
         ConfigureEditorLabel(proportionalLabel, "Proportional");
         proportionalCheckBox.AutoSize = true;
@@ -758,7 +758,7 @@ partial class MainForm
         rulerOrientationComboBox.Items.AddRange(new object[] { "Vertical", "Horizontal" });
         rulerOrientationComboBox.SelectedIndexChanged += RulerOrientationComboBox_SelectedIndexChanged;
         ConfigureEditorLabel(rulerPositionLabel, "Position");
-        ConfigureEditorTextBox(rulerPositionTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorNumericBox(rulerPositionNumericBox, ActionNumberNumericBox_ValueChanged);
 
         mainStatusStrip.Items.AddRange(new ToolStripItem[] { statusLabel });
         mainStatusStrip.Location = new Point(0, 700);
@@ -820,6 +820,17 @@ partial class MainForm
     {
         textBox.Dock = DockStyle.Fill;
         textBox.TextChanged += handler;
+    }
+
+    private static void ConfigureEditorNumericBox(NumericUpDown numericBox, EventHandler handler)
+    {
+        numericBox.DecimalPlaces = 3;
+        numericBox.Dock = DockStyle.Fill;
+        numericBox.Increment = 0.001M;
+        numericBox.Maximum = 100000M;
+        numericBox.Minimum = 0M;
+        numericBox.ThousandsSeparator = true;
+        numericBox.ValueChanged += handler;
     }
 
     private void ConfigureAnchorButton(RadioButton radioButton)
