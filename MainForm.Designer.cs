@@ -30,6 +30,8 @@ partial class MainForm
     private ToolStripButton zoomInButton;
     private ToolStripButton fitWidthButton;
     private ToolStripButton fitPageButton;
+    private ToolStripSeparator pageSizeSeparator;
+    private ToolStripLabel pageSizeLabel;
     private PdfPageViewer pdfPageViewer;
     private TableLayoutPanel actionsPanel;
     private Label actionsTitleLabel;
@@ -91,6 +93,8 @@ partial class MainForm
         zoomInButton = new ToolStripButton();
         fitWidthButton = new ToolStripButton();
         fitPageButton = new ToolStripButton();
+        pageSizeSeparator = new ToolStripSeparator();
+        pageSizeLabel = new ToolStripLabel();
         pdfPageViewer = new PdfPageViewer();
         actionsPanel = new TableLayoutPanel();
         actionsTitleLabel = new Label();
@@ -258,6 +262,8 @@ partial class MainForm
             zoomInButton,
             fitWidthButton,
             fitPageButton,
+            pageSizeSeparator,
+            pageSizeLabel,
         });
         pdfNavigationToolStrip.Location = new Point(0, 0);
         pdfNavigationToolStrip.Name = "pdfNavigationToolStrip";
@@ -315,6 +321,13 @@ partial class MainForm
         fitPageButton.Size = new Size(54, 20);
         fitPageButton.Text = "Fit Page";
         fitPageButton.Click += FitPageButton_Click;
+
+        pageSizeSeparator.Name = "pageSizeSeparator";
+        pageSizeSeparator.Size = new Size(6, 25);
+
+        pageSizeLabel.Name = "pageSizeLabel";
+        pageSizeLabel.Size = new Size(74, 20);
+        pageSizeLabel.Text = "Page: -- x -- in";
 
         pdfPageViewer.Dock = DockStyle.Fill;
         pdfPageViewer.Name = "pdfPageViewer";

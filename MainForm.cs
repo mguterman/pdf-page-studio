@@ -1,5 +1,6 @@
 using System.Text.Json;
 using PdfiumViewer;
+using System.Globalization;
 
 namespace PdfPageStudio;
 
@@ -442,6 +443,7 @@ public sealed partial class MainForm : Form
         var image = _pdfDocument.Render(_pageIndex, width, height, renderDpi, renderDpi, PdfRenderFlags.Annotations);
         pdfPageViewer.SetPage(image);
         UpdatePdfNavigation();
+        UpdatePageSizeLabel(pageSize);
     }
 
     private void GoToPageFromTextBox()
@@ -475,6 +477,7 @@ public sealed partial class MainForm : Form
         pageCountLabel.Text = hasDocument ? $"of {_pdfDocument!.PageCount}" : "of 0";
         previousPageButton.Enabled = hasDocument && _pageIndex > 0;
         nextPageButton.Enabled = hasDocument && _pageIndex < _pdfDocument!.PageCount - 1;
+        pageSizeLabel.Text = hasDocument ? pageSizeLabel.Text : "Page: -- x -- in";
     }
 
     private void SetPdfToolbarEnabled(bool enabled)
@@ -487,6 +490,21 @@ public sealed partial class MainForm : Form
         previousPageButton.Enabled = false;
         nextPageButton.Enabled = false;
         pageCountLabel.Text = enabled && _pdfDocument != null ? $"of {_pdfDocument.PageCount}" : "of 0";
+        if (!enabled)
+        {
+            pageSizeLabel.Text = "Page: -- x -- in";
+        }
+    }
+
+    private void UpdatePageSizeLabel(SizeF pageSizePoints)
+    {
+        var width = pageSizePoints.Width / 72f;
+        var height = pageSizePoints.Height / 72f;
+        pageSizeLabel.Text = string.Format(
+            CultureInfo.InvariantCulture,
+            "Page: {0:0.##} x {1:0.##} in",
+            width,
+            height);
     }
 
     private void ShowProjectInfo()
