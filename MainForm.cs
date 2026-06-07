@@ -111,7 +111,17 @@ public sealed partial class MainForm : Form
             return;
         }
 
+        var actionsWithDefaultNames = _project.Actions
+            .Where(action => IsDefaultActionName(action.Name, action.Type))
+            .Select(action => action.Id)
+            .ToHashSet(StringComparer.Ordinal);
+
         TranslationService.SetLanguage(language);
+        foreach (var action in _project.Actions.Where(action => actionsWithDefaultNames.Contains(action.Id)))
+        {
+            action.Name = GetActionDisplayName(action.Type);
+        }
+
         _settings.Language = TranslationService.CurrentLanguage;
         _settings.Save();
         ApplyTranslations();
@@ -128,6 +138,26 @@ public sealed partial class MainForm : Form
         {
             SetPdfToolbarEnabled(false);
         }
+    }
+
+    private static bool IsDefaultActionName(string name, PdfActionType type)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return true;
+        }
+
+        if (string.Equals(name, type.ToString(), StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (type == PdfActionType.AddRuler && string.Equals(name, "Add Ruler", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return string.Equals(name, GetActionDisplayName(type), StringComparison.CurrentCultureIgnoreCase);
     }
 
     private void ApplyTranslations()
@@ -1402,10 +1432,21 @@ public sealed partial class MainForm : Form
         actionPropertiesScrollPanel.PerformLayout();
     }
 
-    private static void SetEditorRowVisible(Control label, Control editor, bool visible)
+    private void SetEditorRowVisible(Control label, Control editor, bool visible)
     {
         label.Visible = visible;
         editor.Visible = visible;
+        var rowIndex = actionPropertiesPanel.GetRow(label);
+        if (rowIndex >= 0 && rowIndex < actionPropertiesPanel.RowStyles.Count)
+        {
+            actionPropertiesPanel.RowStyles[rowIndex].SizeType = SizeType.Absolute;
+            actionPropertiesPanel.RowStyles[rowIndex].Height = visible ? GetEditorRowHeight(rowIndex) : 0;
+        }
+    }
+
+    private static float GetEditorRowHeight(int rowIndex)
+    {
+        return rowIndex == 11 ? 78F : 34F;
     }
 
     private void ClearActionParameterInputs()

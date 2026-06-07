@@ -101,11 +101,11 @@
   <data name="error.pageRangeEnd" xml:space="preserve"><value>סוף הטווח חייב להיות ריק או גדול/שווה להתחלה.</value></data>
   <data name="enum.unit.Inch" xml:space="preserve"><value>אינץ'</value></data>
   <data name="enum.unit.Cm" xml:space="preserve"><value>ס&quot;מ</value></data>
-  <data name="enum.action.Trim" xml:space="preserve"><value>Trim</value></data>
-  <data name="enum.action.Expand" xml:space="preserve"><value>Expand</value></data>
-  <data name="enum.action.Resize" xml:space="preserve"><value>Resize</value></data>
-  <data name="enum.action.Zoom" xml:space="preserve"><value>Zoom</value></data>
-  <data name="enum.action.AddRuler" xml:space="preserve"><value>Add Ruler</value></data>
+  <data name="enum.action.Trim" xml:space="preserve"><value>חיתוך</value></data>
+  <data name="enum.action.Expand" xml:space="preserve"><value>הרחבה</value></data>
+  <data name="enum.action.Resize" xml:space="preserve"><value>שינוי גודל</value></data>
+  <data name="enum.action.Zoom" xml:space="preserve"><value>זום</value></data>
+  <data name="enum.action.AddRuler" xml:space="preserve"><value>הוסף סרגל</value></data>
   <data name="enum.pageFilter.Any" xml:space="preserve"><value>כל סוג</value></data>
   <data name="enum.pageFilter.Odd" xml:space="preserve"><value>אי זוגיים</value></data>
   <data name="enum.pageFilter.Even" xml:space="preserve"><value>זוגיים</value></data>
