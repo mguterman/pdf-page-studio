@@ -1057,6 +1057,8 @@ public sealed partial class MainForm : Form
         SetEditorRowVisible(rulerValueModeLabel, rulerValueModeComboBox, hasRuler);
         SetEditorRowVisible(rulerOrientationLabel, rulerOrientationComboBox, hasRuler);
         SetEditorRowVisible(rulerPositionLabel, rulerPositionTextBox, hasRuler);
+        actionPropertiesPanel.PerformLayout();
+        actionPropertiesScrollPanel.PerformLayout();
     }
 
     private static void SetEditorRowVisible(Control label, Control editor, bool visible)

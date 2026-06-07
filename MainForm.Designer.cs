@@ -590,6 +590,8 @@ partial class MainForm
         actionPropertiesScrollPanel.Name = "actionPropertiesScrollPanel";
         actionPropertiesScrollPanel.TabIndex = 4;
 
+        actionPropertiesPanel.AutoSize = true;
+        actionPropertiesPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         actionPropertiesPanel.ColumnCount = 2;
         actionPropertiesPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96F));
         actionPropertiesPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -629,12 +631,11 @@ partial class MainForm
         actionPropertiesPanel.Controls.Add(rulerPositionTextBox, 1, 16);
         actionPropertiesPanel.Dock = DockStyle.Top;
         actionPropertiesPanel.Name = "actionPropertiesPanel";
-        actionPropertiesPanel.RowCount = 18;
+        actionPropertiesPanel.RowCount = 17;
         for (var rowIndex = 0; rowIndex < 17; rowIndex++)
         {
             actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, rowIndex == 11 ? 78F : 34F));
         }
-        actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         actionPropertiesPanel.TabIndex = 4;
 
         actionTypeLabel.AutoSize = true;
