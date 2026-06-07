@@ -8,6 +8,7 @@ public sealed class AppSettings
 
     public List<string> RecentProjects { get; set; } = [];
     public string LastPdfFolder { get; set; } = "";
+    public string Language { get; set; } = "";
 
     public static AppSettings Load()
     {

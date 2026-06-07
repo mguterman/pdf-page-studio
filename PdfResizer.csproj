@@ -14,6 +14,7 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <DebugType>embedded</DebugType>
+    <SatelliteResourceLanguages>ru;he</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>

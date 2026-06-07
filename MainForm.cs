@@ -22,13 +22,15 @@ public sealed partial class MainForm : Form
     public MainForm()
     {
         _settings = AppSettings.Load();
+        TranslationService.Initialize(_settings.Language);
         InitializeComponent();
+        ApplyTranslations();
         InitializePdfRendering();
         RefreshRecentProjectsMenu();
         BindProject();
         LoadPdfFromProject();
         UpdateTitle();
-        UpdateStatus("Ready.");
+        UpdateStatus(TranslationService.T("status.ready"));
     }
 
     private void OpenProjectMenuItem_Click(object? sender, EventArgs e)
@@ -40,8 +42,8 @@ public sealed partial class MainForm : Form
 
         using var dialog = new OpenFileDialog
         {
-            Title = "Open PDF Page Studio Project",
-            Filter = "PDF Page Studio Project (*.ppsproj)|*.ppsproj|All files (*.*)|*.*",
+            Title = TranslationService.T("dialog.openProject.title"),
+            Filter = TranslationService.T("dialog.project.filter"),
             DefaultExt = "ppsproj",
             CheckFileExists = true,
             InitialDirectory = GetInitialProjectFolder(),
@@ -65,12 +67,27 @@ public sealed partial class MainForm : Form
         SaveProjectAs();
     }
 
+    private void EnglishLanguageMenuItem_Click(object? sender, EventArgs e)
+    {
+        ChangeLanguage("en");
+    }
+
+    private void RussianLanguageMenuItem_Click(object? sender, EventArgs e)
+    {
+        ChangeLanguage("ru");
+    }
+
+    private void HebrewLanguageMenuItem_Click(object? sender, EventArgs e)
+    {
+        ChangeLanguage("he");
+    }
+
     private void AddPdfFileMenuItem_Click(object? sender, EventArgs e)
     {
         using var dialog = new OpenFileDialog
         {
-            Title = "Add PDF File",
-            Filter = "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*",
+            Title = TranslationService.T("dialog.addPdf.title"),
+            Filter = TranslationService.T("dialog.pdf.filter"),
             CheckFileExists = true,
             InitialDirectory = GetInitialPdfFolder(),
         };
@@ -85,6 +102,110 @@ public sealed partial class MainForm : Form
         _settings.Save();
         MarkDirty();
         LoadPdfFromProject();
+    }
+
+    private void ChangeLanguage(string language)
+    {
+        if (string.Equals(TranslationService.CurrentLanguage, language, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        TranslationService.SetLanguage(language);
+        _settings.Language = TranslationService.CurrentLanguage;
+        _settings.Save();
+        ApplyTranslations();
+        RefreshRecentProjectsMenu();
+        RefreshActions(actionsListBox.SelectedIndex);
+        UpdateTitle();
+        if (_pdfDocument != null)
+        {
+            UpdatePdfNavigation();
+            UpdatePageSizeLabel(_pdfDocument.PageSizes[_pageIndex]);
+            UpdatePreviewStatus();
+        }
+        else
+        {
+            SetPdfToolbarEnabled(false);
+        }
+    }
+
+    private void ApplyTranslations()
+    {
+        _isBinding = true;
+
+        fileMenuItem.Text = TranslationService.T("menu.file");
+        openProjectMenuItem.Text = TranslationService.T("menu.openProject");
+        saveProjectMenuItem.Text = TranslationService.T("menu.save");
+        saveProjectAsMenuItem.Text = TranslationService.T("menu.saveAs");
+        addPdfFileMenuItem.Text = TranslationService.T("menu.addPdf");
+        openRecentProjectMenuItem.Text = TranslationService.T("menu.openRecent");
+        languageMenuItem.Text = TranslationService.T("menu.language");
+        englishLanguageMenuItem.Text = TranslationService.T("language.english");
+        russianLanguageMenuItem.Text = TranslationService.T("language.russian");
+        hebrewLanguageMenuItem.Text = TranslationService.T("language.hebrew");
+        englishLanguageMenuItem.Checked = TranslationService.CurrentLanguage == "en";
+        russianLanguageMenuItem.Checked = TranslationService.CurrentLanguage == "ru";
+        hebrewLanguageMenuItem.Checked = TranslationService.CurrentLanguage == "he";
+
+        projectNameLabel.Text = TranslationService.T("project.name");
+        projectUnitTypeLabel.Text = TranslationService.T("project.unitType");
+        projectDescriptionLabel.Text = TranslationService.T("project.description");
+
+        firstPageButton.Text = TranslationService.T("nav.firstPage");
+        previousPageButton.Text = TranslationService.T("nav.previousPage");
+        nextPageButton.Text = TranslationService.T("nav.nextPage");
+        lastPageButton.Text = TranslationService.T("nav.lastPage");
+        firstPageButton.ToolTipText = TranslationService.T("nav.firstPage.tooltip");
+        previousPageButton.ToolTipText = TranslationService.T("nav.previousPage.tooltip");
+        nextPageButton.ToolTipText = TranslationService.T("nav.nextPage.tooltip");
+        lastPageButton.ToolTipText = TranslationService.T("nav.lastPage.tooltip");
+        zoomOutButton.Text = TranslationService.T("nav.zoomOut");
+        zoomInButton.Text = TranslationService.T("nav.zoomIn");
+        zoomOutButton.ToolTipText = TranslationService.T("nav.zoomOut.tooltip");
+        zoomInButton.ToolTipText = TranslationService.T("nav.zoomIn.tooltip");
+        fitWidthButton.Text = TranslationService.T("nav.fitWidth");
+        fitPageButton.Text = TranslationService.T("nav.fitPage");
+
+        actionsTitleLabel.Text = TranslationService.T("actions.title");
+        applyAllRadioButton.Text = TranslationService.T("actions.applyAll");
+        untilCurrentRadioButton.Text = TranslationService.T("actions.untilCurrent");
+        addActionButton.Text = TranslationService.T("actions.add");
+        insertBeforeActionButton.Text = TranslationService.T("actions.insertBefore");
+        insertAfterActionButton.Text = TranslationService.T("actions.insertAfter");
+        deleteActionButton.Text = TranslationService.T("actions.delete");
+        moveActionUpButton.Text = TranslationService.T("actions.up");
+        moveActionDownButton.Text = TranslationService.T("actions.down");
+        propertiesTitleLabel.Text = TranslationService.T("properties.title");
+
+        actionTypeLabel.Text = TranslationService.T("field.type");
+        actionNameLabel.Text = TranslationService.T("field.name");
+        pageFilterTypeLabel.Text = TranslationService.T("field.pageType");
+        pageFilterRangeLabel.Text = TranslationService.T("field.range");
+        pageFilterRangeTextBox.PlaceholderText = TranslationService.T("field.range.placeholder");
+        leftLabel.Text = TranslationService.T("field.left");
+        topLabel.Text = TranslationService.T("field.top");
+        rightLabel.Text = TranslationService.T("field.right");
+        bottomLabel.Text = TranslationService.T("field.bottom");
+        targetedWidthLabel.Text = TranslationService.T("field.width");
+        targetedHeightLabel.Text = TranslationService.T("field.height");
+        proportionalLabel.Text = TranslationService.T("field.proportional");
+        anchorLabel.Text = TranslationService.T("field.anchor");
+        rulerColorLabel.Text = TranslationService.T("field.color");
+        rulerStyleLabel.Text = TranslationService.T("field.style");
+        rulerValueModeLabel.Text = TranslationService.T("field.mode");
+        rulerOrientationLabel.Text = TranslationService.T("field.line");
+        rulerPositionLabel.Text = TranslationService.T("field.position");
+
+        ConfigureEnumCombo(projectUnitTypeComboBox, "enum.unit.", _project.UnitType);
+        ConfigureEnumCombo(actionTypeComboBox, "enum.action.", GetSelectedAction()?.Type ?? PdfActionType.Trim);
+        ConfigureEnumCombo(pageFilterTypeComboBox, "enum.pageFilter.", GetSelectedAction()?.PageFilter?.Type ?? PageFilterType.Any);
+        ConfigureEnumCombo(rulerStyleComboBox, "enum.rulerStyle.", GetSelectedAction()?.Style ?? RulerStyle.Solid);
+        ConfigureEnumCombo(rulerValueModeComboBox, "enum.rulerMode.", GetSelectedAction()?.RulerValueMode ?? RulerValueMode.Percent);
+        ConfigureEnumCombo(rulerOrientationComboBox, "enum.rulerOrientation.", GetSelectedAction()?.Orientation ?? RulerOrientation.Vertical);
+
+        _isBinding = false;
+        BindSelectedAction();
     }
 
     private void PreviousPageButton_Click(object? sender, EventArgs e)
@@ -227,7 +348,7 @@ public sealed partial class MainForm : Form
         _project.Actions.RemoveAt(index);
         MarkDirty();
         RefreshActions(Math.Min(index, _project.Actions.Count - 1));
-        UpdateStatus("Action deleted.");
+        UpdateStatus(TranslationService.T("status.actionDeleted"));
         RefreshCurrentPagePreview();
     }
 
@@ -242,7 +363,7 @@ public sealed partial class MainForm : Form
         (_project.Actions[index - 1], _project.Actions[index]) = (_project.Actions[index], _project.Actions[index - 1]);
         MarkDirty();
         RefreshActions(index - 1);
-        UpdateStatus("Action moved up.");
+        UpdateStatus(TranslationService.T("status.actionMovedUp"));
         RefreshCurrentPagePreview();
     }
 
@@ -257,7 +378,7 @@ public sealed partial class MainForm : Form
         (_project.Actions[index + 1], _project.Actions[index]) = (_project.Actions[index], _project.Actions[index + 1]);
         MarkDirty();
         RefreshActions(index + 1);
-        UpdateStatus("Action moved down.");
+        UpdateStatus(TranslationService.T("status.actionMovedDown"));
         RefreshCurrentPagePreview();
     }
 
@@ -304,7 +425,7 @@ public sealed partial class MainForm : Form
 
     private void UnitTypeComboBox_SelectedIndexChanged(object? sender, EventArgs e)
     {
-        if (_isBinding || !Enum.TryParse<UnitType>(projectUnitTypeComboBox.Text, out var newUnit) || newUnit == _project.UnitType)
+        if (_isBinding || !TryGetSelectedEnum(projectUnitTypeComboBox, out UnitType newUnit) || newUnit == _project.UnitType)
         {
             return;
         }
@@ -328,7 +449,7 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        if (Enum.TryParse<PdfActionType>(actionTypeComboBox.Text, out var type))
+        if (TryGetSelectedEnum(actionTypeComboBox, out PdfActionType type))
         {
             action.Type = type;
             ApplyActionDefaults(action, overwriteName: true);
@@ -345,7 +466,7 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        if (Enum.TryParse<PageFilterType>(pageFilterTypeComboBox.Text, out var type))
+        if (TryGetSelectedEnum(pageFilterTypeComboBox, out PageFilterType type))
         {
             action.PageFilter.Type = type;
             MarkDirty();
@@ -368,7 +489,7 @@ public sealed partial class MainForm : Form
 
         action.PageFilter.Range = ranges;
         MarkDirty();
-        UpdateStatus("Page filter updated.");
+        UpdateStatus(TranslationService.T("status.pageFilterUpdated"));
         RefreshCurrentPagePreview();
     }
 
@@ -447,7 +568,7 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        if (Enum.TryParse<RulerStyle>(rulerStyleComboBox.Text, out var style))
+        if (TryGetSelectedEnum(rulerStyleComboBox, out RulerStyle style))
         {
             action.Style = style;
             MarkDirty();
@@ -462,7 +583,7 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        if (Enum.TryParse<RulerValueMode>(rulerValueModeComboBox.Text, out var mode))
+        if (TryGetSelectedEnum(rulerValueModeComboBox, out RulerValueMode mode))
         {
             action.RulerValueMode = mode;
             MarkDirty();
@@ -477,7 +598,7 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        if (Enum.TryParse<RulerOrientation>(rulerOrientationComboBox.Text, out var orientation))
+        if (TryGetSelectedEnum(rulerOrientationComboBox, out RulerOrientation orientation))
         {
             action.Orientation = orientation;
             MarkDirty();
@@ -500,12 +621,12 @@ public sealed partial class MainForm : Form
             LoadPdfFromProject();
             RefreshRecentProjectsMenu();
             UpdateTitle();
-            UpdateStatus("Opened: " + path);
+            UpdateStatus(TranslationService.T("status.opened", path));
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Open project failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            UpdateStatus("Open project failed.");
+            MessageBox.Show(this, ex.Message, TranslationService.T("message.openProjectFailed.title"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateStatus(TranslationService.T("status.openProjectFailed"));
         }
     }
 
@@ -523,8 +644,8 @@ public sealed partial class MainForm : Form
     {
         using var dialog = new SaveFileDialog
         {
-            Title = "Save PDF Page Studio Project",
-            Filter = "PDF Page Studio Project (*.ppsproj)|*.ppsproj|All files (*.*)|*.*",
+            Title = TranslationService.T("dialog.saveProject.title"),
+            Filter = TranslationService.T("dialog.project.filter"),
             DefaultExt = "ppsproj",
             AddExtension = true,
             OverwritePrompt = true,
@@ -559,13 +680,13 @@ public sealed partial class MainForm : Form
             _settings.Save();
             RefreshRecentProjectsMenu();
             UpdateTitle();
-            UpdateStatus("Saved: " + path);
+            UpdateStatus(TranslationService.T("status.saved", path));
             return true;
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Save project failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            UpdateStatus("Save project failed.");
+            MessageBox.Show(this, ex.Message, TranslationService.T("message.saveProjectFailed.title"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateStatus(TranslationService.T("status.saveProjectFailed"));
             return false;
         }
     }
@@ -593,7 +714,7 @@ public sealed partial class MainForm : Form
         {
             addPdfFileMenuItem.Enabled = false;
             SetPdfToolbarEnabled(false);
-            MessageBox.Show(this, ex.Message, "PDF preview initialization failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, ex.Message, TranslationService.T("message.previewInitFailed.title"), MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -614,7 +735,7 @@ public sealed partial class MainForm : Form
         if (!File.Exists(_project.PdfFilePath))
         {
             ShowProjectInfo();
-            UpdateStatus("PDF file not found: " + _project.PdfFilePath);
+            UpdateStatus(TranslationService.T("status.pdfNotFound", _project.PdfFilePath));
             return;
         }
 
@@ -625,13 +746,13 @@ public sealed partial class MainForm : Form
             SetPdfToolbarEnabled(true);
             FitPageButton_Click(this, EventArgs.Empty);
             RenderCurrentPage();
-            UpdateStatus("PDF loaded: " + _project.PdfFilePath);
+            UpdateStatus(TranslationService.T("status.pdfLoaded", _project.PdfFilePath));
         }
         catch (Exception ex)
         {
             ShowProjectInfo();
-            MessageBox.Show(this, ex.Message, "PDF load failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            UpdateStatus("PDF load failed.");
+            MessageBox.Show(this, ex.Message, TranslationService.T("message.pdfLoadFailed.title"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateStatus(TranslationService.T("status.pdfLoadFailed"));
         }
     }
 
@@ -692,12 +813,12 @@ public sealed partial class MainForm : Form
     {
         var hasDocument = _pdfDocument != null;
         pageNumberTextBox.Text = hasDocument ? (_pageIndex + 1).ToString() : "";
-        pageCountLabel.Text = hasDocument ? $"of {_pdfDocument!.PageCount}" : "of 0";
+        pageCountLabel.Text = hasDocument ? TranslationService.T("nav.pageCount", _pdfDocument!.PageCount) : TranslationService.T("nav.pageCount.empty");
         firstPageButton.Enabled = hasDocument && _pageIndex > 0;
         previousPageButton.Enabled = hasDocument && _pageIndex > 0;
         nextPageButton.Enabled = hasDocument && _pageIndex < _pdfDocument!.PageCount - 1;
         lastPageButton.Enabled = hasDocument && _pageIndex < _pdfDocument!.PageCount - 1;
-        pageSizeLabel.Text = hasDocument ? pageSizeLabel.Text : "Page: -- x -- in";
+        pageSizeLabel.Text = hasDocument ? pageSizeLabel.Text : TranslationService.T("page.size.empty");
     }
 
     private void SetPdfToolbarEnabled(bool enabled)
@@ -711,10 +832,10 @@ public sealed partial class MainForm : Form
         previousPageButton.Enabled = false;
         nextPageButton.Enabled = false;
         lastPageButton.Enabled = false;
-        pageCountLabel.Text = enabled && _pdfDocument != null ? $"of {_pdfDocument.PageCount}" : "of 0";
+        pageCountLabel.Text = enabled && _pdfDocument != null ? TranslationService.T("nav.pageCount", _pdfDocument.PageCount) : TranslationService.T("nav.pageCount.empty");
         if (!enabled)
         {
-            pageSizeLabel.Text = "Page: -- x -- in";
+            pageSizeLabel.Text = TranslationService.T("page.size.empty");
         }
     }
 
@@ -725,12 +846,7 @@ public sealed partial class MainForm : Form
         var width = _project.UnitType == UnitType.Cm ? widthInches * 2.54f : widthInches;
         var height = _project.UnitType == UnitType.Cm ? heightInches * 2.54f : heightInches;
         var unit = _project.UnitType == UnitType.Cm ? "cm" : "in";
-        pageSizeLabel.Text = string.Format(
-            CultureInfo.InvariantCulture,
-            "Page: {0:0.###} x {1:0.###} {2}",
-            width,
-            height,
-            unit);
+        pageSizeLabel.Text = TranslationService.T("page.size", width, height, unit);
     }
 
     private void ShowProjectInfo()
@@ -755,7 +871,7 @@ public sealed partial class MainForm : Form
         _project.Actions.Insert(index, action);
         MarkDirty();
         RefreshActions(index);
-        UpdateStatus("Action added.");
+        UpdateStatus(TranslationService.T("status.actionAdded"));
         RefreshCurrentPagePreview();
     }
 
@@ -841,9 +957,9 @@ public sealed partial class MainForm : Form
         }
 
         action.PageFilter ??= new PageFilter();
-        actionTypeComboBox.SelectedItem = action.Type.ToString();
+        SelectEnum(actionTypeComboBox, action.Type);
         actionNameTextBox.Text = action.Name;
-        pageFilterTypeComboBox.SelectedItem = action.PageFilter.Type.ToString();
+        SelectEnum(pageFilterTypeComboBox, action.PageFilter.Type);
         pageFilterRangeTextBox.Text = FormatPageRanges(action.PageFilter.Range);
         leftNumericBox.Value = FloatToDecimal(action.Left);
         topNumericBox.Value = FloatToDecimal(action.Top);
@@ -853,9 +969,9 @@ public sealed partial class MainForm : Form
         targetedHeightNumericBox.Value = FloatToDecimal(action.TargetedHeight);
         proportionalCheckBox.Checked = action.Proportional ?? true;
         rulerColorTextBox.Text = action.Color;
-        rulerStyleComboBox.SelectedItem = action.Style.ToString();
-        rulerValueModeComboBox.SelectedItem = action.RulerValueMode.ToString();
-        rulerOrientationComboBox.SelectedItem = action.Orientation.ToString();
+        SelectEnum(rulerStyleComboBox, action.Style);
+        SelectEnum(rulerValueModeComboBox, action.RulerValueMode);
+        SelectEnum(rulerOrientationComboBox, action.Orientation);
         rulerPositionNumericBox.Value = FloatToDecimal(action.Position);
         SelectAnchorButton(action.AnchorHorizontal, action.AnchorVertical);
         UpdateActionEditorVisibility(action);
@@ -882,8 +998,8 @@ public sealed partial class MainForm : Form
 
         var count = GetPreviewActionCount();
         var label = _project.PreviewApplyMode == PreviewApplyMode.UntilCurrent
-            ? $"Preview: actions through selected ({count})"
-            : $"Preview: all actions ({count})";
+            ? TranslationService.T("status.previewUntilCurrent", count)
+            : TranslationService.T("status.previewApplyAll", count);
         UpdateStatus(label);
     }
 
@@ -1137,18 +1253,18 @@ public sealed partial class MainForm : Form
 
     private static string FormatActionListItem(int index, ProjectAction action)
     {
-        return $"{index + 1}. {action.Name} [{action.Type}] ({FormatPageFilter(action.PageFilter)})";
+        return $"{index + 1}. {action.Name} [{GetActionDisplayName(action.Type)}] ({FormatPageFilter(action.PageFilter)})";
     }
 
     private static string FormatPageFilter(PageFilter? filter)
     {
         if (filter == null)
         {
-            return "All pages";
+            return TranslationService.T("pageFilter.all");
         }
 
-        var range = filter.Range.Count == 0 ? "All pages" : FormatPageRanges(filter.Range);
-        return filter.Type == PageFilterType.Any ? range : $"{range}, {filter.Type}";
+        var range = filter.Range.Count == 0 ? TranslationService.T("pageFilter.all") : FormatPageRanges(filter.Range);
+        return filter.Type == PageFilterType.Any ? range : $"{range}, {TranslationService.T("enum.pageFilter." + filter.Type)}";
     }
 
     private static string FormatPageRanges(IReadOnlyList<PageFilterRange> ranges)
@@ -1184,7 +1300,7 @@ public sealed partial class MainForm : Form
             {
                 if (!int.TryParse(part, out var page) || page < 1)
                 {
-                    error = "Page range must use positive page numbers.";
+                    error = TranslationService.T("error.pageRangePositive");
                     return false;
                 }
 
@@ -1196,7 +1312,7 @@ public sealed partial class MainForm : Form
             var endText = part[(dashIndex + 1)..].Trim();
             if (!int.TryParse(startText, out var start) || start < 1)
             {
-                error = "Page range start must be a positive page number.";
+                error = TranslationService.T("error.pageRangeStart");
                 return false;
             }
 
@@ -1205,7 +1321,7 @@ public sealed partial class MainForm : Form
             {
                 if (!int.TryParse(endText, out var parsedEnd) || parsedEnd < start)
                 {
-                    error = "Page range end must be empty or greater than/equal to start.";
+                    error = TranslationService.T("error.pageRangeEnd");
                     return false;
                 }
 
@@ -1224,8 +1340,7 @@ public sealed partial class MainForm : Form
         {
             action.Name = action.Type switch
             {
-                PdfActionType.AddRuler => "Add Ruler",
-                _ => action.Type.ToString(),
+                _ => GetActionDisplayName(action.Type),
             };
         }
 
@@ -1258,7 +1373,7 @@ public sealed partial class MainForm : Form
 
     private static string GetActionDisplayName(PdfActionType type)
     {
-        return type == PdfActionType.AddRuler ? "Add Ruler" : type.ToString();
+        return TranslationService.T("enum.action." + type);
     }
 
     private void UpdateActionEditorVisibility(ProjectAction? action)
@@ -1356,7 +1471,49 @@ public sealed partial class MainForm : Form
 
     private void SyncUnitCombos()
     {
-        projectUnitTypeComboBox.SelectedItem = _project.UnitType.ToString();
+        SelectEnum(projectUnitTypeComboBox, _project.UnitType);
+    }
+
+    private static void ConfigureEnumCombo<TEnum>(ComboBox comboBox, string keyPrefix, TEnum selectedValue)
+        where TEnum : struct, Enum
+    {
+        comboBox.DisplayMember = nameof(EnumComboItem<TEnum>.Text);
+        comboBox.ValueMember = nameof(EnumComboItem<TEnum>.Value);
+        comboBox.Items.Clear();
+        foreach (var value in Enum.GetValues<TEnum>())
+        {
+            comboBox.Items.Add(new EnumComboItem<TEnum>(value, TranslationService.T(keyPrefix + value)));
+        }
+
+        SelectEnum(comboBox, selectedValue);
+    }
+
+    private static bool TryGetSelectedEnum<TEnum>(ComboBox comboBox, out TEnum value)
+        where TEnum : struct, Enum
+    {
+        if (comboBox.SelectedItem is EnumComboItem<TEnum> item)
+        {
+            value = item.Value;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static void SelectEnum<TEnum>(ComboBox comboBox, TEnum value)
+        where TEnum : struct, Enum
+    {
+        for (var index = 0; index < comboBox.Items.Count; index++)
+        {
+            if (comboBox.Items[index] is EnumComboItem<TEnum> item && EqualityComparer<TEnum>.Default.Equals(item.Value, value))
+            {
+                comboBox.SelectedIndex = index;
+                return;
+            }
+        }
+
+        comboBox.SelectedIndex = -1;
     }
 
     private static float? ConvertUnitValue(float? value, float factor)
@@ -1417,7 +1574,7 @@ public sealed partial class MainForm : Form
 
         if (_settings.RecentProjects.Count == 0)
         {
-            var emptyItem = new ToolStripMenuItem("(No recent projects)")
+            var emptyItem = new ToolStripMenuItem(TranslationService.T("recent.empty"))
             {
                 Enabled = false,
             };
@@ -1455,7 +1612,7 @@ public sealed partial class MainForm : Form
             _settings.RemoveRecentProject(path);
             _settings.Save();
             RefreshRecentProjectsMenu();
-            MessageBox.Show(this, "Project file was not found and has been removed from recent projects.", "Recent project not found", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, TranslationService.T("message.recentProjectNotFound.body"), TranslationService.T("message.recentProjectNotFound.title"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 
@@ -1488,8 +1645,8 @@ public sealed partial class MainForm : Form
 
     private void UpdateTitle()
     {
-        var name = string.IsNullOrWhiteSpace(_project.Name) ? "Untitled" : _project.Name.Trim();
-        Text = $"PDF Page Studio - {name}{(_isDirty ? " *" : "")}";
+        var name = string.IsNullOrWhiteSpace(_project.Name) ? TranslationService.T("common.untitled") : _project.Name.Trim();
+        Text = TranslationService.T("app.titleWithProject", name, _isDirty ? TranslationService.T("app.dirtyMark") : "");
     }
 
     private void UpdateStatus(string text)
@@ -1506,8 +1663,8 @@ public sealed partial class MainForm : Form
 
         var result = MessageBox.Show(
             this,
-            "Save changes to the current project?",
-            "PDF Page Studio",
+            TranslationService.T("message.saveChanges.body"),
+            TranslationService.T("app.title"),
             MessageBoxButtons.YesNoCancel,
             MessageBoxIcon.Question);
 
@@ -1563,7 +1720,7 @@ public sealed partial class MainForm : Form
 
     private string GetDefaultProjectFileName()
     {
-        var name = string.IsNullOrWhiteSpace(_project.Name) ? "Untitled" : _project.Name.Trim();
+        var name = string.IsNullOrWhiteSpace(_project.Name) ? TranslationService.T("common.untitled") : _project.Name.Trim();
         var invalid = Path.GetInvalidFileNameChars();
         var cleaned = new string(name.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
         return cleaned + ProjectExtension;

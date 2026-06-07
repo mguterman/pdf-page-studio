@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="app.title" xml:space="preserve"><value>PDF Page Studio</value></data>
+  <data name="app.titleWithProject" xml:space="preserve"><value>PDF Page Studio - {0}{1}</value></data>
+  <data name="app.dirtyMark" xml:space="preserve"><value> *</value></data>
+  <data name="common.untitled" xml:space="preserve"><value>Без имени</value></data>
+  <data name="menu.file" xml:space="preserve"><value>&amp;Файл</value></data>
+  <data name="menu.openProject" xml:space="preserve"><value>&amp;Открыть проект...</value></data>
+  <data name="menu.save" xml:space="preserve"><value>&amp;Сохранить</value></data>
+  <data name="menu.saveAs" xml:space="preserve"><value>Сохранить &amp;как...</value></data>
+  <data name="menu.addPdf" xml:space="preserve"><value>Добавить &amp;PDF файл...</value></data>
+  <data name="menu.openRecent" xml:space="preserve"><value>Открыть &amp;недавний проект</value></data>
+  <data name="menu.language" xml:space="preserve"><value>&amp;Язык</value></data>
+  <data name="language.english" xml:space="preserve"><value>Английский</value></data>
+  <data name="language.russian" xml:space="preserve"><value>Русский</value></data>
+  <data name="language.hebrew" xml:space="preserve"><value>Иврит</value></data>
+  <data name="project.name" xml:space="preserve"><value>Название</value></data>
+  <data name="project.unitType" xml:space="preserve"><value>Единицы</value></data>
+  <data name="project.description" xml:space="preserve"><value>Описание</value></data>
+  <data name="nav.firstPage" xml:space="preserve"><value>|&lt;</value></data>
+  <data name="nav.previousPage" xml:space="preserve"><value>&lt;</value></data>
+  <data name="nav.nextPage" xml:space="preserve"><value>&gt;</value></data>
+  <data name="nav.lastPage" xml:space="preserve"><value>&gt;|</value></data>
+  <data name="nav.firstPage.tooltip" xml:space="preserve"><value>Первая страница</value></data>
+  <data name="nav.previousPage.tooltip" xml:space="preserve"><value>Предыдущая страница</value></data>
+  <data name="nav.nextPage.tooltip" xml:space="preserve"><value>Следующая страница</value></data>
+  <data name="nav.lastPage.tooltip" xml:space="preserve"><value>Последняя страница</value></data>
+  <data name="nav.pageCount" xml:space="preserve"><value>из {0}</value></data>
+  <data name="nav.pageCount.empty" xml:space="preserve"><value>из 0</value></data>
+  <data name="nav.zoomOut" xml:space="preserve"><value>-</value></data>
+  <data name="nav.zoomIn" xml:space="preserve"><value>+</value></data>
+  <data name="nav.zoomOut.tooltip" xml:space="preserve"><value>Уменьшить</value></data>
+  <data name="nav.zoomIn.tooltip" xml:space="preserve"><value>Увеличить</value></data>
+  <data name="nav.fitWidth" xml:space="preserve"><value>По ширине</value></data>
+  <data name="nav.fitPage" xml:space="preserve"><value>Страница</value></data>
+  <data name="page.size.empty" xml:space="preserve"><value>Страница: -- x -- in</value></data>
+  <data name="page.size" xml:space="preserve"><value>Страница: {0:0.###} x {1:0.###} {2}</value></data>
+  <data name="actions.title" xml:space="preserve"><value>Действия</value></data>
+  <data name="actions.applyAll" xml:space="preserve"><value>Все</value></data>
+  <data name="actions.untilCurrent" xml:space="preserve"><value>До текущего</value></data>
+  <data name="actions.add" xml:space="preserve"><value>Добавить</value></data>
+  <data name="actions.insertBefore" xml:space="preserve"><value>Вставить до</value></data>
+  <data name="actions.insertAfter" xml:space="preserve"><value>Вставить после</value></data>
+  <data name="actions.delete" xml:space="preserve"><value>Удалить</value></data>
+  <data name="actions.up" xml:space="preserve"><value>Вверх</value></data>
+  <data name="actions.down" xml:space="preserve"><value>Вниз</value></data>
+  <data name="properties.title" xml:space="preserve"><value>Параметры</value></data>
+  <data name="field.type" xml:space="preserve"><value>Тип</value></data>
+  <data name="field.name" xml:space="preserve"><value>Имя</value></data>
+  <data name="field.pageType" xml:space="preserve"><value>Страницы</value></data>
+  <data name="field.range" xml:space="preserve"><value>Диапазон</value></data>
+  <data name="field.range.placeholder" xml:space="preserve"><value>Все страницы или 1-3, 5, 7-</value></data>
+  <data name="field.left" xml:space="preserve"><value>Слева</value></data>
+  <data name="field.top" xml:space="preserve"><value>Сверху</value></data>
+  <data name="field.right" xml:space="preserve"><value>Справа</value></data>
+  <data name="field.bottom" xml:space="preserve"><value>Снизу</value></data>
+  <data name="field.width" xml:space="preserve"><value>Ширина</value></data>
+  <data name="field.height" xml:space="preserve"><value>Высота</value></data>
+  <data name="field.proportional" xml:space="preserve"><value>Пропорции</value></data>
+  <data name="field.anchor" xml:space="preserve"><value>Якорь</value></data>
+  <data name="field.color" xml:space="preserve"><value>Цвет</value></data>
+  <data name="field.style" xml:space="preserve"><value>Стиль</value></data>
+  <data name="field.mode" xml:space="preserve"><value>Режим</value></data>
+  <data name="field.line" xml:space="preserve"><value>Линия</value></data>
+  <data name="field.position" xml:space="preserve"><value>Позиция</value></data>
+  <data name="dialog.openProject.title" xml:space="preserve"><value>Открыть проект PDF Page Studio</value></data>
+  <data name="dialog.saveProject.title" xml:space="preserve"><value>Сохранить проект PDF Page Studio</value></data>
+  <data name="dialog.project.filter" xml:space="preserve"><value>Проект PDF Page Studio (*.ppsproj)|*.ppsproj|Все файлы (*.*)|*.*</value></data>
+  <data name="dialog.addPdf.title" xml:space="preserve"><value>Добавить PDF файл</value></data>
+  <data name="dialog.pdf.filter" xml:space="preserve"><value>PDF файлы (*.pdf)|*.pdf|Все файлы (*.*)|*.*</value></data>
+  <data name="message.openProjectFailed.title" xml:space="preserve"><value>Не удалось открыть проект</value></data>
+  <data name="message.saveProjectFailed.title" xml:space="preserve"><value>Не удалось сохранить проект</value></data>
+  <data name="message.previewInitFailed.title" xml:space="preserve"><value>Не удалось запустить PDF preview</value></data>
+  <data name="message.pdfLoadFailed.title" xml:space="preserve"><value>Не удалось загрузить PDF</value></data>
+  <data name="message.recentProjectNotFound.title" xml:space="preserve"><value>Недавний проект не найден</value></data>
+  <data name="message.recentProjectNotFound.body" xml:space="preserve"><value>Файл проекта не найден и удалён из списка недавних проектов.</value></data>
+  <data name="message.saveChanges.body" xml:space="preserve"><value>Сохранить изменения в текущем проекте?</value></data>
+  <data name="status.ready" xml:space="preserve"><value>Готово.</value></data>
+  <data name="status.opened" xml:space="preserve"><value>Открыто: {0}</value></data>
+  <data name="status.openProjectFailed" xml:space="preserve"><value>Не удалось открыть проект.</value></data>
+  <data name="status.saved" xml:space="preserve"><value>Сохранено: {0}</value></data>
+  <data name="status.saveProjectFailed" xml:space="preserve"><value>Не удалось сохранить проект.</value></data>
+  <data name="status.pdfNotFound" xml:space="preserve"><value>PDF файл не найден: {0}</value></data>
+  <data name="status.pdfLoaded" xml:space="preserve"><value>PDF загружен: {0}</value></data>
+  <data name="status.pdfLoadFailed" xml:space="preserve"><value>Не удалось загрузить PDF.</value></data>
+  <data name="status.actionDeleted" xml:space="preserve"><value>Действие удалено.</value></data>
+  <data name="status.actionMovedUp" xml:space="preserve"><value>Действие перемещено вверх.</value></data>
+  <data name="status.actionMovedDown" xml:space="preserve"><value>Действие перемещено вниз.</value></data>
+  <data name="status.pageFilterUpdated" xml:space="preserve"><value>Фильтр страниц обновлён.</value></data>
+  <data name="status.actionAdded" xml:space="preserve"><value>Действие добавлено.</value></data>
+  <data name="status.previewUntilCurrent" xml:space="preserve"><value>Preview: действия до выбранного ({0})</value></data>
+  <data name="status.previewApplyAll" xml:space="preserve"><value>Preview: все действия ({0})</value></data>
+  <data name="recent.empty" xml:space="preserve"><value>(Нет недавних проектов)</value></data>
+  <data name="pageFilter.all" xml:space="preserve"><value>Все страницы</value></data>
+  <data name="error.pageRangePositive" xml:space="preserve"><value>Диапазон должен использовать положительные номера страниц.</value></data>
+  <data name="error.pageRangeStart" xml:space="preserve"><value>Начало диапазона должно быть положительным номером страницы.</value></data>
+  <data name="error.pageRangeEnd" xml:space="preserve"><value>Конец диапазона должен быть пустым или больше/равен началу.</value></data>
+  <data name="enum.unit.Inch" xml:space="preserve"><value>Дюймы</value></data>
+  <data name="enum.unit.Cm" xml:space="preserve"><value>См</value></data>
+  <data name="enum.action.Trim" xml:space="preserve"><value>Trim</value></data>
+  <data name="enum.action.Expand" xml:space="preserve"><value>Expand</value></data>
+  <data name="enum.action.Resize" xml:space="preserve"><value>Resize</value></data>
+  <data name="enum.action.Zoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="enum.action.AddRuler" xml:space="preserve"><value>Add Ruler</value></data>
+  <data name="enum.pageFilter.Any" xml:space="preserve"><value>Любые</value></data>
+  <data name="enum.pageFilter.Odd" xml:space="preserve"><value>Нечётные</value></data>
+  <data name="enum.pageFilter.Even" xml:space="preserve"><value>Чётные</value></data>
+  <data name="enum.rulerStyle.Solid" xml:space="preserve"><value>Сплошная</value></data>
+  <data name="enum.rulerStyle.Dotted" xml:space="preserve"><value>Пунктир</value></data>
+  <data name="enum.rulerMode.Percent" xml:space="preserve"><value>Проценты</value></data>
+  <data name="enum.rulerMode.Unit" xml:space="preserve"><value>Единицы</value></data>
+  <data name="enum.rulerOrientation.Vertical" xml:space="preserve"><value>Вертикальная</value></data>
+  <data name="enum.rulerOrientation.Horizontal" xml:space="preserve"><value>Горизонтальная</value></data>
+</root>

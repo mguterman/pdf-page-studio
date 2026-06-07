@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="app.title" xml:space="preserve"><value>PDF Page Studio</value></data>
+  <data name="app.titleWithProject" xml:space="preserve"><value>PDF Page Studio - {0}{1}</value></data>
+  <data name="app.dirtyMark" xml:space="preserve"><value> *</value></data>
+  <data name="common.untitled" xml:space="preserve"><value>Untitled</value></data>
+  <data name="menu.file" xml:space="preserve"><value>&amp;File</value></data>
+  <data name="menu.openProject" xml:space="preserve"><value>&amp;Open Project...</value></data>
+  <data name="menu.save" xml:space="preserve"><value>&amp;Save</value></data>
+  <data name="menu.saveAs" xml:space="preserve"><value>Save &amp;As...</value></data>
+  <data name="menu.addPdf" xml:space="preserve"><value>Add &amp;PDF File...</value></data>
+  <data name="menu.openRecent" xml:space="preserve"><value>Open &amp;Recent Project</value></data>
+  <data name="menu.language" xml:space="preserve"><value>&amp;Language</value></data>
+  <data name="language.english" xml:space="preserve"><value>English</value></data>
+  <data name="language.russian" xml:space="preserve"><value>Russian</value></data>
+  <data name="language.hebrew" xml:space="preserve"><value>Hebrew</value></data>
+  <data name="project.name" xml:space="preserve"><value>Name</value></data>
+  <data name="project.unitType" xml:space="preserve"><value>Unit Type</value></data>
+  <data name="project.description" xml:space="preserve"><value>Description</value></data>
+  <data name="nav.firstPage" xml:space="preserve"><value>|&lt;</value></data>
+  <data name="nav.previousPage" xml:space="preserve"><value>&lt;</value></data>
+  <data name="nav.nextPage" xml:space="preserve"><value>&gt;</value></data>
+  <data name="nav.lastPage" xml:space="preserve"><value>&gt;|</value></data>
+  <data name="nav.firstPage.tooltip" xml:space="preserve"><value>First page</value></data>
+  <data name="nav.previousPage.tooltip" xml:space="preserve"><value>Previous page</value></data>
+  <data name="nav.nextPage.tooltip" xml:space="preserve"><value>Next page</value></data>
+  <data name="nav.lastPage.tooltip" xml:space="preserve"><value>Last page</value></data>
+  <data name="nav.pageCount" xml:space="preserve"><value>of {0}</value></data>
+  <data name="nav.pageCount.empty" xml:space="preserve"><value>of 0</value></data>
+  <data name="nav.zoomOut" xml:space="preserve"><value>-</value></data>
+  <data name="nav.zoomIn" xml:space="preserve"><value>+</value></data>
+  <data name="nav.zoomOut.tooltip" xml:space="preserve"><value>Zoom out</value></data>
+  <data name="nav.zoomIn.tooltip" xml:space="preserve"><value>Zoom in</value></data>
+  <data name="nav.fitWidth" xml:space="preserve"><value>Fit Width</value></data>
+  <data name="nav.fitPage" xml:space="preserve"><value>Fit Page</value></data>
+  <data name="page.size.empty" xml:space="preserve"><value>Page: -- x -- in</value></data>
+  <data name="page.size" xml:space="preserve"><value>Page: {0:0.###} x {1:0.###} {2}</value></data>
+  <data name="actions.title" xml:space="preserve"><value>Actions</value></data>
+  <data name="actions.applyAll" xml:space="preserve"><value>Apply All</value></data>
+  <data name="actions.untilCurrent" xml:space="preserve"><value>Until Current</value></data>
+  <data name="actions.add" xml:space="preserve"><value>Add</value></data>
+  <data name="actions.insertBefore" xml:space="preserve"><value>Insert Before</value></data>
+  <data name="actions.insertAfter" xml:space="preserve"><value>Insert After</value></data>
+  <data name="actions.delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="actions.up" xml:space="preserve"><value>Up</value></data>
+  <data name="actions.down" xml:space="preserve"><value>Down</value></data>
+  <data name="properties.title" xml:space="preserve"><value>Properties</value></data>
+  <data name="field.type" xml:space="preserve"><value>Type</value></data>
+  <data name="field.name" xml:space="preserve"><value>Name</value></data>
+  <data name="field.pageType" xml:space="preserve"><value>Page Type</value></data>
+  <data name="field.range" xml:space="preserve"><value>Range</value></data>
+  <data name="field.range.placeholder" xml:space="preserve"><value>All pages or 1-3, 5, 7-</value></data>
+  <data name="field.left" xml:space="preserve"><value>Left</value></data>
+  <data name="field.top" xml:space="preserve"><value>Top</value></data>
+  <data name="field.right" xml:space="preserve"><value>Right</value></data>
+  <data name="field.bottom" xml:space="preserve"><value>Bottom</value></data>
+  <data name="field.width" xml:space="preserve"><value>Width</value></data>
+  <data name="field.height" xml:space="preserve"><value>Height</value></data>
+  <data name="field.proportional" xml:space="preserve"><value>Proportional</value></data>
+  <data name="field.anchor" xml:space="preserve"><value>Anchor</value></data>
+  <data name="field.color" xml:space="preserve"><value>Color</value></data>
+  <data name="field.style" xml:space="preserve"><value>Style</value></data>
+  <data name="field.mode" xml:space="preserve"><value>Mode</value></data>
+  <data name="field.line" xml:space="preserve"><value>Line</value></data>
+  <data name="field.position" xml:space="preserve"><value>Position</value></data>
+  <data name="dialog.openProject.title" xml:space="preserve"><value>Open PDF Page Studio Project</value></data>
+  <data name="dialog.saveProject.title" xml:space="preserve"><value>Save PDF Page Studio Project</value></data>
+  <data name="dialog.project.filter" xml:space="preserve"><value>PDF Page Studio Project (*.ppsproj)|*.ppsproj|All files (*.*)|*.*</value></data>
+  <data name="dialog.addPdf.title" xml:space="preserve"><value>Add PDF File</value></data>
+  <data name="dialog.pdf.filter" xml:space="preserve"><value>PDF files (*.pdf)|*.pdf|All files (*.*)|*.*</value></data>
+  <data name="message.openProjectFailed.title" xml:space="preserve"><value>Open project failed</value></data>
+  <data name="message.saveProjectFailed.title" xml:space="preserve"><value>Save project failed</value></data>
+  <data name="message.previewInitFailed.title" xml:space="preserve"><value>PDF preview initialization failed</value></data>
+  <data name="message.pdfLoadFailed.title" xml:space="preserve"><value>PDF load failed</value></data>
+  <data name="message.recentProjectNotFound.title" xml:space="preserve"><value>Recent project not found</value></data>
+  <data name="message.recentProjectNotFound.body" xml:space="preserve"><value>Project file was not found and has been removed from recent projects.</value></data>
+  <data name="message.saveChanges.body" xml:space="preserve"><value>Save changes to the current project?</value></data>
+  <data name="status.ready" xml:space="preserve"><value>Ready.</value></data>
+  <data name="status.opened" xml:space="preserve"><value>Opened: {0}</value></data>
+  <data name="status.openProjectFailed" xml:space="preserve"><value>Open project failed.</value></data>
+  <data name="status.saved" xml:space="preserve"><value>Saved: {0}</value></data>
+  <data name="status.saveProjectFailed" xml:space="preserve"><value>Save project failed.</value></data>
+  <data name="status.pdfNotFound" xml:space="preserve"><value>PDF file not found: {0}</value></data>
+  <data name="status.pdfLoaded" xml:space="preserve"><value>PDF loaded: {0}</value></data>
+  <data name="status.pdfLoadFailed" xml:space="preserve"><value>PDF load failed.</value></data>
+  <data name="status.actionDeleted" xml:space="preserve"><value>Action deleted.</value></data>
+  <data name="status.actionMovedUp" xml:space="preserve"><value>Action moved up.</value></data>
+  <data name="status.actionMovedDown" xml:space="preserve"><value>Action moved down.</value></data>
+  <data name="status.pageFilterUpdated" xml:space="preserve"><value>Page filter updated.</value></data>
+  <data name="status.actionAdded" xml:space="preserve"><value>Action added.</value></data>
+  <data name="status.previewUntilCurrent" xml:space="preserve"><value>Preview: actions through selected ({0})</value></data>
+  <data name="status.previewApplyAll" xml:space="preserve"><value>Preview: all actions ({0})</value></data>
+  <data name="recent.empty" xml:space="preserve"><value>(No recent projects)</value></data>
+  <data name="pageFilter.all" xml:space="preserve"><value>All pages</value></data>
+  <data name="error.pageRangePositive" xml:space="preserve"><value>Page range must use positive page numbers.</value></data>
+  <data name="error.pageRangeStart" xml:space="preserve"><value>Page range start must be a positive page number.</value></data>
+  <data name="error.pageRangeEnd" xml:space="preserve"><value>Page range end must be empty or greater than/equal to start.</value></data>
+  <data name="enum.unit.Inch" xml:space="preserve"><value>Inch</value></data>
+  <data name="enum.unit.Cm" xml:space="preserve"><value>Cm</value></data>
+  <data name="enum.action.Trim" xml:space="preserve"><value>Trim</value></data>
+  <data name="enum.action.Expand" xml:space="preserve"><value>Expand</value></data>
+  <data name="enum.action.Resize" xml:space="preserve"><value>Resize</value></data>
+  <data name="enum.action.Zoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="enum.action.AddRuler" xml:space="preserve"><value>Add Ruler</value></data>
+  <data name="enum.pageFilter.Any" xml:space="preserve"><value>Any</value></data>
+  <data name="enum.pageFilter.Odd" xml:space="preserve"><value>Odd</value></data>
+  <data name="enum.pageFilter.Even" xml:space="preserve"><value>Even</value></data>
+  <data name="enum.rulerStyle.Solid" xml:space="preserve"><value>Solid</value></data>
+  <data name="enum.rulerStyle.Dotted" xml:space="preserve"><value>Dotted</value></data>
+  <data name="enum.rulerMode.Percent" xml:space="preserve"><value>Percent</value></data>
+  <data name="enum.rulerMode.Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="enum.rulerOrientation.Vertical" xml:space="preserve"><value>Vertical</value></data>
+  <data name="enum.rulerOrientation.Horizontal" xml:space="preserve"><value>Horizontal</value></data>
+</root>

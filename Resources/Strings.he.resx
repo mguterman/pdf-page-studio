@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="app.title" xml:space="preserve"><value>PDF Page Studio</value></data>
+  <data name="app.titleWithProject" xml:space="preserve"><value>PDF Page Studio - {0}{1}</value></data>
+  <data name="app.dirtyMark" xml:space="preserve"><value> *</value></data>
+  <data name="common.untitled" xml:space="preserve"><value>ללא שם</value></data>
+  <data name="menu.file" xml:space="preserve"><value>&amp;קובץ</value></data>
+  <data name="menu.openProject" xml:space="preserve"><value>&amp;פתח פרויקט...</value></data>
+  <data name="menu.save" xml:space="preserve"><value>&amp;שמור</value></data>
+  <data name="menu.saveAs" xml:space="preserve"><value>שמור &amp;בשם...</value></data>
+  <data name="menu.addPdf" xml:space="preserve"><value>הוסף קובץ &amp;PDF...</value></data>
+  <data name="menu.openRecent" xml:space="preserve"><value>פתח פרויקט &amp;אחרון</value></data>
+  <data name="menu.language" xml:space="preserve"><value>&amp;שפה</value></data>
+  <data name="language.english" xml:space="preserve"><value>אנגלית</value></data>
+  <data name="language.russian" xml:space="preserve"><value>רוסית</value></data>
+  <data name="language.hebrew" xml:space="preserve"><value>עברית</value></data>
+  <data name="project.name" xml:space="preserve"><value>שם</value></data>
+  <data name="project.unitType" xml:space="preserve"><value>יחידות</value></data>
+  <data name="project.description" xml:space="preserve"><value>תיאור</value></data>
+  <data name="nav.firstPage" xml:space="preserve"><value>|&lt;</value></data>
+  <data name="nav.previousPage" xml:space="preserve"><value>&lt;</value></data>
+  <data name="nav.nextPage" xml:space="preserve"><value>&gt;</value></data>
+  <data name="nav.lastPage" xml:space="preserve"><value>&gt;|</value></data>
+  <data name="nav.firstPage.tooltip" xml:space="preserve"><value>עמוד ראשון</value></data>
+  <data name="nav.previousPage.tooltip" xml:space="preserve"><value>עמוד קודם</value></data>
+  <data name="nav.nextPage.tooltip" xml:space="preserve"><value>עמוד הבא</value></data>
+  <data name="nav.lastPage.tooltip" xml:space="preserve"><value>עמוד אחרון</value></data>
+  <data name="nav.pageCount" xml:space="preserve"><value>מתוך {0}</value></data>
+  <data name="nav.pageCount.empty" xml:space="preserve"><value>מתוך 0</value></data>
+  <data name="nav.zoomOut" xml:space="preserve"><value>-</value></data>
+  <data name="nav.zoomIn" xml:space="preserve"><value>+</value></data>
+  <data name="nav.zoomOut.tooltip" xml:space="preserve"><value>הקטן</value></data>
+  <data name="nav.zoomIn.tooltip" xml:space="preserve"><value>הגדל</value></data>
+  <data name="nav.fitWidth" xml:space="preserve"><value>התאם לרוחב</value></data>
+  <data name="nav.fitPage" xml:space="preserve"><value>עמוד שלם</value></data>
+  <data name="page.size.empty" xml:space="preserve"><value>עמוד: -- x -- in</value></data>
+  <data name="page.size" xml:space="preserve"><value>עמוד: {0:0.###} x {1:0.###} {2}</value></data>
+  <data name="actions.title" xml:space="preserve"><value>פעולות</value></data>
+  <data name="actions.applyAll" xml:space="preserve"><value>הכל</value></data>
+  <data name="actions.untilCurrent" xml:space="preserve"><value>עד הנוכחי</value></data>
+  <data name="actions.add" xml:space="preserve"><value>הוסף</value></data>
+  <data name="actions.insertBefore" xml:space="preserve"><value>הכנס לפני</value></data>
+  <data name="actions.insertAfter" xml:space="preserve"><value>הכנס אחרי</value></data>
+  <data name="actions.delete" xml:space="preserve"><value>מחק</value></data>
+  <data name="actions.up" xml:space="preserve"><value>למעלה</value></data>
+  <data name="actions.down" xml:space="preserve"><value>למטה</value></data>
+  <data name="properties.title" xml:space="preserve"><value>מאפיינים</value></data>
+  <data name="field.type" xml:space="preserve"><value>סוג</value></data>
+  <data name="field.name" xml:space="preserve"><value>שם</value></data>
+  <data name="field.pageType" xml:space="preserve"><value>סוג עמודים</value></data>
+  <data name="field.range" xml:space="preserve"><value>טווח</value></data>
+  <data name="field.range.placeholder" xml:space="preserve"><value>כל העמודים או 1-3, 5, 7-</value></data>
+  <data name="field.left" xml:space="preserve"><value>שמאל</value></data>
+  <data name="field.top" xml:space="preserve"><value>למעלה</value></data>
+  <data name="field.right" xml:space="preserve"><value>ימין</value></data>
+  <data name="field.bottom" xml:space="preserve"><value>למטה</value></data>
+  <data name="field.width" xml:space="preserve"><value>רוחב</value></data>
+  <data name="field.height" xml:space="preserve"><value>גובה</value></data>
+  <data name="field.proportional" xml:space="preserve"><value>יחסי</value></data>
+  <data name="field.anchor" xml:space="preserve"><value>עוגן</value></data>
+  <data name="field.color" xml:space="preserve"><value>צבע</value></data>
+  <data name="field.style" xml:space="preserve"><value>סגנון</value></data>
+  <data name="field.mode" xml:space="preserve"><value>מצב</value></data>
+  <data name="field.line" xml:space="preserve"><value>קו</value></data>
+  <data name="field.position" xml:space="preserve"><value>מיקום</value></data>
+  <data name="dialog.openProject.title" xml:space="preserve"><value>פתח פרויקט PDF Page Studio</value></data>
+  <data name="dialog.saveProject.title" xml:space="preserve"><value>שמור פרויקט PDF Page Studio</value></data>
+  <data name="dialog.project.filter" xml:space="preserve"><value>פרויקט PDF Page Studio (*.ppsproj)|*.ppsproj|כל הקבצים (*.*)|*.*</value></data>
+  <data name="dialog.addPdf.title" xml:space="preserve"><value>הוסף קובץ PDF</value></data>
+  <data name="dialog.pdf.filter" xml:space="preserve"><value>קבצי PDF (*.pdf)|*.pdf|כל הקבצים (*.*)|*.*</value></data>
+  <data name="message.openProjectFailed.title" xml:space="preserve"><value>פתיחת הפרויקט נכשלה</value></data>
+  <data name="message.saveProjectFailed.title" xml:space="preserve"><value>שמירת הפרויקט נכשלה</value></data>
+  <data name="message.previewInitFailed.title" xml:space="preserve"><value>אתחול תצוגת PDF נכשל</value></data>
+  <data name="message.pdfLoadFailed.title" xml:space="preserve"><value>טעינת PDF נכשלה</value></data>
+  <data name="message.recentProjectNotFound.title" xml:space="preserve"><value>הפרויקט האחרון לא נמצא</value></data>
+  <data name="message.recentProjectNotFound.body" xml:space="preserve"><value>קובץ הפרויקט לא נמצא והוסר מרשימת הפרויקטים האחרונים.</value></data>
+  <data name="message.saveChanges.body" xml:space="preserve"><value>לשמור את השינויים בפרויקט הנוכחי?</value></data>
+  <data name="status.ready" xml:space="preserve"><value>מוכן.</value></data>
+  <data name="status.opened" xml:space="preserve"><value>נפתח: {0}</value></data>
+  <data name="status.openProjectFailed" xml:space="preserve"><value>פתיחת הפרויקט נכשלה.</value></data>
+  <data name="status.saved" xml:space="preserve"><value>נשמר: {0}</value></data>
+  <data name="status.saveProjectFailed" xml:space="preserve"><value>שמירת הפרויקט נכשלה.</value></data>
+  <data name="status.pdfNotFound" xml:space="preserve"><value>קובץ PDF לא נמצא: {0}</value></data>
+  <data name="status.pdfLoaded" xml:space="preserve"><value>PDF נטען: {0}</value></data>
+  <data name="status.pdfLoadFailed" xml:space="preserve"><value>טעינת PDF נכשלה.</value></data>
+  <data name="status.actionDeleted" xml:space="preserve"><value>הפעולה נמחקה.</value></data>
+  <data name="status.actionMovedUp" xml:space="preserve"><value>הפעולה הוזזה למעלה.</value></data>
+  <data name="status.actionMovedDown" xml:space="preserve"><value>הפעולה הוזזה למטה.</value></data>
+  <data name="status.pageFilterUpdated" xml:space="preserve"><value>מסנן העמודים עודכן.</value></data>
+  <data name="status.actionAdded" xml:space="preserve"><value>הפעולה נוספה.</value></data>
+  <data name="status.previewUntilCurrent" xml:space="preserve"><value>תצוגה: פעולות עד הבחירה ({0})</value></data>
+  <data name="status.previewApplyAll" xml:space="preserve"><value>תצוגה: כל הפעולות ({0})</value></data>
+  <data name="recent.empty" xml:space="preserve"><value>(אין פרויקטים אחרונים)</value></data>
+  <data name="pageFilter.all" xml:space="preserve"><value>כל העמודים</value></data>
+  <data name="error.pageRangePositive" xml:space="preserve"><value>טווח העמודים חייב להשתמש במספרי עמודים חיוביים.</value></data>
+  <data name="error.pageRangeStart" xml:space="preserve"><value>תחילת הטווח חייבת להיות מספר עמוד חיובי.</value></data>
+  <data name="error.pageRangeEnd" xml:space="preserve"><value>סוף הטווח חייב להיות ריק או גדול/שווה להתחלה.</value></data>
+  <data name="enum.unit.Inch" xml:space="preserve"><value>אינץ'</value></data>
+  <data name="enum.unit.Cm" xml:space="preserve"><value>ס&quot;מ</value></data>
+  <data name="enum.action.Trim" xml:space="preserve"><value>Trim</value></data>
+  <data name="enum.action.Expand" xml:space="preserve"><value>Expand</value></data>
+  <data name="enum.action.Resize" xml:space="preserve"><value>Resize</value></data>
+  <data name="enum.action.Zoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="enum.action.AddRuler" xml:space="preserve"><value>Add Ruler</value></data>
+  <data name="enum.pageFilter.Any" xml:space="preserve"><value>כל סוג</value></data>
+  <data name="enum.pageFilter.Odd" xml:space="preserve"><value>אי זוגיים</value></data>
+  <data name="enum.pageFilter.Even" xml:space="preserve"><value>זוגיים</value></data>
+  <data name="enum.rulerStyle.Solid" xml:space="preserve"><value>רציף</value></data>
+  <data name="enum.rulerStyle.Dotted" xml:space="preserve"><value>מקווקו</value></data>
+  <data name="enum.rulerMode.Percent" xml:space="preserve"><value>אחוזים</value></data>
+  <data name="enum.rulerMode.Unit" xml:space="preserve"><value>יחידות</value></data>
+  <data name="enum.rulerOrientation.Vertical" xml:space="preserve"><value>אנכי</value></data>
+  <data name="enum.rulerOrientation.Horizontal" xml:space="preserve"><value>אופקי</value></data>
+</root>

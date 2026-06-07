@@ -13,6 +13,10 @@ partial class MainForm
     private ToolStripMenuItem addPdfFileMenuItem;
     private ToolStripSeparator recentMenuSeparator;
     private ToolStripMenuItem openRecentProjectMenuItem;
+    private ToolStripMenuItem languageMenuItem;
+    private ToolStripMenuItem englishLanguageMenuItem;
+    private ToolStripMenuItem russianLanguageMenuItem;
+    private ToolStripMenuItem hebrewLanguageMenuItem;
     private Panel mainContentPanel;
     private TableLayoutPanel projectInfoPanel;
     private Label projectNameLabel;
@@ -121,6 +125,10 @@ partial class MainForm
         addPdfFileMenuItem = new ToolStripMenuItem();
         recentMenuSeparator = new ToolStripSeparator();
         openRecentProjectMenuItem = new ToolStripMenuItem();
+        languageMenuItem = new ToolStripMenuItem();
+        englishLanguageMenuItem = new ToolStripMenuItem();
+        russianLanguageMenuItem = new ToolStripMenuItem();
+        hebrewLanguageMenuItem = new ToolStripMenuItem();
         mainContentPanel = new Panel();
         projectInfoPanel = new TableLayoutPanel();
         projectNameLabel = new Label();
@@ -220,7 +228,7 @@ partial class MainForm
         mainStatusStrip.SuspendLayout();
         SuspendLayout();
 
-        mainMenuStrip.Items.AddRange(new ToolStripItem[] { fileMenuItem });
+        mainMenuStrip.Items.AddRange(new ToolStripItem[] { fileMenuItem, languageMenuItem });
         mainMenuStrip.Location = new Point(0, 0);
         mainMenuStrip.Name = "mainMenuStrip";
         mainMenuStrip.Size = new Size(1100, 24);
@@ -238,24 +246,24 @@ partial class MainForm
         });
         fileMenuItem.Name = "fileMenuItem";
         fileMenuItem.Size = new Size(37, 20);
-        fileMenuItem.Text = "&File";
+        fileMenuItem.Text = TranslationService.T("menu.file");
 
         openProjectMenuItem.Name = "openProjectMenuItem";
         openProjectMenuItem.ShortcutKeys = Keys.Control | Keys.O;
         openProjectMenuItem.Size = new Size(211, 22);
-        openProjectMenuItem.Text = "&Open Project...";
+        openProjectMenuItem.Text = TranslationService.T("menu.openProject");
         openProjectMenuItem.Click += OpenProjectMenuItem_Click;
 
         saveProjectMenuItem.Name = "saveProjectMenuItem";
         saveProjectMenuItem.ShortcutKeys = Keys.Control | Keys.S;
         saveProjectMenuItem.Size = new Size(211, 22);
-        saveProjectMenuItem.Text = "&Save";
+        saveProjectMenuItem.Text = TranslationService.T("menu.save");
         saveProjectMenuItem.Click += SaveProjectMenuItem_Click;
 
         saveProjectAsMenuItem.Name = "saveProjectAsMenuItem";
         saveProjectAsMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.S;
         saveProjectAsMenuItem.Size = new Size(211, 22);
-        saveProjectAsMenuItem.Text = "Save &As...";
+        saveProjectAsMenuItem.Text = TranslationService.T("menu.saveAs");
         saveProjectAsMenuItem.Click += SaveProjectAsMenuItem_Click;
 
         saveMenuSeparator.Name = "saveMenuSeparator";
@@ -264,7 +272,7 @@ partial class MainForm
         addPdfFileMenuItem.Name = "addPdfFileMenuItem";
         addPdfFileMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.O;
         addPdfFileMenuItem.Size = new Size(211, 22);
-        addPdfFileMenuItem.Text = "Add &PDF File...";
+        addPdfFileMenuItem.Text = TranslationService.T("menu.addPdf");
         addPdfFileMenuItem.Click += AddPdfFileMenuItem_Click;
 
         recentMenuSeparator.Name = "recentMenuSeparator";
@@ -272,7 +280,27 @@ partial class MainForm
 
         openRecentProjectMenuItem.Name = "openRecentProjectMenuItem";
         openRecentProjectMenuItem.Size = new Size(211, 22);
-        openRecentProjectMenuItem.Text = "Open &Recent Project";
+        openRecentProjectMenuItem.Text = TranslationService.T("menu.openRecent");
+
+        languageMenuItem.DropDownItems.AddRange(new ToolStripItem[] { englishLanguageMenuItem, russianLanguageMenuItem, hebrewLanguageMenuItem });
+        languageMenuItem.Name = "languageMenuItem";
+        languageMenuItem.Size = new Size(71, 20);
+        languageMenuItem.Text = TranslationService.T("menu.language");
+
+        englishLanguageMenuItem.Name = "englishLanguageMenuItem";
+        englishLanguageMenuItem.Size = new Size(180, 22);
+        englishLanguageMenuItem.Text = TranslationService.T("language.english");
+        englishLanguageMenuItem.Click += EnglishLanguageMenuItem_Click;
+
+        russianLanguageMenuItem.Name = "russianLanguageMenuItem";
+        russianLanguageMenuItem.Size = new Size(180, 22);
+        russianLanguageMenuItem.Text = TranslationService.T("language.russian");
+        russianLanguageMenuItem.Click += RussianLanguageMenuItem_Click;
+
+        hebrewLanguageMenuItem.Name = "hebrewLanguageMenuItem";
+        hebrewLanguageMenuItem.Size = new Size(180, 22);
+        hebrewLanguageMenuItem.Text = TranslationService.T("language.hebrew");
+        hebrewLanguageMenuItem.Click += HebrewLanguageMenuItem_Click;
 
         mainContentPanel.Controls.Add(pdfWorkspacePanel);
         mainContentPanel.Controls.Add(projectInfoPanel);
@@ -306,7 +334,7 @@ partial class MainForm
         projectNameLabel.Dock = DockStyle.Fill;
         projectNameLabel.Name = "projectNameLabel";
         projectNameLabel.TabIndex = 0;
-        projectNameLabel.Text = "Name";
+        projectNameLabel.Text = TranslationService.T("project.name");
         projectNameLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         projectNameTextBox.Dock = DockStyle.Fill;
@@ -318,12 +346,11 @@ partial class MainForm
         projectUnitTypeLabel.Dock = DockStyle.Fill;
         projectUnitTypeLabel.Name = "projectUnitTypeLabel";
         projectUnitTypeLabel.TabIndex = 2;
-        projectUnitTypeLabel.Text = "Unit Type";
+        projectUnitTypeLabel.Text = TranslationService.T("project.unitType");
         projectUnitTypeLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         projectUnitTypeComboBox.Dock = DockStyle.Left;
         projectUnitTypeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        projectUnitTypeComboBox.Items.AddRange(new object[] { "Inch", "Cm" });
         projectUnitTypeComboBox.Name = "projectUnitTypeComboBox";
         projectUnitTypeComboBox.Size = new Size(120, 23);
         projectUnitTypeComboBox.TabIndex = 3;
@@ -333,7 +360,7 @@ partial class MainForm
         projectDescriptionLabel.Dock = DockStyle.Fill;
         projectDescriptionLabel.Name = "projectDescriptionLabel";
         projectDescriptionLabel.TabIndex = 4;
-        projectDescriptionLabel.Text = "Description";
+        projectDescriptionLabel.Text = TranslationService.T("project.description");
         projectDescriptionLabel.TextAlign = ContentAlignment.TopLeft;
 
         projectDescriptionTextBox.AcceptsReturn = true;
@@ -387,15 +414,15 @@ partial class MainForm
         firstPageButton.Enabled = false;
         firstPageButton.Name = "firstPageButton";
         firstPageButton.Size = new Size(32, 20);
-        firstPageButton.Text = "|◀";
-        firstPageButton.ToolTipText = "First page";
+        firstPageButton.Text = TranslationService.T("nav.firstPage");
+        firstPageButton.ToolTipText = TranslationService.T("nav.firstPage.tooltip");
         firstPageButton.Click += FirstPageButton_Click;
 
         previousPageButton.Enabled = false;
         previousPageButton.Name = "previousPageButton";
         previousPageButton.Size = new Size(26, 20);
-        previousPageButton.Text = "◀";
-        previousPageButton.ToolTipText = "Previous page";
+        previousPageButton.Text = TranslationService.T("nav.previousPage");
+        previousPageButton.ToolTipText = TranslationService.T("nav.previousPage.tooltip");
         previousPageButton.Click += PreviousPageButton_Click;
 
         pageNumberTextBox.Enabled = false;
@@ -406,20 +433,20 @@ partial class MainForm
 
         pageCountLabel.Name = "pageCountLabel";
         pageCountLabel.Size = new Size(29, 20);
-        pageCountLabel.Text = "of 0";
+        pageCountLabel.Text = TranslationService.T("nav.pageCount.empty");
 
         nextPageButton.Enabled = false;
         nextPageButton.Name = "nextPageButton";
         nextPageButton.Size = new Size(26, 20);
-        nextPageButton.Text = "▶";
-        nextPageButton.ToolTipText = "Next page";
+        nextPageButton.Text = TranslationService.T("nav.nextPage");
+        nextPageButton.ToolTipText = TranslationService.T("nav.nextPage.tooltip");
         nextPageButton.Click += NextPageButton_Click;
 
         lastPageButton.Enabled = false;
         lastPageButton.Name = "lastPageButton";
         lastPageButton.Size = new Size(32, 20);
-        lastPageButton.Text = "▶|";
-        lastPageButton.ToolTipText = "Last page";
+        lastPageButton.Text = TranslationService.T("nav.lastPage");
+        lastPageButton.ToolTipText = TranslationService.T("nav.lastPage.tooltip");
         lastPageButton.Click += LastPageButton_Click;
 
         navigationSeparator.Name = "navigationSeparator";
@@ -428,27 +455,27 @@ partial class MainForm
         zoomOutButton.Enabled = false;
         zoomOutButton.Name = "zoomOutButton";
         zoomOutButton.Size = new Size(23, 20);
-        zoomOutButton.Text = "-";
-        zoomOutButton.ToolTipText = "Zoom out";
+        zoomOutButton.Text = TranslationService.T("nav.zoomOut");
+        zoomOutButton.ToolTipText = TranslationService.T("nav.zoomOut.tooltip");
         zoomOutButton.Click += ZoomOutButton_Click;
 
         zoomInButton.Enabled = false;
         zoomInButton.Name = "zoomInButton";
         zoomInButton.Size = new Size(23, 20);
-        zoomInButton.Text = "+";
-        zoomInButton.ToolTipText = "Zoom in";
+        zoomInButton.Text = TranslationService.T("nav.zoomIn");
+        zoomInButton.ToolTipText = TranslationService.T("nav.zoomIn.tooltip");
         zoomInButton.Click += ZoomInButton_Click;
 
         fitWidthButton.Enabled = false;
         fitWidthButton.Name = "fitWidthButton";
         fitWidthButton.Size = new Size(60, 20);
-        fitWidthButton.Text = "Fit Width";
+        fitWidthButton.Text = TranslationService.T("nav.fitWidth");
         fitWidthButton.Click += FitWidthButton_Click;
 
         fitPageButton.Enabled = false;
         fitPageButton.Name = "fitPageButton";
         fitPageButton.Size = new Size(54, 20);
-        fitPageButton.Text = "Fit Page";
+        fitPageButton.Text = TranslationService.T("nav.fitPage");
         fitPageButton.Click += FitPageButton_Click;
 
         pageSizeSeparator.Name = "pageSizeSeparator";
@@ -456,7 +483,7 @@ partial class MainForm
 
         pageSizeLabel.Name = "pageSizeLabel";
         pageSizeLabel.Size = new Size(74, 20);
-        pageSizeLabel.Text = "Page: -- x -- in";
+        pageSizeLabel.Text = TranslationService.T("page.size.empty");
 
         pdfPageViewer.Dock = DockStyle.Fill;
         pdfPageViewer.Name = "pdfPageViewer";
@@ -488,7 +515,7 @@ partial class MainForm
         actionsTitleLabel.Font = new Font(actionsTitleLabel.Font, FontStyle.Bold);
         actionsTitleLabel.Name = "actionsTitleLabel";
         actionsTitleLabel.TabIndex = 0;
-        actionsTitleLabel.Text = "Actions";
+        actionsTitleLabel.Text = TranslationService.T("actions.title");
         actionsTitleLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         previewModePanel.Controls.Add(applyAllRadioButton);
@@ -504,7 +531,7 @@ partial class MainForm
         applyAllRadioButton.Size = new Size(68, 19);
         applyAllRadioButton.TabIndex = 0;
         applyAllRadioButton.TabStop = true;
-        applyAllRadioButton.Text = "Apply All";
+        applyAllRadioButton.Text = TranslationService.T("actions.applyAll");
         applyAllRadioButton.UseVisualStyleBackColor = true;
         applyAllRadioButton.CheckedChanged += PreviewModeRadioButton_CheckedChanged;
 
@@ -513,7 +540,7 @@ partial class MainForm
         untilCurrentRadioButton.Name = "untilCurrentRadioButton";
         untilCurrentRadioButton.Size = new Size(90, 19);
         untilCurrentRadioButton.TabIndex = 1;
-        untilCurrentRadioButton.Text = "Until Current";
+        untilCurrentRadioButton.Text = TranslationService.T("actions.untilCurrent");
         untilCurrentRadioButton.UseVisualStyleBackColor = true;
         untilCurrentRadioButton.CheckedChanged += PreviewModeRadioButton_CheckedChanged;
 
@@ -530,42 +557,42 @@ partial class MainForm
         addActionButton.Name = "addActionButton";
         addActionButton.Size = new Size(68, 28);
         addActionButton.TabIndex = 0;
-        addActionButton.Text = "Add";
+        addActionButton.Text = TranslationService.T("actions.add");
         addActionButton.UseVisualStyleBackColor = true;
         addActionButton.Click += AddActionButton_Click;
 
         insertBeforeActionButton.Name = "insertBeforeActionButton";
         insertBeforeActionButton.Size = new Size(102, 28);
         insertBeforeActionButton.TabIndex = 1;
-        insertBeforeActionButton.Text = "Insert Before";
+        insertBeforeActionButton.Text = TranslationService.T("actions.insertBefore");
         insertBeforeActionButton.UseVisualStyleBackColor = true;
         insertBeforeActionButton.Click += InsertBeforeActionButton_Click;
 
         insertAfterActionButton.Name = "insertAfterActionButton";
         insertAfterActionButton.Size = new Size(94, 28);
         insertAfterActionButton.TabIndex = 2;
-        insertAfterActionButton.Text = "Insert After";
+        insertAfterActionButton.Text = TranslationService.T("actions.insertAfter");
         insertAfterActionButton.UseVisualStyleBackColor = true;
         insertAfterActionButton.Click += InsertAfterActionButton_Click;
 
         deleteActionButton.Name = "deleteActionButton";
         deleteActionButton.Size = new Size(68, 28);
         deleteActionButton.TabIndex = 3;
-        deleteActionButton.Text = "Delete";
+        deleteActionButton.Text = TranslationService.T("actions.delete");
         deleteActionButton.UseVisualStyleBackColor = true;
         deleteActionButton.Click += DeleteActionButton_Click;
 
         moveActionUpButton.Name = "moveActionUpButton";
         moveActionUpButton.Size = new Size(68, 28);
         moveActionUpButton.TabIndex = 4;
-        moveActionUpButton.Text = "Up";
+        moveActionUpButton.Text = TranslationService.T("actions.up");
         moveActionUpButton.UseVisualStyleBackColor = true;
         moveActionUpButton.Click += MoveActionUpButton_Click;
 
         moveActionDownButton.Name = "moveActionDownButton";
         moveActionDownButton.Size = new Size(68, 28);
         moveActionDownButton.TabIndex = 5;
-        moveActionDownButton.Text = "Down";
+        moveActionDownButton.Text = TranslationService.T("actions.down");
         moveActionDownButton.UseVisualStyleBackColor = true;
         moveActionDownButton.Click += MoveActionDownButton_Click;
 
@@ -581,7 +608,7 @@ partial class MainForm
         propertiesTitleLabel.Font = new Font(propertiesTitleLabel.Font, FontStyle.Bold);
         propertiesTitleLabel.Name = "propertiesTitleLabel";
         propertiesTitleLabel.TabIndex = 3;
-        propertiesTitleLabel.Text = "Properties";
+        propertiesTitleLabel.Text = TranslationService.T("properties.title");
         propertiesTitleLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         actionPropertiesScrollPanel.AutoScroll = true;
@@ -641,12 +668,11 @@ partial class MainForm
         actionTypeLabel.AutoSize = true;
         actionTypeLabel.Dock = DockStyle.Fill;
         actionTypeLabel.Name = "actionTypeLabel";
-        actionTypeLabel.Text = "Type";
+        actionTypeLabel.Text = TranslationService.T("field.type");
         actionTypeLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         actionTypeComboBox.Dock = DockStyle.Fill;
         actionTypeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        actionTypeComboBox.Items.AddRange(new object[] { "Trim", "Expand", "Resize", "Zoom", "AddRuler" });
         actionTypeComboBox.Name = "actionTypeComboBox";
         actionTypeComboBox.SelectedIndexChanged += ActionTypeComboBox_SelectedIndexChanged;
 
@@ -654,7 +680,7 @@ partial class MainForm
         actionNameLabel.Dock = DockStyle.Fill;
         actionNameLabel.Name = "actionNameLabel";
         actionNameLabel.TabIndex = 0;
-        actionNameLabel.Text = "Name";
+        actionNameLabel.Text = TranslationService.T("field.name");
         actionNameLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         actionNameTextBox.Dock = DockStyle.Fill;
@@ -666,13 +692,12 @@ partial class MainForm
         pageFilterTypeLabel.Dock = DockStyle.Fill;
         pageFilterTypeLabel.Name = "pageFilterTypeLabel";
         pageFilterTypeLabel.TabIndex = 2;
-        pageFilterTypeLabel.Text = "Page Type";
+        pageFilterTypeLabel.Text = TranslationService.T("field.pageType");
         pageFilterTypeLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         pageFilterTypeComboBox.Dock = DockStyle.Fill;
         pageFilterTypeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
         pageFilterTypeComboBox.FormattingEnabled = true;
-        pageFilterTypeComboBox.Items.AddRange(new object[] { "Any", "Odd", "Even" });
         pageFilterTypeComboBox.Name = "pageFilterTypeComboBox";
         pageFilterTypeComboBox.TabIndex = 3;
         pageFilterTypeComboBox.SelectedIndexChanged += PageFilterTypeComboBox_SelectedIndexChanged;
@@ -681,35 +706,35 @@ partial class MainForm
         pageFilterRangeLabel.Dock = DockStyle.Fill;
         pageFilterRangeLabel.Name = "pageFilterRangeLabel";
         pageFilterRangeLabel.TabIndex = 4;
-        pageFilterRangeLabel.Text = "Range";
+        pageFilterRangeLabel.Text = TranslationService.T("field.range");
         pageFilterRangeLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         pageFilterRangeTextBox.Dock = DockStyle.Fill;
         pageFilterRangeTextBox.Name = "pageFilterRangeTextBox";
-        pageFilterRangeTextBox.PlaceholderText = "All pages or 1-3, 5, 7-";
+        pageFilterRangeTextBox.PlaceholderText = TranslationService.T("field.range.placeholder");
         pageFilterRangeTextBox.TabIndex = 5;
         pageFilterRangeTextBox.TextChanged += PageFilterRangeTextBox_TextChanged;
 
-        ConfigureEditorLabel(leftLabel, "Left");
+        ConfigureEditorLabel(leftLabel, TranslationService.T("field.left"));
         ConfigureEditorNumericBox(leftNumericBox, ActionNumberNumericBox_ValueChanged);
-        ConfigureEditorLabel(topLabel, "Top");
+        ConfigureEditorLabel(topLabel, TranslationService.T("field.top"));
         ConfigureEditorNumericBox(topNumericBox, ActionNumberNumericBox_ValueChanged);
-        ConfigureEditorLabel(rightLabel, "Right");
+        ConfigureEditorLabel(rightLabel, TranslationService.T("field.right"));
         ConfigureEditorNumericBox(rightNumericBox, ActionNumberNumericBox_ValueChanged);
-        ConfigureEditorLabel(bottomLabel, "Bottom");
+        ConfigureEditorLabel(bottomLabel, TranslationService.T("field.bottom"));
         ConfigureEditorNumericBox(bottomNumericBox, ActionNumberNumericBox_ValueChanged);
-        ConfigureEditorLabel(targetedWidthLabel, "Width");
+        ConfigureEditorLabel(targetedWidthLabel, TranslationService.T("field.width"));
         ConfigureEditorNumericBox(targetedWidthNumericBox, ActionNumberNumericBox_ValueChanged);
-        ConfigureEditorLabel(targetedHeightLabel, "Height");
+        ConfigureEditorLabel(targetedHeightLabel, TranslationService.T("field.height"));
         ConfigureEditorNumericBox(targetedHeightNumericBox, ActionNumberNumericBox_ValueChanged);
 
-        ConfigureEditorLabel(proportionalLabel, "Proportional");
+        ConfigureEditorLabel(proportionalLabel, TranslationService.T("field.proportional"));
         proportionalCheckBox.AutoSize = true;
         proportionalCheckBox.Dock = DockStyle.Fill;
         proportionalCheckBox.Name = "proportionalCheckBox";
         proportionalCheckBox.CheckedChanged += ProportionalCheckBox_CheckedChanged;
 
-        ConfigureEditorLabel(anchorLabel, "Anchor");
+        ConfigureEditorLabel(anchorLabel, TranslationService.T("field.anchor"));
         anchorPanel.ColumnCount = 3;
         anchorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333F));
         anchorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333F));
@@ -740,24 +765,21 @@ partial class MainForm
         ConfigureAnchorButton(anchorBottomRightRadioButton);
         anchorMiddleCenterRadioButton.Checked = true;
 
-        ConfigureEditorLabel(rulerColorLabel, "Color");
+        ConfigureEditorLabel(rulerColorLabel, TranslationService.T("field.color"));
         ConfigureEditorTextBox(rulerColorTextBox, RulerColorTextBox_TextChanged);
-        ConfigureEditorLabel(rulerStyleLabel, "Style");
+        ConfigureEditorLabel(rulerStyleLabel, TranslationService.T("field.style"));
         rulerStyleComboBox.Dock = DockStyle.Fill;
         rulerStyleComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        rulerStyleComboBox.Items.AddRange(new object[] { "Solid", "Dotted" });
         rulerStyleComboBox.SelectedIndexChanged += RulerStyleComboBox_SelectedIndexChanged;
-        ConfigureEditorLabel(rulerValueModeLabel, "Mode");
+        ConfigureEditorLabel(rulerValueModeLabel, TranslationService.T("field.mode"));
         rulerValueModeComboBox.Dock = DockStyle.Fill;
         rulerValueModeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        rulerValueModeComboBox.Items.AddRange(new object[] { "Percent", "Unit" });
         rulerValueModeComboBox.SelectedIndexChanged += RulerValueModeComboBox_SelectedIndexChanged;
-        ConfigureEditorLabel(rulerOrientationLabel, "Line");
+        ConfigureEditorLabel(rulerOrientationLabel, TranslationService.T("field.line"));
         rulerOrientationComboBox.Dock = DockStyle.Fill;
         rulerOrientationComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        rulerOrientationComboBox.Items.AddRange(new object[] { "Vertical", "Horizontal" });
         rulerOrientationComboBox.SelectedIndexChanged += RulerOrientationComboBox_SelectedIndexChanged;
-        ConfigureEditorLabel(rulerPositionLabel, "Position");
+        ConfigureEditorLabel(rulerPositionLabel, TranslationService.T("field.position"));
         ConfigureEditorNumericBox(rulerPositionNumericBox, ActionNumberNumericBox_ValueChanged);
 
         mainStatusStrip.Items.AddRange(new ToolStripItem[] { statusLabel });
@@ -768,7 +790,7 @@ partial class MainForm
 
         statusLabel.Name = "statusLabel";
         statusLabel.Size = new Size(39, 17);
-        statusLabel.Text = "Ready.";
+        statusLabel.Text = TranslationService.T("status.ready");
 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
@@ -780,7 +802,7 @@ partial class MainForm
         MinimumSize = new Size(860, 560);
         Name = "MainForm";
         StartPosition = FormStartPosition.CenterScreen;
-        Text = "PDF Page Studio";
+        Text = TranslationService.T("app.title");
         WindowState = FormWindowState.Maximized;
 
         mainMenuStrip.ResumeLayout(false);
