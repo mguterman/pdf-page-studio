@@ -5,6 +5,7 @@ public sealed class PdfPageViewer : ScrollableControl
     private Image? _pageImage;
     private PdfZoomMode _zoomMode = PdfZoomMode.FitPage;
     private float _customZoom = 1f;
+    private Size _lastAutoScrollMinSize;
 
     public PdfPageViewer()
     {
@@ -49,7 +50,13 @@ public sealed class PdfPageViewer : ScrollableControl
     protected override void OnSizeChanged(EventArgs e)
     {
         base.OnSizeChanged(e);
+        if (_zoomMode is PdfZoomMode.FitPage or PdfZoomMode.FitWidth)
+        {
+            AutoScrollPosition = Point.Empty;
+        }
+
         UpdateScrollSize();
+        Invalidate();
     }
 
     protected override void OnPaint(PaintEventArgs e)
@@ -94,11 +101,22 @@ public sealed class PdfPageViewer : ScrollableControl
     {
         if (_pageImage == null)
         {
-            AutoScrollMinSize = Size.Empty;
+            SetAutoScrollMinSize(Size.Empty);
             return;
         }
 
-        AutoScrollMinSize = GetScaledPageSize(GetScale());
+        SetAutoScrollMinSize(GetScaledPageSize(GetScale()));
+    }
+
+    private void SetAutoScrollMinSize(Size size)
+    {
+        if (_lastAutoScrollMinSize == size)
+        {
+            return;
+        }
+
+        _lastAutoScrollMinSize = size;
+        AutoScrollMinSize = size;
     }
 
     private Size GetScaledPageSize(float scale)

@@ -12,6 +12,7 @@ public sealed partial class MainForm : Form
     private readonly AppSettings _settings;
     private PdfPageStudioProject _project = new();
     private PdfDocument? _pdfDocument;
+    private ContextMenuStrip? _actionMenu;
     private string? _projectPath;
     private int _pageIndex;
     private float _zoomFactor = 1f;
@@ -95,6 +96,17 @@ public sealed partial class MainForm : Form
         RenderCurrentPage();
     }
 
+    private void FirstPageButton_Click(object? sender, EventArgs e)
+    {
+        if (_pdfDocument == null || _pageIndex == 0)
+        {
+            return;
+        }
+
+        _pageIndex = 0;
+        RenderCurrentPage();
+    }
+
     private void NextPageButton_Click(object? sender, EventArgs e)
     {
         if (_pdfDocument == null || _pageIndex >= _pdfDocument.PageCount - 1)
@@ -103,6 +115,17 @@ public sealed partial class MainForm : Form
         }
 
         _pageIndex++;
+        RenderCurrentPage();
+    }
+
+    private void LastPageButton_Click(object? sender, EventArgs e)
+    {
+        if (_pdfDocument == null || _pageIndex >= _pdfDocument.PageCount - 1)
+        {
+            return;
+        }
+
+        _pageIndex = _pdfDocument.PageCount - 1;
         RenderCurrentPage();
     }
 
@@ -673,8 +696,10 @@ public sealed partial class MainForm : Form
         var hasDocument = _pdfDocument != null;
         pageNumberTextBox.Text = hasDocument ? (_pageIndex + 1).ToString() : "";
         pageCountLabel.Text = hasDocument ? $"of {_pdfDocument!.PageCount}" : "of 0";
+        firstPageButton.Enabled = hasDocument && _pageIndex > 0;
         previousPageButton.Enabled = hasDocument && _pageIndex > 0;
         nextPageButton.Enabled = hasDocument && _pageIndex < _pdfDocument!.PageCount - 1;
+        lastPageButton.Enabled = hasDocument && _pageIndex < _pdfDocument!.PageCount - 1;
         pageSizeLabel.Text = hasDocument ? pageSizeLabel.Text : "Page: -- x -- in";
     }
 
@@ -685,8 +710,10 @@ public sealed partial class MainForm : Form
         zoomInButton.Enabled = enabled;
         fitWidthButton.Enabled = enabled;
         fitPageButton.Enabled = enabled;
+        firstPageButton.Enabled = false;
         previousPageButton.Enabled = false;
         nextPageButton.Enabled = false;
+        lastPageButton.Enabled = false;
         pageCountLabel.Text = enabled && _pdfDocument != null ? $"of {_pdfDocument.PageCount}" : "of 0";
         if (!enabled)
         {
@@ -737,7 +764,8 @@ public sealed partial class MainForm : Form
 
     private void ShowAddActionMenu(Control owner, int insertIndex)
     {
-        using var menu = new ContextMenuStrip();
+        _actionMenu?.Dispose();
+        _actionMenu = new ContextMenuStrip();
         foreach (var actionType in Enum.GetValues<PdfActionType>())
         {
             var item = new ToolStripMenuItem(GetActionDisplayName(actionType))
@@ -745,10 +773,10 @@ public sealed partial class MainForm : Form
                 Tag = actionType,
             };
             item.Click += (_, _) => InsertAction(insertIndex, actionType);
-            menu.Items.Add(item);
+            _actionMenu.Items.Add(item);
         }
 
-        menu.Show(owner, new Point(0, owner.Height));
+        _actionMenu.Show(owner, new Point(0, owner.Height));
     }
 
     private void NormalizeProject()
@@ -796,6 +824,8 @@ public sealed partial class MainForm : Form
         _isBinding = true;
         var action = GetSelectedAction();
         var hasAction = action != null;
+        propertiesTitleLabel.Visible = hasAction;
+        actionPropertiesPanel.Visible = hasAction;
         actionNameTextBox.Enabled = hasAction;
         actionTypeComboBox.Enabled = hasAction;
         pageFilterTypeComboBox.Enabled = hasAction;
@@ -1206,6 +1236,7 @@ public sealed partial class MainForm : Form
         }
 
         _pdfDocument?.Dispose();
+        _actionMenu?.Dispose();
         base.OnFormClosing(e);
     }
 

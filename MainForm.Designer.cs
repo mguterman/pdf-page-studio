@@ -23,10 +23,12 @@ partial class MainForm
     private TextBox projectDescriptionTextBox;
     private TableLayoutPanel pdfWorkspacePanel;
     private ToolStrip pdfNavigationToolStrip;
+    private ToolStripButton firstPageButton;
     private ToolStripButton previousPageButton;
     private ToolStripTextBox pageNumberTextBox;
     private ToolStripLabel pageCountLabel;
     private ToolStripButton nextPageButton;
+    private ToolStripButton lastPageButton;
     private ToolStripSeparator navigationSeparator;
     private ToolStripButton zoomOutButton;
     private ToolStripButton zoomInButton;
@@ -130,10 +132,12 @@ partial class MainForm
         projectDescriptionTextBox = new TextBox();
         pdfWorkspacePanel = new TableLayoutPanel();
         pdfNavigationToolStrip = new ToolStrip();
+        firstPageButton = new ToolStripButton();
         previousPageButton = new ToolStripButton();
         pageNumberTextBox = new ToolStripTextBox();
         pageCountLabel = new ToolStripLabel();
         nextPageButton = new ToolStripButton();
+        lastPageButton = new ToolStripButton();
         navigationSeparator = new ToolStripSeparator();
         zoomOutButton = new ToolStripButton();
         zoomInButton = new ToolStripButton();
@@ -361,10 +365,12 @@ partial class MainForm
         pdfNavigationToolStrip.GripStyle = ToolStripGripStyle.Hidden;
         pdfNavigationToolStrip.Items.AddRange(new ToolStripItem[]
         {
+            firstPageButton,
             previousPageButton,
             pageNumberTextBox,
             pageCountLabel,
             nextPageButton,
+            lastPageButton,
             navigationSeparator,
             zoomOutButton,
             zoomInButton,
@@ -379,10 +385,18 @@ partial class MainForm
         pdfNavigationToolStrip.Size = new Size(1100, 31);
         pdfNavigationToolStrip.TabIndex = 0;
 
+        firstPageButton.Enabled = false;
+        firstPageButton.Name = "firstPageButton";
+        firstPageButton.Size = new Size(32, 20);
+        firstPageButton.Text = "|◀";
+        firstPageButton.ToolTipText = "First page";
+        firstPageButton.Click += FirstPageButton_Click;
+
         previousPageButton.Enabled = false;
         previousPageButton.Name = "previousPageButton";
-        previousPageButton.Size = new Size(64, 20);
-        previousPageButton.Text = "Previous";
+        previousPageButton.Size = new Size(26, 20);
+        previousPageButton.Text = "◀";
+        previousPageButton.ToolTipText = "Previous page";
         previousPageButton.Click += PreviousPageButton_Click;
 
         pageNumberTextBox.Enabled = false;
@@ -397,9 +411,17 @@ partial class MainForm
 
         nextPageButton.Enabled = false;
         nextPageButton.Name = "nextPageButton";
-        nextPageButton.Size = new Size(35, 20);
-        nextPageButton.Text = "Next";
+        nextPageButton.Size = new Size(26, 20);
+        nextPageButton.Text = "▶";
+        nextPageButton.ToolTipText = "Next page";
         nextPageButton.Click += NextPageButton_Click;
+
+        lastPageButton.Enabled = false;
+        lastPageButton.Name = "lastPageButton";
+        lastPageButton.Size = new Size(32, 20);
+        lastPageButton.Text = "▶|";
+        lastPageButton.ToolTipText = "Last page";
+        lastPageButton.Click += LastPageButton_Click;
 
         navigationSeparator.Name = "navigationSeparator";
         navigationSeparator.Size = new Size(6, 25);
@@ -767,6 +789,7 @@ partial class MainForm
         Name = "MainForm";
         StartPosition = FormStartPosition.CenterScreen;
         Text = "PDF Page Studio";
+        WindowState = FormWindowState.Maximized;
 
         mainMenuStrip.ResumeLayout(false);
         mainMenuStrip.PerformLayout();
