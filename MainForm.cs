@@ -1,506 +1,315 @@
-using System.Globalization;
 using System.Text.Json;
 
-namespace PdfResizer;
+namespace PdfPageStudio;
 
 public sealed partial class MainForm : Form
 {
+    private const string ProjectExtension = ".ppsproj";
+    private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
     private readonly AppSettings _settings;
-    private SizeF _trimPageSizeInches;
+    private PdfPageStudioProject _project = new();
+    private string? _projectPath;
+    private bool _isDirty;
+    private bool _isBinding;
 
     public MainForm()
     {
         _settings = AppSettings.Load();
         InitializeComponent();
-        ApplyTrimSettingsToInputs();
-        UpdateTrimFrameSize();
-        InitializeNativeDependencies();
+        RefreshRecentProjectsMenu();
+        BindProject();
+        UpdateTitle();
+        UpdateStatus("Ready.");
     }
 
-    private void InitializeNativeDependencies()
+    private void OpenProjectMenuItem_Click(object? sender, EventArgs e)
     {
-        try
-        {
-            PdfiumNativeLoader.EnsureLoaded();
-        }
-        catch (Exception ex)
-        {
-            trimBrowsePdfButton.Enabled = false;
-            trimButton.Enabled = false;
-            trimStatusLabel.Text = "Preview initialization failed: " + ex.Message;
-            MessageBox.Show(this, ex.Message, "Preview initialization failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
-
-    private void TrimBrowsePdfButton_Click(object? sender, EventArgs e)
-    {
-        using var dialog = CreatePdfDialog(_settings.LastTrimFolder);
-        if (dialog.ShowDialog(this) != DialogResult.OK)
+        if (!ConfirmSaveChanges())
         {
             return;
         }
 
-        try
+        using var dialog = new OpenFileDialog
         {
-            PdfBookResizer.GetPageCount(dialog.FileName);
-            trimInputTextBox.Text = dialog.FileName;
-            trimDestinationTextBox.Text = Path.GetDirectoryName(dialog.FileName) ?? "";
-            _settings.LastTrimFolder = trimDestinationTextBox.Text;
-            _settings.Save();
-
-            UpdateTrimOutputPath();
-            UpdateTrimButtons();
-            LoadTrimPreview();
-            trimStatusLabel.Text = "Ready.";
-        }
-        catch (Exception ex)
-        {
-            trimButton.Enabled = false;
-            trimStatusLabel.Text = "Could not read PDF: " + ex.Message;
-            MessageBox.Show(this, ex.Message, "Could not read PDF", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
-
-    private void TrimDestinationButton_Click(object? sender, EventArgs e)
-    {
-        using var dialog = CreateFolderDialog(GetTrimDefaultFolder());
-        if (dialog.ShowDialog(this) != DialogResult.OK)
-        {
-            return;
-        }
-
-        trimDestinationTextBox.Text = dialog.SelectedPath;
-        UpdateTrimOutputPath();
-        UpdateTrimButtons();
-    }
-
-    private void TrimOpenDestinationButton_Click(object? sender, EventArgs e)
-    {
-        OpenFolder(trimDestinationTextBox.Text, trimStatusLabel);
-    }
-
-    private void TrimSetting_ValueChanged(object? sender, EventArgs e)
-    {
-        _settings.Trim = ReadTrimSettingsFromInputs();
-        _settings.Save();
-        trimPreviewBox.SetTrim(_settings.Trim);
-        UpdateTrimOutputPath();
-        UpdateTrimFrameSize();
-    }
-
-    private void TrimButton_Click(object? sender, EventArgs e)
-    {
-        if (!ValidateTrimInputs())
-        {
-            return;
-        }
-
-        var outputPath = BuildTrimOutputPath();
-
-        try
-        {
-            SetTrimBusy(true, "Trimming...");
-            var settings = ReadTrimSettingsFromInputs();
-
-            PdfBookResizer.TrimPdf(
-                trimInputTextBox.Text,
-                outputPath,
-                settings.Left / 100f,
-                settings.Top / 100f,
-                settings.Right / 100f,
-                settings.Bottom / 100f);
-
-            trimStatusLabel.Text = "Done: " + outputPath;
-            MessageBox.Show(this, "PDF trim completed.", "PDF Resizer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        catch (Exception ex)
-        {
-            trimStatusLabel.Text = "Error: " + ex.Message;
-            MessageBox.Show(this, ex.Message, "Trim failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-        finally
-        {
-            SetTrimBusy(false, "");
-        }
-    }
-
-    private void AdjustBrowsePdfButton_Click(object? sender, EventArgs e)
-    {
-        using var dialog = CreatePdfDialog(_settings.LastAdjustFolder);
-        if (dialog.ShowDialog(this) != DialogResult.OK)
-        {
-            return;
-        }
-
-        try
-        {
-            var pageCount = PdfBookResizer.GetPageCount(dialog.FileName);
-            adjustInputTextBox.Text = dialog.FileName;
-            adjustDestinationTextBox.Text = Path.GetDirectoryName(dialog.FileName) ?? "";
-            startPageInput.Maximum = pageCount;
-            endPageInput.Maximum = pageCount;
-            startPageInput.Value = 1;
-            endPageInput.Value = pageCount;
-            _settings.LastAdjustFolder = adjustDestinationTextBox.Text;
-            _settings.Save();
-
-            UpdateAdjustOutputPath();
-            UpdateAdjustButtons();
-            adjustStatusLabel.Text = "Ready.";
-        }
-        catch (Exception ex)
-        {
-            adjustConvertButton.Enabled = false;
-            adjustStatusLabel.Text = "Could not read PDF: " + ex.Message;
-            MessageBox.Show(this, ex.Message, "Could not read PDF", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
-
-    private void AdjustDestinationButton_Click(object? sender, EventArgs e)
-    {
-        using var dialog = CreateFolderDialog(GetAdjustDefaultFolder());
-        if (dialog.ShowDialog(this) != DialogResult.OK)
-        {
-            return;
-        }
-
-        adjustDestinationTextBox.Text = dialog.SelectedPath;
-        UpdateAdjustOutputPath();
-        UpdateAdjustButtons();
-    }
-
-    private void AdjustOpenDestinationButton_Click(object? sender, EventArgs e)
-    {
-        OpenFolder(adjustDestinationTextBox.Text, adjustStatusLabel);
-    }
-
-    private void AdjustSetting_ValueChanged(object? sender, EventArgs e)
-    {
-        UpdateAdjustOutputPath();
-    }
-
-    private void AdjustConvertButton_Click(object? sender, EventArgs e)
-    {
-        if (!ValidateAdjustInputs())
-        {
-            return;
-        }
-
-        var outputPath = BuildAdjustOutputPath();
-
-        try
-        {
-            SetAdjustBusy(true, "Converting...");
-            var endPage = endPageInput.Value == 0 ? (int?)null : (int)endPageInput.Value;
-            var shiftInches = (float)shiftInput.Value / 100f;
-
-            PdfBookResizer.ConvertToPageSize(
-                adjustInputTextBox.Text,
-                outputPath,
-                (float)widthInput.Value,
-                (float)heightInput.Value,
-                shiftInches,
-                (int)startPageInput.Value,
-                endPage);
-
-            adjustStatusLabel.Text = "Done: " + outputPath;
-            MessageBox.Show(this, "PDF conversion completed.", "PDF Resizer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        catch (Exception ex)
-        {
-            adjustStatusLabel.Text = "Error: " + ex.Message;
-            MessageBox.Show(this, ex.Message, "Conversion failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-        finally
-        {
-            SetAdjustBusy(false, "");
-        }
-    }
-
-    private static OpenFileDialog CreatePdfDialog(string? lastFolder)
-    {
-        return new OpenFileDialog
-        {
-            Title = "Choose PDF file",
-            Filter = "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*",
+            Title = "Open PDF Page Studio Project",
+            Filter = "PDF Page Studio Project (*.ppsproj)|*.ppsproj|All files (*.*)|*.*",
+            DefaultExt = "ppsproj",
             CheckFileExists = true,
-            InitialDirectory = Directory.Exists(lastFolder)
-                ? lastFolder
-                : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            InitialDirectory = GetInitialProjectFolder(),
         };
-    }
 
-    private static FolderBrowserDialog CreateFolderDialog(string selectedPath)
-    {
-        return new FolderBrowserDialog
+        if (dialog.ShowDialog(this) != DialogResult.OK)
         {
-            Description = "Choose destination folder",
-            UseDescriptionForTitle = true,
-            SelectedPath = selectedPath,
-        };
-    }
-
-    private void LoadTrimPreview()
-    {
-        try
-        {
-            var preview = PdfPreviewRenderer.RenderFirstPage(trimInputTextBox.Text);
-            _trimPageSizeInches = preview.PageSizeInches;
-            trimPreviewBox.SetPreview(preview.Image, preview.PageSizeInches);
-            trimPreviewBox.SetTrim(ReadTrimSettingsFromInputs());
-            UpdateTrimFrameSize();
-        }
-        catch (Exception ex)
-        {
-            trimStatusLabel.Text = "Could not render preview: " + ex.Message;
-            MessageBox.Show(this, ex.Message, "Could not render preview", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
-
-    private void ApplyTrimSettingsToInputs()
-    {
-        trimLeftInput.Value = _settings.Trim.Left;
-        trimTopInput.Value = _settings.Trim.Top;
-        trimRightInput.Value = _settings.Trim.Right;
-        trimBottomInput.Value = _settings.Trim.Bottom;
-    }
-
-    private TrimSettings ReadTrimSettingsFromInputs()
-    {
-        return new TrimSettings
-        {
-            Left = (int)trimLeftInput.Value,
-            Top = (int)trimTopInput.Value,
-            Right = (int)trimRightInput.Value,
-            Bottom = (int)trimBottomInput.Value,
-        };
-    }
-
-    private void UpdateTrimFrameSize()
-    {
-        var settings = ReadTrimSettingsFromInputs();
-        var width = Math.Max(0, _trimPageSizeInches.Width - settings.Left / 100f - settings.Right / 100f);
-        var height = Math.Max(0, _trimPageSizeInches.Height - settings.Top / 100f - settings.Bottom / 100f);
-        trimFrameSizeTextBox.Text = $"{width:0.##} x {height:0.##} inches";
-    }
-
-    private void UpdateTrimOutputPath()
-    {
-        trimOutputTextBox.Text = CanBuildTrimOutputPath() ? BuildTrimOutputPath() : "";
-        UpdateTrimButtons();
-    }
-
-    private void UpdateAdjustOutputPath()
-    {
-        adjustOutputTextBox.Text = CanBuildAdjustOutputPath() ? BuildAdjustOutputPath() : "";
-        UpdateAdjustButtons();
-    }
-
-    private void UpdateTrimButtons(bool enabled = true)
-    {
-        var canAct = enabled && HasTrimInput() && HasTrimDestination();
-        trimButton.Enabled = canAct;
-        trimOpenDestinationButton.Enabled = canAct;
-    }
-
-    private void UpdateAdjustButtons(bool enabled = true)
-    {
-        var canAct = enabled && HasAdjustInput() && HasAdjustDestination();
-        adjustConvertButton.Enabled = canAct;
-        adjustOpenDestinationButton.Enabled = canAct;
-    }
-
-    private bool ValidateTrimInputs()
-    {
-        if (!HasTrimInput())
-        {
-            trimStatusLabel.Text = "Choose a PDF file first.";
-            return false;
-        }
-
-        if (!HasTrimDestination())
-        {
-            trimStatusLabel.Text = "Choose an existing destination folder.";
-            return false;
-        }
-
-        return true;
-    }
-
-    private bool ValidateAdjustInputs()
-    {
-        if (!HasAdjustInput())
-        {
-            adjustStatusLabel.Text = "Choose a PDF file first.";
-            return false;
-        }
-
-        if (!HasAdjustDestination())
-        {
-            adjustStatusLabel.Text = "Choose an existing destination folder.";
-            return false;
-        }
-
-        return true;
-    }
-
-    private bool CanBuildTrimOutputPath()
-    {
-        return !string.IsNullOrWhiteSpace(trimInputTextBox.Text)
-            && !string.IsNullOrWhiteSpace(trimDestinationTextBox.Text);
-    }
-
-    private bool CanBuildAdjustOutputPath()
-    {
-        return !string.IsNullOrWhiteSpace(adjustInputTextBox.Text)
-            && !string.IsNullOrWhiteSpace(adjustDestinationTextBox.Text);
-    }
-
-    private bool HasTrimInput()
-    {
-        return !string.IsNullOrWhiteSpace(trimInputTextBox.Text);
-    }
-
-    private bool HasAdjustInput()
-    {
-        return !string.IsNullOrWhiteSpace(adjustInputTextBox.Text);
-    }
-
-    private bool HasTrimDestination()
-    {
-        return !string.IsNullOrWhiteSpace(trimDestinationTextBox.Text)
-            && Directory.Exists(trimDestinationTextBox.Text);
-    }
-
-    private bool HasAdjustDestination()
-    {
-        return !string.IsNullOrWhiteSpace(adjustDestinationTextBox.Text)
-            && Directory.Exists(adjustDestinationTextBox.Text);
-    }
-
-    private string BuildTrimOutputPath()
-    {
-        var sourceFileName = Path.GetFileName(trimInputTextBox.Text);
-        var settings = ReadTrimSettingsFromInputs();
-        var prefix = $"Trim_{settings.Left}_{settings.Top}_{settings.Right}_{settings.Bottom}_";
-        return Path.Combine(trimDestinationTextBox.Text, prefix + sourceFileName);
-    }
-
-    private string BuildAdjustOutputPath()
-    {
-        var sourceFileName = Path.GetFileName(adjustInputTextBox.Text);
-        var prefix = $"Converted_{FormatToken(widthInput.Value)}_{FormatToken(heightInput.Value)}_{(int)shiftInput.Value}_";
-        return Path.Combine(adjustDestinationTextBox.Text, prefix + sourceFileName);
-    }
-
-    private static string FormatToken(decimal value)
-    {
-        return value.ToString("0.##", CultureInfo.InvariantCulture).Replace(".", "p");
-    }
-
-    private string GetTrimDefaultFolder()
-    {
-        if (Directory.Exists(trimDestinationTextBox.Text))
-        {
-            return trimDestinationTextBox.Text;
-        }
-
-        if (!string.IsNullOrWhiteSpace(trimInputTextBox.Text))
-        {
-            return Path.GetDirectoryName(trimInputTextBox.Text) ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        }
-
-        return Directory.Exists(_settings.LastTrimFolder)
-            ? _settings.LastTrimFolder
-            : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-    }
-
-    private string GetAdjustDefaultFolder()
-    {
-        if (Directory.Exists(adjustDestinationTextBox.Text))
-        {
-            return adjustDestinationTextBox.Text;
-        }
-
-        if (!string.IsNullOrWhiteSpace(adjustInputTextBox.Text))
-        {
-            return Path.GetDirectoryName(adjustInputTextBox.Text) ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        }
-
-        return Directory.Exists(_settings.LastAdjustFolder)
-            ? _settings.LastAdjustFolder
-            : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-    }
-
-    private static void OpenFolder(string folder, Label statusLabel)
-    {
-        if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
-        {
-            statusLabel.Text = "Choose an existing destination folder first.";
             return;
         }
 
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = folder,
-            UseShellExecute = true,
-        });
+        OpenProject(dialog.FileName);
     }
 
-    private void SetTrimBusy(bool isBusy, string status)
+    private void SaveProjectMenuItem_Click(object? sender, EventArgs e)
     {
-        UseWaitCursor = isBusy;
-        UpdateTrimButtons(!isBusy);
-        if (isBusy)
+        SaveProject();
+    }
+
+    private void SaveProjectAsMenuItem_Click(object? sender, EventArgs e)
+    {
+        SaveProjectAs();
+    }
+
+    private void ProjectNameTextBox_TextChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding)
         {
-            trimStatusLabel.Text = status;
+            return;
+        }
+
+        _project.Name = projectNameTextBox.Text;
+        MarkDirty();
+    }
+
+    private void ProjectDescriptionTextBox_TextChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding)
+        {
+            return;
+        }
+
+        _project.Description = projectDescriptionTextBox.Text;
+        MarkDirty();
+    }
+
+    private void OpenProject(string path)
+    {
+        try
+        {
+            var json = File.ReadAllText(path);
+            _project = JsonSerializer.Deserialize<PdfPageStudioProject>(json, _jsonOptions) ?? new PdfPageStudioProject();
+            _projectPath = path;
+            _isDirty = false;
+            _settings.AddRecentProject(path);
+            _settings.Save();
+            BindProject();
+            RefreshRecentProjectsMenu();
+            UpdateTitle();
+            UpdateStatus("Opened: " + path);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Open project failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateStatus("Open project failed.");
         }
     }
 
-    private void SetAdjustBusy(bool isBusy, string status)
+    private bool SaveProject()
     {
-        UseWaitCursor = isBusy;
-        UpdateAdjustButtons(!isBusy);
-        if (isBusy)
+        if (string.IsNullOrWhiteSpace(_projectPath))
         {
-            adjustStatusLabel.Text = status;
+            return SaveProjectAs();
         }
+
+        return SaveProjectTo(_projectPath);
     }
 
-    private sealed class AppSettings
+    private bool SaveProjectAs()
     {
-        public string? LastTrimFolder { get; set; }
-        public string? LastAdjustFolder { get; set; }
-        public TrimSettings Trim { get; set; } = new();
-
-        public static AppSettings Load()
+        using var dialog = new SaveFileDialog
         {
-            try
+            Title = "Save PDF Page Studio Project",
+            Filter = "PDF Page Studio Project (*.ppsproj)|*.ppsproj|All files (*.*)|*.*",
+            DefaultExt = "ppsproj",
+            AddExtension = true,
+            OverwritePrompt = true,
+            InitialDirectory = GetInitialProjectFolder(),
+            FileName = GetDefaultProjectFileName(),
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return false;
+        }
+
+        var path = EnsureProjectExtension(dialog.FileName);
+        return SaveProjectTo(path);
+    }
+
+    private bool SaveProjectTo(string path)
+    {
+        try
+        {
+            var folder = Path.GetDirectoryName(path);
+            if (!string.IsNullOrWhiteSpace(folder))
             {
-                if (!File.Exists(SettingsPath))
-                {
-                    return new AppSettings();
-                }
+                Directory.CreateDirectory(folder);
+            }
 
-                var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath)) ?? new AppSettings();
-                settings.Trim ??= new TrimSettings();
-                return settings;
-            }
-            catch
-            {
-                return new AppSettings();
-            }
+            var json = JsonSerializer.Serialize(_project, _jsonOptions);
+            File.WriteAllText(path, json);
+            _projectPath = path;
+            _isDirty = false;
+            _settings.AddRecentProject(path);
+            _settings.Save();
+            RefreshRecentProjectsMenu();
+            UpdateTitle();
+            UpdateStatus("Saved: " + path);
+            return true;
         }
-
-        public void Save()
+        catch (Exception ex)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
-            File.WriteAllText(SettingsPath, JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+            MessageBox.Show(this, ex.Message, "Save project failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            UpdateStatus("Save project failed.");
+            return false;
+        }
+    }
+
+    private void BindProject()
+    {
+        _isBinding = true;
+        projectNameTextBox.Text = _project.Name;
+        projectDescriptionTextBox.Text = _project.Description;
+        _isBinding = false;
+    }
+
+    private void RefreshRecentProjectsMenu()
+    {
+        openRecentProjectMenuItem.DropDownItems.Clear();
+
+        if (_settings.RecentProjects.Count == 0)
+        {
+            var emptyItem = new ToolStripMenuItem("(No recent projects)")
+            {
+                Enabled = false,
+            };
+            openRecentProjectMenuItem.DropDownItems.Add(emptyItem);
+            openRecentProjectMenuItem.Enabled = false;
+            return;
         }
 
-        private static string SettingsPath => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "PdfResizer",
-            "settings.json");
+        openRecentProjectMenuItem.Enabled = true;
+        foreach (var recentPath in _settings.RecentProjects)
+        {
+            var item = new ToolStripMenuItem(recentPath)
+            {
+                Tag = recentPath,
+            };
+            item.Click += RecentProjectMenuItem_Click;
+            openRecentProjectMenuItem.DropDownItems.Add(item);
+        }
+    }
+
+    private void RecentProjectMenuItem_Click(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem { Tag: string path })
+        {
+            return;
+        }
+
+        if (!ConfirmSaveChanges())
+        {
+            return;
+        }
+
+        if (!File.Exists(path))
+        {
+            _settings.RemoveRecentProject(path);
+            _settings.Save();
+            RefreshRecentProjectsMenu();
+            MessageBox.Show(this, "Project file was not found and has been removed from recent projects.", "Recent project not found", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        OpenProject(path);
+    }
+
+    protected override void OnFormClosing(FormClosingEventArgs e)
+    {
+        if (!ConfirmSaveChanges())
+        {
+            e.Cancel = true;
+            return;
+        }
+
+        base.OnFormClosing(e);
+    }
+
+    private void MarkDirty()
+    {
+        if (_isDirty)
+        {
+            return;
+        }
+
+        _isDirty = true;
+        UpdateTitle();
+    }
+
+    private void UpdateTitle()
+    {
+        var name = string.IsNullOrWhiteSpace(_project.Name) ? "Untitled" : _project.Name.Trim();
+        Text = $"PDF Page Studio - {name}{(_isDirty ? " *" : "")}";
+    }
+
+    private void UpdateStatus(string text)
+    {
+        statusLabel.Text = text;
+    }
+
+    private bool ConfirmSaveChanges()
+    {
+        if (!_isDirty)
+        {
+            return true;
+        }
+
+        var result = MessageBox.Show(
+            this,
+            "Save changes to the current project?",
+            "PDF Page Studio",
+            MessageBoxButtons.YesNoCancel,
+            MessageBoxIcon.Question);
+
+        return result switch
+        {
+            DialogResult.Yes => SaveProject(),
+            DialogResult.No => true,
+            _ => false,
+        };
+    }
+
+    private string GetInitialProjectFolder()
+    {
+        if (!string.IsNullOrWhiteSpace(_projectPath))
+        {
+            var currentFolder = Path.GetDirectoryName(_projectPath);
+            if (Directory.Exists(currentFolder))
+            {
+                return currentFolder;
+            }
+        }
+
+        foreach (var recentPath in _settings.RecentProjects)
+        {
+            var recentFolder = Path.GetDirectoryName(recentPath);
+            if (Directory.Exists(recentFolder))
+            {
+                return recentFolder;
+            }
+        }
+
+        return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+    }
+
+    private string GetDefaultProjectFileName()
+    {
+        var name = string.IsNullOrWhiteSpace(_project.Name) ? "Untitled" : _project.Name.Trim();
+        var invalid = Path.GetInvalidFileNameChars();
+        var cleaned = new string(name.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
+        return cleaned + ProjectExtension;
+    }
+
+    private static string EnsureProjectExtension(string path)
+    {
+        return string.Equals(Path.GetExtension(path), ProjectExtension, StringComparison.OrdinalIgnoreCase)
+            ? path
+            : path + ProjectExtension;
     }
 }

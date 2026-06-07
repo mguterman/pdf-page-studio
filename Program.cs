@@ -1,14 +1,13 @@
 using System.Windows.Forms;
 
-namespace PdfResizer
+namespace PdfPageStudio;
+
+internal static class Program
 {
-    internal class Program
+    [STAThread]
+    private static void Main()
     {
-        [STAThread]
-        static void Main(string[] args)
-        {
-            ApplicationConfiguration.Initialize();
-            Application.Run(new MainForm());
-        }
+        ApplicationConfiguration.Initialize();
+        Application.Run(new MainForm());
     }
 }
