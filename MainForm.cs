@@ -1119,26 +1119,7 @@ public sealed partial class MainForm : Form
 
     private void ConvertPdfFile(string sourcePdfPath, string destinationPath)
     {
-        const float renderDpi = 144f;
-        using var document = PdfDocument.Load(sourcePdfPath);
-        var writer = new PdfRasterWriter();
-        for (var pageIndex = 0; pageIndex < document.PageCount; pageIndex++)
-        {
-            var pageSize = document.PageSizes[pageIndex];
-            var width = Math.Max(1, (int)Math.Round(pageSize.Width / 72f * renderDpi));
-            var height = Math.Max(1, (int)Math.Round(pageSize.Height / 72f * renderDpi));
-            using var image = document.Render(pageIndex, width, height, renderDpi, renderDpi, PdfRenderFlags.Annotations);
-            using var convertedImage = ApplyActionsForPage(image, pageSize, renderDpi, pageIndex, _project.Actions.Count, includeRulers: false, out var convertedPageSize);
-            writer.AddPage(convertedImage, convertedPageSize);
-        }
-
-        var folder = Path.GetDirectoryName(destinationPath);
-        if (!string.IsNullOrWhiteSpace(folder))
-        {
-            Directory.CreateDirectory(folder);
-        }
-
-        writer.Save(destinationPath);
+        PdfProjectConverter.Convert(sourcePdfPath, destinationPath, _project.Actions, _project.UnitType);
     }
 
     private void InsertAction(int index, PdfActionType type)
