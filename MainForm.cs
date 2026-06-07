@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using PdfiumViewer;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace PdfPageStudio;
 
@@ -108,10 +109,119 @@ public sealed partial class MainForm : Form
         }
 
         _project.PdfFilePath = dialog.FileName;
-        _settings.LastPdfFolder = Path.GetDirectoryName(dialog.FileName) ?? "";
+        var pdfFolder = Path.GetDirectoryName(dialog.FileName) ?? "";
+        _settings.LastPdfFolder = pdfFolder;
         _settings.Save();
+        if (string.IsNullOrWhiteSpace(_project.OutputFolder))
+        {
+            _project.OutputFolder = pdfFolder;
+        }
+
         MarkDirty();
         LoadPdfFromProject();
+    }
+
+    private void OutputFolderTextBox_Leave(object? sender, EventArgs e)
+    {
+        UpdateOutputFolderFromToolbar();
+    }
+
+    private void OutputFolderTextBox_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.KeyCode != Keys.Enter)
+        {
+            return;
+        }
+
+        e.SuppressKeyPress = true;
+        UpdateOutputFolderFromToolbar();
+    }
+
+    private void BrowseOutputFolderButton_Click(object? sender, EventArgs e)
+    {
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = TranslationService.T("dialog.outputFolder.title"),
+            InitialDirectory = GetOutputFolderOrDefault(),
+            UseDescriptionForTitle = true,
+        };
+
+        if (dialog.ShowDialog(this) == DialogResult.OK)
+        {
+            SetProjectOutputFolder(dialog.SelectedPath);
+        }
+    }
+
+    private void OpenOutputFolderButton_Click(object? sender, EventArgs e)
+    {
+        var folder = _project.OutputFolder;
+        if (Directory.Exists(folder))
+        {
+            Process.Start(new ProcessStartInfo { FileName = folder, UseShellExecute = true });
+        }
+    }
+
+    private void ConvertCurrentPdfMenuItem_Click(object? sender, EventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_project.PdfFilePath) || !File.Exists(_project.PdfFilePath))
+        {
+            return;
+        }
+
+        var outputFolder = GetOutputFolderOrDefault();
+        Directory.CreateDirectory(outputFolder);
+        using var dialog = new SaveFileDialog
+        {
+            Title = TranslationService.T("dialog.saveConverted.title"),
+            Filter = TranslationService.T("dialog.pdf.filter"),
+            DefaultExt = "pdf",
+            AddExtension = true,
+            OverwritePrompt = true,
+            InitialDirectory = outputFolder,
+            FileName = BuildConvertedFileName(_project.PdfFilePath, DateTime.Now),
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        try
+        {
+            ConvertPdfFile(_project.PdfFilePath, dialog.FileName);
+            SetProjectOutputFolder(Path.GetDirectoryName(dialog.FileName) ?? outputFolder, markDirty: false);
+            UpdateStatus(TranslationService.T("status.converted", dialog.FileName));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, TranslationService.T("message.convertFailed.title"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void ConvertMultiplePdfMenuItem_Click(object? sender, EventArgs e)
+    {
+        using var form = new BatchConvertForm();
+        if (form.ShowDialog(this) != DialogResult.OK || form.PdfFiles.Count == 0)
+        {
+            return;
+        }
+
+        var timestamp = DateTime.Now;
+        var outputFolder = Path.Combine(GetOutputFolderOrDefault(), "Converted" + timestamp.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture));
+        try
+        {
+            Directory.CreateDirectory(outputFolder);
+            foreach (var pdfFile in form.PdfFiles)
+            {
+                ConvertPdfFile(pdfFile, Path.Combine(outputFolder, BuildConvertedFileName(pdfFile, timestamp)));
+            }
+
+            UpdateStatus(TranslationService.T("status.batchConverted", form.PdfFiles.Count, outputFolder));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, TranslationService.T("message.convertFailed.title"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private void ChangeLanguage(string language)
@@ -179,6 +289,9 @@ public sealed partial class MainForm : Form
         saveProjectMenuItem.Text = TranslationService.T("menu.save");
         saveProjectAsMenuItem.Text = TranslationService.T("menu.saveAs");
         addPdfFileMenuItem.Text = TranslationService.T("menu.addPdf");
+        convertMenuItem.Text = TranslationService.T("convert.button");
+        convertCurrentPdfFileMenuItem.Text = TranslationService.T("convert.menu.current");
+        convertMultiplePdfFilesMenuItem.Text = TranslationService.T("convert.menu.multiple");
         openRecentProjectMenuItem.Text = TranslationService.T("menu.openRecent");
         settingsMenuItem.Text = TranslationService.T("menu.settings");
         inchUnitMenuItem.Text = TranslationService.T("enum.unit.Inch");
@@ -209,6 +322,12 @@ public sealed partial class MainForm : Form
         zoomInButton.ToolTipText = TranslationService.T("nav.zoomIn.tooltip");
         fitWidthButton.Text = TranslationService.T("nav.fitWidth");
         fitPageButton.Text = TranslationService.T("nav.fitPage");
+        outputFolderLabel.Text = TranslationService.T("output.folder");
+        browseOutputFolderButton.Text = TranslationService.T("common.browse");
+        openOutputFolderButton.Text = TranslationService.T("common.open");
+        convertDropDownButton.Text = TranslationService.T("convert.button");
+        convertCurrentPdfMenuItem.Text = TranslationService.T("convert.menu.current");
+        convertMultiplePdfMenuItem.Text = TranslationService.T("convert.menu.multiple");
 
         actionsTitleLabel.Text = TranslationService.T("actions.title");
         applyAllRadioButton.Text = TranslationService.T("actions.applyAll");
@@ -742,6 +861,7 @@ public sealed partial class MainForm : Form
             _settings.Save();
             RefreshRecentProjectsMenu();
             UpdateTitle();
+            UpdateOutputFolderToolbarState();
             UpdateStatus(TranslationService.T("status.saved", path));
             return true;
         }
@@ -759,6 +879,7 @@ public sealed partial class MainForm : Form
         _isBinding = true;
         projectNameTextBox.Text = _project.Name;
         projectDescriptionTextBox.Text = _project.Description;
+        outputFolderTextBox.Text = _project.OutputFolder;
         SyncUnitCombos();
         applyAllRadioButton.Checked = _project.PreviewApplyMode == PreviewApplyMode.ApplyAll;
         untilCurrentRadioButton.Checked = _project.PreviewApplyMode == PreviewApplyMode.UntilCurrent;
@@ -791,6 +912,7 @@ public sealed partial class MainForm : Form
         if (string.IsNullOrWhiteSpace(_project.PdfFilePath))
         {
             ShowProjectInfo();
+            UpdateOutputFolderToolbarState();
             return;
         }
 
@@ -798,6 +920,7 @@ public sealed partial class MainForm : Form
         {
             ShowProjectInfo();
             UpdateStatus(TranslationService.T("status.pdfNotFound", _project.PdfFilePath));
+            UpdateOutputFolderToolbarState();
             return;
         }
 
@@ -809,12 +932,14 @@ public sealed partial class MainForm : Form
             FitPageButton_Click(this, EventArgs.Empty);
             RenderCurrentPage();
             UpdateStatus(TranslationService.T("status.pdfLoaded", _project.PdfFilePath));
+            UpdateOutputFolderToolbarState();
         }
         catch (Exception ex)
         {
             ShowProjectInfo();
             MessageBox.Show(this, ex.Message, TranslationService.T("message.pdfLoadFailed.title"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             UpdateStatus(TranslationService.T("status.pdfLoadFailed"));
+            UpdateOutputFolderToolbarState();
         }
     }
 
@@ -890,6 +1015,8 @@ public sealed partial class MainForm : Form
         zoomInButton.Enabled = enabled;
         fitWidthButton.Enabled = enabled;
         fitPageButton.Enabled = enabled;
+        outputFolderTextBox.Enabled = enabled;
+        browseOutputFolderButton.Enabled = enabled;
         firstPageButton.Enabled = false;
         previousPageButton.Enabled = false;
         nextPageButton.Enabled = false;
@@ -899,6 +1026,8 @@ public sealed partial class MainForm : Form
         {
             pageSizeLabel.Text = TranslationService.T("page.size.empty");
         }
+
+        UpdateOutputFolderToolbarState();
     }
 
     private void UpdatePageSizeLabel(SizeF pageSizePoints)
@@ -923,6 +1052,93 @@ public sealed partial class MainForm : Form
         projectInfoPanel.Visible = false;
         pdfWorkspacePanel.Visible = true;
         pdfWorkspacePanel.BringToFront();
+    }
+
+    private void UpdateOutputFolderFromToolbar()
+    {
+        if (_isBinding)
+        {
+            return;
+        }
+
+        SetProjectOutputFolder(outputFolderTextBox.Text);
+    }
+
+    private void SetProjectOutputFolder(string outputFolder, bool markDirty = true)
+    {
+        outputFolder = outputFolder.Trim();
+        if (string.Equals(_project.OutputFolder, outputFolder, StringComparison.OrdinalIgnoreCase))
+        {
+            UpdateOutputFolderToolbarState();
+            return;
+        }
+
+        _project.OutputFolder = outputFolder;
+        _isBinding = true;
+        outputFolderTextBox.Text = outputFolder;
+        _isBinding = false;
+        if (markDirty)
+        {
+            MarkDirty();
+        }
+
+        UpdateOutputFolderToolbarState();
+        UpdateStatus(TranslationService.T("status.outputFolderUpdated"));
+    }
+
+    private void UpdateOutputFolderToolbarState()
+    {
+        openOutputFolderButton.Enabled = !string.IsNullOrWhiteSpace(_project.OutputFolder);
+        var hasProject = !string.IsNullOrWhiteSpace(_projectPath);
+        convertDropDownButton.Enabled = true;
+        convertCurrentPdfMenuItem.Enabled = !string.IsNullOrWhiteSpace(_project.PdfFilePath) && File.Exists(_project.PdfFilePath);
+        convertMultiplePdfMenuItem.Enabled = hasProject;
+        convertCurrentPdfFileMenuItem.Enabled = convertCurrentPdfMenuItem.Enabled;
+        convertMultiplePdfFilesMenuItem.Enabled = hasProject;
+    }
+
+    private string GetOutputFolderOrDefault()
+    {
+        if (!string.IsNullOrWhiteSpace(_project.OutputFolder))
+        {
+            return _project.OutputFolder;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_project.PdfFilePath))
+        {
+            return Path.GetDirectoryName(_project.PdfFilePath) ?? GetInitialProjectFolder();
+        }
+
+        return GetInitialProjectFolder();
+    }
+
+    private static string BuildConvertedFileName(string sourcePdfPath, DateTime timestamp)
+    {
+        return "converted_" + timestamp.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture) + "_" + Path.GetFileName(sourcePdfPath);
+    }
+
+    private void ConvertPdfFile(string sourcePdfPath, string destinationPath)
+    {
+        const float renderDpi = 144f;
+        using var document = PdfDocument.Load(sourcePdfPath);
+        var writer = new PdfRasterWriter();
+        for (var pageIndex = 0; pageIndex < document.PageCount; pageIndex++)
+        {
+            var pageSize = document.PageSizes[pageIndex];
+            var width = Math.Max(1, (int)Math.Round(pageSize.Width / 72f * renderDpi));
+            var height = Math.Max(1, (int)Math.Round(pageSize.Height / 72f * renderDpi));
+            using var image = document.Render(pageIndex, width, height, renderDpi, renderDpi, PdfRenderFlags.Annotations);
+            using var convertedImage = ApplyActionsForPage(image, pageSize, renderDpi, pageIndex, _project.Actions.Count, includeRulers: false, out var convertedPageSize);
+            writer.AddPage(convertedImage, convertedPageSize);
+        }
+
+        var folder = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrWhiteSpace(folder))
+        {
+            Directory.CreateDirectory(folder);
+        }
+
+        writer.Save(destinationPath);
     }
 
     private void InsertAction(int index, PdfActionType type)
@@ -956,6 +1172,11 @@ public sealed partial class MainForm : Form
 
     private void NormalizeProject()
     {
+        if (string.IsNullOrWhiteSpace(_project.OutputFolder) && !string.IsNullOrWhiteSpace(_project.PdfFilePath))
+        {
+            _project.OutputFolder = Path.GetDirectoryName(_project.PdfFilePath) ?? "";
+        }
+
         _project.Actions ??= [];
         foreach (var action in _project.Actions)
         {
@@ -1078,15 +1299,31 @@ public sealed partial class MainForm : Form
 
     private Bitmap ApplyPreviewActions(Image originalImage, SizeF originalPageSizePoints, float dpi, out SizeF previewPageSizePoints)
     {
+        return ApplyActionsForPage(originalImage, originalPageSizePoints, dpi, _pageIndex, GetPreviewActionCount(), includeRulers: true, out previewPageSizePoints);
+    }
+
+    private Bitmap ApplyActionsForPage(
+        Image originalImage,
+        SizeF originalPageSizePoints,
+        float dpi,
+        int pageIndex,
+        int actionCount,
+        bool includeRulers,
+        out SizeF previewPageSizePoints)
+    {
         var current = new Bitmap(originalImage);
         previewPageSizePoints = originalPageSizePoints;
-        var actionCount = GetPreviewActionCount();
-        var pageNumber = _pageIndex + 1;
+        var pageNumber = pageIndex + 1;
 
         for (var index = 0; index < actionCount; index++)
         {
             var action = _project.Actions[index];
             if (!PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber))
+            {
+                continue;
+            }
+
+            if (!includeRulers && action.Type == PdfActionType.AddRuler)
             {
                 continue;
             }

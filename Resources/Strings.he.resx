@@ -8,6 +8,10 @@
   <data name="app.titleWithProject" xml:space="preserve"><value>PDF Page Studio - {0}{1}</value></data>
   <data name="app.dirtyMark" xml:space="preserve"><value> *</value></data>
   <data name="common.untitled" xml:space="preserve"><value>ללא שם</value></data>
+  <data name="common.browse" xml:space="preserve"><value>עיון...</value></data>
+  <data name="common.open" xml:space="preserve"><value>פתח</value></data>
+  <data name="common.remove" xml:space="preserve"><value>הסר</value></data>
+  <data name="common.cancel" xml:space="preserve"><value>ביטול</value></data>
   <data name="menu.file" xml:space="preserve"><value>&amp;קובץ</value></data>
   <data name="menu.openProject" xml:space="preserve"><value>&amp;פתח פרויקט...</value></data>
   <data name="menu.save" xml:space="preserve"><value>&amp;שמור</value></data>
@@ -40,6 +44,18 @@
   <data name="nav.fitPage" xml:space="preserve"><value>עמוד שלם</value></data>
   <data name="page.size.empty" xml:space="preserve"><value>עמוד: -- x -- in</value></data>
   <data name="page.size" xml:space="preserve"><value>עמוד: {0:0.###} x {1:0.###} {2}</value></data>
+  <data name="output.folder" xml:space="preserve"><value>תיקיית פלט</value></data>
+  <data name="convert.button" xml:space="preserve"><value>המר</value></data>
+  <data name="convert.menu.current" xml:space="preserve"><value>המר קובץ PDF נוכחי</value></data>
+  <data name="convert.menu.multiple" xml:space="preserve"><value>המר כמה קבצי PDF</value></data>
+  <data name="batch.title" xml:space="preserve"><value>המרת כמה קבצי PDF</value></data>
+  <data name="batch.dropFiles" xml:space="preserve"><value>גרור קבצי PDF לכאן או הוסף אותם ידנית.</value></data>
+  <data name="dialog.outputFolder.title" xml:space="preserve"><value>בחר תיקיית פלט</value></data>
+  <data name="dialog.saveConverted.title" xml:space="preserve"><value>שמור PDF שהומר</value></data>
+  <data name="status.outputFolderUpdated" xml:space="preserve"><value>תיקיית הפלט עודכנה.</value></data>
+  <data name="status.converted" xml:space="preserve"><value>הומר: {0}</value></data>
+  <data name="status.batchConverted" xml:space="preserve"><value>הומרו {0} קבצים אל: {1}</value></data>
+  <data name="message.convertFailed.title" xml:space="preserve"><value>ההמרה נכשלה</value></data>
   <data name="actions.title" xml:space="preserve"><value>פעולות</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>הכל</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>עד הנוכחי</value></data>

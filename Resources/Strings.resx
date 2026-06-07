@@ -8,6 +8,10 @@
   <data name="app.titleWithProject" xml:space="preserve"><value>PDF Page Studio - {0}{1}</value></data>
   <data name="app.dirtyMark" xml:space="preserve"><value> *</value></data>
   <data name="common.untitled" xml:space="preserve"><value>Untitled</value></data>
+  <data name="common.browse" xml:space="preserve"><value>Browse...</value></data>
+  <data name="common.open" xml:space="preserve"><value>Open</value></data>
+  <data name="common.remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="common.cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="menu.file" xml:space="preserve"><value>&amp;File</value></data>
   <data name="menu.openProject" xml:space="preserve"><value>&amp;Open Project...</value></data>
   <data name="menu.save" xml:space="preserve"><value>&amp;Save</value></data>
@@ -40,6 +44,18 @@
   <data name="nav.fitPage" xml:space="preserve"><value>Fit Page</value></data>
   <data name="page.size.empty" xml:space="preserve"><value>Page: -- x -- in</value></data>
   <data name="page.size" xml:space="preserve"><value>Page: {0:0.###} x {1:0.###} {2}</value></data>
+  <data name="output.folder" xml:space="preserve"><value>Output Folder</value></data>
+  <data name="convert.button" xml:space="preserve"><value>Convert</value></data>
+  <data name="convert.menu.current" xml:space="preserve"><value>Convert current PDF file</value></data>
+  <data name="convert.menu.multiple" xml:space="preserve"><value>Convert multiple PDF files</value></data>
+  <data name="batch.title" xml:space="preserve"><value>Convert Multiple PDF Files</value></data>
+  <data name="batch.dropFiles" xml:space="preserve"><value>Drop PDF files here or add them manually.</value></data>
+  <data name="dialog.outputFolder.title" xml:space="preserve"><value>Select Output Folder</value></data>
+  <data name="dialog.saveConverted.title" xml:space="preserve"><value>Save Converted PDF</value></data>
+  <data name="status.outputFolderUpdated" xml:space="preserve"><value>Output folder updated.</value></data>
+  <data name="status.converted" xml:space="preserve"><value>Converted: {0}</value></data>
+  <data name="status.batchConverted" xml:space="preserve"><value>Converted {0} files to: {1}</value></data>
+  <data name="message.convertFailed.title" xml:space="preserve"><value>Convert failed</value></data>
   <data name="actions.title" xml:space="preserve"><value>Actions</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>Apply All</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>Until Current</value></data>

@@ -11,6 +11,9 @@ partial class MainForm
     private ToolStripMenuItem saveProjectAsMenuItem;
     private ToolStripSeparator saveMenuSeparator;
     private ToolStripMenuItem addPdfFileMenuItem;
+    private ToolStripMenuItem convertMenuItem;
+    private ToolStripMenuItem convertCurrentPdfFileMenuItem;
+    private ToolStripMenuItem convertMultiplePdfFilesMenuItem;
     private ToolStripSeparator recentMenuSeparator;
     private ToolStripMenuItem openRecentProjectMenuItem;
     private ToolStripMenuItem languageMenuItem;
@@ -43,6 +46,14 @@ partial class MainForm
     private ToolStripButton fitPageButton;
     private ToolStripSeparator pageSizeSeparator;
     private ToolStripLabel pageSizeLabel;
+    private ToolStripSeparator outputFolderSeparator;
+    private ToolStripLabel outputFolderLabel;
+    private ToolStripTextBox outputFolderTextBox;
+    private ToolStripButton browseOutputFolderButton;
+    private ToolStripButton openOutputFolderButton;
+    private ToolStripDropDownButton convertDropDownButton;
+    private ToolStripMenuItem convertCurrentPdfMenuItem;
+    private ToolStripMenuItem convertMultiplePdfMenuItem;
     private PdfPageViewer pdfPageViewer;
     private TableLayoutPanel actionsPanel;
     private Label actionsTitleLabel;
@@ -126,6 +137,9 @@ partial class MainForm
         saveProjectAsMenuItem = new ToolStripMenuItem();
         saveMenuSeparator = new ToolStripSeparator();
         addPdfFileMenuItem = new ToolStripMenuItem();
+        convertMenuItem = new ToolStripMenuItem();
+        convertCurrentPdfFileMenuItem = new ToolStripMenuItem();
+        convertMultiplePdfFilesMenuItem = new ToolStripMenuItem();
         recentMenuSeparator = new ToolStripSeparator();
         openRecentProjectMenuItem = new ToolStripMenuItem();
         languageMenuItem = new ToolStripMenuItem();
@@ -158,6 +172,14 @@ partial class MainForm
         fitPageButton = new ToolStripButton();
         pageSizeSeparator = new ToolStripSeparator();
         pageSizeLabel = new ToolStripLabel();
+        outputFolderSeparator = new ToolStripSeparator();
+        outputFolderLabel = new ToolStripLabel();
+        outputFolderTextBox = new ToolStripTextBox();
+        browseOutputFolderButton = new ToolStripButton();
+        openOutputFolderButton = new ToolStripButton();
+        convertDropDownButton = new ToolStripDropDownButton();
+        convertCurrentPdfMenuItem = new ToolStripMenuItem();
+        convertMultiplePdfMenuItem = new ToolStripMenuItem();
         pdfPageViewer = new PdfPageViewer();
         actionsPanel = new TableLayoutPanel();
         actionsTitleLabel = new Label();
@@ -247,6 +269,7 @@ partial class MainForm
             saveProjectAsMenuItem,
             saveMenuSeparator,
             addPdfFileMenuItem,
+            convertMenuItem,
             recentMenuSeparator,
             openRecentProjectMenuItem,
         });
@@ -280,6 +303,21 @@ partial class MainForm
         addPdfFileMenuItem.Size = new Size(211, 22);
         addPdfFileMenuItem.Text = TranslationService.T("menu.addPdf");
         addPdfFileMenuItem.Click += AddPdfFileMenuItem_Click;
+
+        convertMenuItem.DropDownItems.AddRange(new ToolStripItem[] { convertCurrentPdfFileMenuItem, convertMultiplePdfFilesMenuItem });
+        convertMenuItem.Name = "convertMenuItem";
+        convertMenuItem.Size = new Size(211, 22);
+        convertMenuItem.Text = TranslationService.T("convert.button");
+
+        convertCurrentPdfFileMenuItem.Name = "convertCurrentPdfFileMenuItem";
+        convertCurrentPdfFileMenuItem.Size = new Size(210, 22);
+        convertCurrentPdfFileMenuItem.Text = TranslationService.T("convert.menu.current");
+        convertCurrentPdfFileMenuItem.Click += ConvertCurrentPdfMenuItem_Click;
+
+        convertMultiplePdfFilesMenuItem.Name = "convertMultiplePdfFilesMenuItem";
+        convertMultiplePdfFilesMenuItem.Size = new Size(210, 22);
+        convertMultiplePdfFilesMenuItem.Text = TranslationService.T("convert.menu.multiple");
+        convertMultiplePdfFilesMenuItem.Click += ConvertMultiplePdfMenuItem_Click;
 
         recentMenuSeparator.Name = "recentMenuSeparator";
         recentMenuSeparator.Size = new Size(208, 6);
@@ -425,6 +463,12 @@ partial class MainForm
             fitPageButton,
             pageSizeSeparator,
             pageSizeLabel,
+            outputFolderSeparator,
+            outputFolderLabel,
+            outputFolderTextBox,
+            browseOutputFolderButton,
+            openOutputFolderButton,
+            convertDropDownButton,
         });
         pdfNavigationToolStrip.Location = new Point(0, 0);
         pdfNavigationToolStrip.Name = "pdfNavigationToolStrip";
@@ -505,6 +549,43 @@ partial class MainForm
         pageSizeLabel.Name = "pageSizeLabel";
         pageSizeLabel.Size = new Size(74, 20);
         pageSizeLabel.Text = TranslationService.T("page.size.empty");
+
+        outputFolderSeparator.Name = "outputFolderSeparator";
+        outputFolderSeparator.Size = new Size(6, 25);
+
+        outputFolderLabel.Name = "outputFolderLabel";
+        outputFolderLabel.Size = new Size(82, 20);
+        outputFolderLabel.Text = TranslationService.T("output.folder");
+
+        outputFolderTextBox.Name = "outputFolderTextBox";
+        outputFolderTextBox.Size = new Size(220, 25);
+        outputFolderTextBox.Leave += OutputFolderTextBox_Leave;
+        outputFolderTextBox.KeyDown += OutputFolderTextBox_KeyDown;
+
+        browseOutputFolderButton.Name = "browseOutputFolderButton";
+        browseOutputFolderButton.Size = new Size(62, 20);
+        browseOutputFolderButton.Text = TranslationService.T("common.browse");
+        browseOutputFolderButton.Click += BrowseOutputFolderButton_Click;
+
+        openOutputFolderButton.Name = "openOutputFolderButton";
+        openOutputFolderButton.Size = new Size(45, 20);
+        openOutputFolderButton.Text = TranslationService.T("common.open");
+        openOutputFolderButton.Click += OpenOutputFolderButton_Click;
+
+        convertDropDownButton.DropDownItems.AddRange(new ToolStripItem[] { convertCurrentPdfMenuItem, convertMultiplePdfMenuItem });
+        convertDropDownButton.Name = "convertDropDownButton";
+        convertDropDownButton.Size = new Size(71, 20);
+        convertDropDownButton.Text = TranslationService.T("convert.button");
+
+        convertCurrentPdfMenuItem.Name = "convertCurrentPdfMenuItem";
+        convertCurrentPdfMenuItem.Size = new Size(210, 22);
+        convertCurrentPdfMenuItem.Text = TranslationService.T("convert.menu.current");
+        convertCurrentPdfMenuItem.Click += ConvertCurrentPdfMenuItem_Click;
+
+        convertMultiplePdfMenuItem.Name = "convertMultiplePdfMenuItem";
+        convertMultiplePdfMenuItem.Size = new Size(210, 22);
+        convertMultiplePdfMenuItem.Text = TranslationService.T("convert.menu.multiple");
+        convertMultiplePdfMenuItem.Click += ConvertMultiplePdfMenuItem_Click;
 
         pdfPageViewer.Dock = DockStyle.Fill;
         pdfPageViewer.Name = "pdfPageViewer";
