@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using PdfiumViewer;
 using System.Globalization;
 
@@ -7,7 +8,7 @@ namespace PdfPageStudio;
 public sealed partial class MainForm : Form
 {
     private const string ProjectExtension = ".ppsproj";
-    private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
+    private readonly JsonSerializerOptions _jsonOptions = CreateJsonOptions();
     private readonly AppSettings _settings;
     private PdfPageStudioProject _project = new();
     private PdfDocument? _pdfDocument;
@@ -175,19 +176,19 @@ public sealed partial class MainForm : Form
 
     private void AddActionButton_Click(object? sender, EventArgs e)
     {
-        InsertAction(_project.Actions.Count);
+        ShowAddActionMenu(addActionButton, _project.Actions.Count);
     }
 
     private void InsertBeforeActionButton_Click(object? sender, EventArgs e)
     {
         var index = actionsListBox.SelectedIndex >= 0 ? actionsListBox.SelectedIndex : 0;
-        InsertAction(index);
+        ShowAddActionMenu(insertBeforeActionButton, index);
     }
 
     private void InsertAfterActionButton_Click(object? sender, EventArgs e)
     {
         var index = actionsListBox.SelectedIndex >= 0 ? actionsListBox.SelectedIndex + 1 : _project.Actions.Count;
-        InsertAction(index);
+        ShowAddActionMenu(insertAfterActionButton, index);
     }
 
     private void DeleteActionButton_Click(object? sender, EventArgs e)
@@ -250,6 +251,41 @@ public sealed partial class MainForm : Form
         RefreshActions(actionsListBox.SelectedIndex);
     }
 
+    private void UnitTypeComboBox_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || !Enum.TryParse<UnitType>(unitTypeComboBox.Text, out var newUnit) || newUnit == _project.UnitType)
+        {
+            return;
+        }
+
+        var oldUnit = _project.UnitType;
+        _project.UnitType = newUnit;
+        ConvertProjectUnits(oldUnit, newUnit);
+        MarkDirty();
+        SyncUnitCombos();
+        BindSelectedAction();
+        if (_pdfDocument != null)
+        {
+            UpdatePageSizeLabel(_pdfDocument.PageSizes[_pageIndex]);
+        }
+    }
+
+    private void ActionTypeComboBox_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        if (Enum.TryParse<PdfActionType>(actionTypeComboBox.Text, out var type))
+        {
+            action.Type = type;
+            ApplyActionDefaults(action, overwriteName: true);
+            MarkDirty();
+            RefreshActions(actionsListBox.SelectedIndex);
+        }
+    }
+
     private void PageFilterTypeComboBox_SelectedIndexChanged(object? sender, EventArgs e)
     {
         if (_isBinding || GetSelectedAction() is not { } action)
@@ -280,6 +316,118 @@ public sealed partial class MainForm : Form
         action.PageFilter.Range = ranges;
         MarkDirty();
         UpdateStatus("Page filter updated.");
+    }
+
+    private void ActionNumberTextBox_TextChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action || sender is not TextBox textBox)
+        {
+            return;
+        }
+
+        if (!TryReadNullableFloat(textBox.Text, out var value))
+        {
+            UpdateStatus("Use a decimal number or leave the field empty.");
+            return;
+        }
+
+        value = Round(value);
+        if (textBox == leftTextBox) action.Left = value;
+        else if (textBox == topTextBox) action.Top = value;
+        else if (textBox == rightTextBox) action.Right = value;
+        else if (textBox == bottomTextBox) action.Bottom = value;
+        else if (textBox == targetedWidthTextBox) action.TargetedWidth = value;
+        else if (textBox == targetedHeightTextBox) action.TargetedHeight = value;
+        else if (textBox == rulerPositionTextBox) action.Position = value;
+        else return;
+
+        MarkDirty();
+    }
+
+    private void ProportionalCheckBox_CheckedChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        action.Proportional = proportionalCheckBox.Checked;
+        MarkDirty();
+    }
+
+    private void AnchorRadioButton_CheckedChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action || sender is not RadioButton { Checked: true } radioButton)
+        {
+            return;
+        }
+
+        (action.AnchorHorizontal, action.AnchorVertical) = radioButton switch
+        {
+            var button when button == anchorTopLeftRadioButton => (AnchorHorizontal.Left, AnchorVertical.Top),
+            var button when button == anchorTopCenterRadioButton => (AnchorHorizontal.Center, AnchorVertical.Top),
+            var button when button == anchorTopRightRadioButton => (AnchorHorizontal.Right, AnchorVertical.Top),
+            var button when button == anchorMiddleLeftRadioButton => (AnchorHorizontal.Left, AnchorVertical.Center),
+            var button when button == anchorMiddleRightRadioButton => (AnchorHorizontal.Right, AnchorVertical.Center),
+            var button when button == anchorBottomLeftRadioButton => (AnchorHorizontal.Left, AnchorVertical.Bottom),
+            var button when button == anchorBottomCenterRadioButton => (AnchorHorizontal.Center, AnchorVertical.Bottom),
+            var button when button == anchorBottomRightRadioButton => (AnchorHorizontal.Right, AnchorVertical.Bottom),
+            _ => (AnchorHorizontal.Center, AnchorVertical.Center),
+        };
+        MarkDirty();
+    }
+
+    private void RulerColorTextBox_TextChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        action.Color = rulerColorTextBox.Text;
+        MarkDirty();
+    }
+
+    private void RulerStyleComboBox_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        if (Enum.TryParse<RulerStyle>(rulerStyleComboBox.Text, out var style))
+        {
+            action.Style = style;
+            MarkDirty();
+        }
+    }
+
+    private void RulerValueModeComboBox_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        if (Enum.TryParse<RulerValueMode>(rulerValueModeComboBox.Text, out var mode))
+        {
+            action.RulerValueMode = mode;
+            MarkDirty();
+        }
+    }
+
+    private void RulerOrientationComboBox_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        if (Enum.TryParse<RulerOrientation>(rulerOrientationComboBox.Text, out var orientation))
+        {
+            action.Orientation = orientation;
+            MarkDirty();
+        }
     }
 
     private void OpenProject(string path)
@@ -373,6 +521,7 @@ public sealed partial class MainForm : Form
         _isBinding = true;
         projectNameTextBox.Text = _project.Name;
         projectDescriptionTextBox.Text = _project.Description;
+        SyncUnitCombos();
         _isBinding = false;
         RefreshActions(actionsListBox.SelectedIndex);
     }
@@ -498,13 +647,17 @@ public sealed partial class MainForm : Form
 
     private void UpdatePageSizeLabel(SizeF pageSizePoints)
     {
-        var width = pageSizePoints.Width / 72f;
-        var height = pageSizePoints.Height / 72f;
+        var widthInches = pageSizePoints.Width / 72f;
+        var heightInches = pageSizePoints.Height / 72f;
+        var width = _project.UnitType == UnitType.Cm ? widthInches * 2.54f : widthInches;
+        var height = _project.UnitType == UnitType.Cm ? heightInches * 2.54f : heightInches;
+        var unit = _project.UnitType == UnitType.Cm ? "cm" : "in";
         pageSizeLabel.Text = string.Format(
             CultureInfo.InvariantCulture,
-            "Page: {0:0.##} x {1:0.##} in",
+            "Page: {0:0.###} x {1:0.###} {2}",
             width,
-            height);
+            height,
+            unit);
     }
 
     private void ShowProjectInfo()
@@ -521,14 +674,31 @@ public sealed partial class MainForm : Form
         pdfWorkspacePanel.BringToFront();
     }
 
-    private void InsertAction(int index)
+    private void InsertAction(int index, PdfActionType type)
     {
-        var action = new ProjectAction();
+        var action = new ProjectAction { Type = type };
+        ApplyActionDefaults(action, overwriteName: true);
         index = Math.Clamp(index, 0, _project.Actions.Count);
         _project.Actions.Insert(index, action);
         MarkDirty();
         RefreshActions(index);
         UpdateStatus("Action added.");
+    }
+
+    private void ShowAddActionMenu(Control owner, int insertIndex)
+    {
+        using var menu = new ContextMenuStrip();
+        foreach (var actionType in Enum.GetValues<PdfActionType>())
+        {
+            var item = new ToolStripMenuItem(GetActionDisplayName(actionType))
+            {
+                Tag = actionType,
+            };
+            item.Click += (_, _) => InsertAction(insertIndex, actionType);
+            menu.Items.Add(item);
+        }
+
+        menu.Show(owner, new Point(0, owner.Height));
     }
 
     private void NormalizeProject()
@@ -541,18 +711,14 @@ public sealed partial class MainForm : Form
                 action.Id = Guid.NewGuid().ToString("N");
             }
 
-            if (string.IsNullOrWhiteSpace(action.Type))
-            {
-                action.Type = "NewAction";
-            }
-
             if (string.IsNullOrWhiteSpace(action.Name))
             {
-                action.Name = "New Action";
+                ApplyActionDefaults(action, overwriteName: true);
             }
 
             action.PageFilter ??= new PageFilter();
             action.PageFilter.Range ??= [];
+            ApplyActionDefaults(action, overwriteName: false);
         }
     }
 
@@ -581,22 +747,41 @@ public sealed partial class MainForm : Form
         var action = GetSelectedAction();
         var hasAction = action != null;
         actionNameTextBox.Enabled = hasAction;
+        actionTypeComboBox.Enabled = hasAction;
         pageFilterTypeComboBox.Enabled = hasAction;
         pageFilterRangeTextBox.Enabled = hasAction;
 
         if (action == null)
         {
             actionNameTextBox.Text = "";
+            actionTypeComboBox.SelectedIndex = -1;
             pageFilterTypeComboBox.SelectedIndex = -1;
             pageFilterRangeTextBox.Text = "";
+            ClearActionParameterInputs();
+            UpdateActionEditorVisibility(null);
             _isBinding = false;
             return;
         }
 
         action.PageFilter ??= new PageFilter();
+        actionTypeComboBox.SelectedItem = action.Type.ToString();
         actionNameTextBox.Text = action.Name;
         pageFilterTypeComboBox.SelectedItem = action.PageFilter.Type.ToString();
         pageFilterRangeTextBox.Text = FormatPageRanges(action.PageFilter.Range);
+        leftTextBox.Text = FormatNullableFloat(action.Left);
+        topTextBox.Text = FormatNullableFloat(action.Top);
+        rightTextBox.Text = FormatNullableFloat(action.Right);
+        bottomTextBox.Text = FormatNullableFloat(action.Bottom);
+        targetedWidthTextBox.Text = FormatNullableFloat(action.TargetedWidth);
+        targetedHeightTextBox.Text = FormatNullableFloat(action.TargetedHeight);
+        proportionalCheckBox.Checked = action.Proportional ?? true;
+        rulerColorTextBox.Text = action.Color;
+        rulerStyleComboBox.SelectedItem = action.Style.ToString();
+        rulerValueModeComboBox.SelectedItem = action.RulerValueMode.ToString();
+        rulerOrientationComboBox.SelectedItem = action.Orientation.ToString();
+        rulerPositionTextBox.Text = FormatNullableFloat(action.Position);
+        SelectAnchorButton(action.AnchorHorizontal, action.AnchorVertical);
+        UpdateActionEditorVisibility(action);
         _isBinding = false;
     }
 
@@ -619,7 +804,7 @@ public sealed partial class MainForm : Form
 
     private static string FormatActionListItem(int index, ProjectAction action)
     {
-        return $"{index + 1}. {action.Name} ({FormatPageFilter(action.PageFilter)})";
+        return $"{index + 1}. {action.Name} [{action.Type}] ({FormatPageFilter(action.PageFilter)})";
     }
 
     private static string FormatPageFilter(PageFilter? filter)
@@ -698,6 +883,192 @@ public sealed partial class MainForm : Form
         }
 
         return true;
+    }
+
+    private void ApplyActionDefaults(ProjectAction action, bool overwriteName)
+    {
+        if (overwriteName)
+        {
+            action.Name = action.Type switch
+            {
+                PdfActionType.AddRuler => "Add Ruler",
+                _ => action.Type.ToString(),
+            };
+        }
+
+        switch (action.Type)
+        {
+            case PdfActionType.Trim:
+            case PdfActionType.Expand:
+                action.Left ??= 0;
+                action.Top ??= 0;
+                action.Right ??= 0;
+                action.Bottom ??= 0;
+                break;
+            case PdfActionType.Resize:
+                action.Proportional ??= true;
+                break;
+            case PdfActionType.Zoom:
+                action.Proportional ??= true;
+                action.AnchorHorizontal = action.AnchorHorizontal;
+                action.AnchorVertical = action.AnchorVertical;
+                break;
+            case PdfActionType.AddRuler:
+                action.Color = string.IsNullOrWhiteSpace(action.Color) ? "#FF0000" : action.Color;
+                action.Style = action.Style;
+                action.RulerValueMode = action.RulerValueMode;
+                action.Orientation = action.Orientation;
+                action.Position ??= action.RulerValueMode == RulerValueMode.Percent ? 50 : 0;
+                break;
+        }
+    }
+
+    private static string GetActionDisplayName(PdfActionType type)
+    {
+        return type == PdfActionType.AddRuler ? "Add Ruler" : type.ToString();
+    }
+
+    private void UpdateActionEditorVisibility(ProjectAction? action)
+    {
+        var type = action?.Type;
+        var hasMargins = type is PdfActionType.Trim or PdfActionType.Expand;
+        var hasTargetSize = type is PdfActionType.Resize or PdfActionType.Zoom;
+        var hasProportional = type is PdfActionType.Resize or PdfActionType.Zoom;
+        var hasAnchor = type == PdfActionType.Zoom;
+        var hasRuler = type == PdfActionType.AddRuler;
+
+        SetEditorRowVisible(leftLabel, leftTextBox, hasMargins);
+        SetEditorRowVisible(topLabel, topTextBox, hasMargins);
+        SetEditorRowVisible(rightLabel, rightTextBox, hasMargins);
+        SetEditorRowVisible(bottomLabel, bottomTextBox, hasMargins);
+        SetEditorRowVisible(targetedWidthLabel, targetedWidthTextBox, hasTargetSize);
+        SetEditorRowVisible(targetedHeightLabel, targetedHeightTextBox, hasTargetSize);
+        SetEditorRowVisible(proportionalLabel, proportionalCheckBox, hasProportional);
+        SetEditorRowVisible(anchorLabel, anchorPanel, hasAnchor);
+        SetEditorRowVisible(rulerColorLabel, rulerColorTextBox, hasRuler);
+        SetEditorRowVisible(rulerStyleLabel, rulerStyleComboBox, hasRuler);
+        SetEditorRowVisible(rulerValueModeLabel, rulerValueModeComboBox, hasRuler);
+        SetEditorRowVisible(rulerOrientationLabel, rulerOrientationComboBox, hasRuler);
+        SetEditorRowVisible(rulerPositionLabel, rulerPositionTextBox, hasRuler);
+    }
+
+    private static void SetEditorRowVisible(Control label, Control editor, bool visible)
+    {
+        label.Visible = visible;
+        editor.Visible = visible;
+    }
+
+    private void ClearActionParameterInputs()
+    {
+        leftTextBox.Text = "";
+        topTextBox.Text = "";
+        rightTextBox.Text = "";
+        bottomTextBox.Text = "";
+        targetedWidthTextBox.Text = "";
+        targetedHeightTextBox.Text = "";
+        proportionalCheckBox.Checked = true;
+        rulerColorTextBox.Text = "";
+        rulerStyleComboBox.SelectedIndex = -1;
+        rulerValueModeComboBox.SelectedIndex = -1;
+        rulerOrientationComboBox.SelectedIndex = -1;
+        rulerPositionTextBox.Text = "";
+    }
+
+    private void SelectAnchorButton(AnchorHorizontal horizontal, AnchorVertical vertical)
+    {
+        var button = (horizontal, vertical) switch
+        {
+            (AnchorHorizontal.Left, AnchorVertical.Top) => anchorTopLeftRadioButton,
+            (AnchorHorizontal.Center, AnchorVertical.Top) => anchorTopCenterRadioButton,
+            (AnchorHorizontal.Right, AnchorVertical.Top) => anchorTopRightRadioButton,
+            (AnchorHorizontal.Left, AnchorVertical.Center) => anchorMiddleLeftRadioButton,
+            (AnchorHorizontal.Right, AnchorVertical.Center) => anchorMiddleRightRadioButton,
+            (AnchorHorizontal.Left, AnchorVertical.Bottom) => anchorBottomLeftRadioButton,
+            (AnchorHorizontal.Center, AnchorVertical.Bottom) => anchorBottomCenterRadioButton,
+            (AnchorHorizontal.Right, AnchorVertical.Bottom) => anchorBottomRightRadioButton,
+            _ => anchorMiddleCenterRadioButton,
+        };
+        button.Checked = true;
+    }
+
+    private void ConvertProjectUnits(UnitType oldUnit, UnitType newUnit)
+    {
+        var factor = oldUnit == UnitType.Inch && newUnit == UnitType.Cm
+            ? 2.54f
+            : oldUnit == UnitType.Cm && newUnit == UnitType.Inch
+                ? 1f / 2.54f
+                : 1f;
+
+        if (Math.Abs(factor - 1f) < 0.0001f)
+        {
+            return;
+        }
+
+        foreach (var action in _project.Actions)
+        {
+            action.Left = ConvertUnitValue(action.Left, factor);
+            action.Top = ConvertUnitValue(action.Top, factor);
+            action.Right = ConvertUnitValue(action.Right, factor);
+            action.Bottom = ConvertUnitValue(action.Bottom, factor);
+            action.TargetedWidth = ConvertUnitValue(action.TargetedWidth, factor);
+            action.TargetedHeight = ConvertUnitValue(action.TargetedHeight, factor);
+            if (action.Type == PdfActionType.AddRuler && action.RulerValueMode == RulerValueMode.Unit)
+            {
+                action.Position = ConvertUnitValue(action.Position, factor);
+            }
+        }
+    }
+
+    private void SyncUnitCombos()
+    {
+        projectUnitTypeComboBox.SelectedItem = _project.UnitType.ToString();
+        unitTypeComboBox.SelectedItem = _project.UnitType.ToString();
+    }
+
+    private static float? ConvertUnitValue(float? value, float factor)
+    {
+        return value == null ? null : Round(value.Value * factor);
+    }
+
+    private static bool TryReadNullableFloat(string text, out float? value)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            value = null;
+            return true;
+        }
+
+        if (float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) ||
+            float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out parsed))
+        {
+            value = parsed;
+            return true;
+        }
+
+        value = null;
+        return false;
+    }
+
+    private static float? Round(float? value)
+    {
+        return value == null ? null : Round(value.Value);
+    }
+
+    private static float Round(float value)
+    {
+        return (float)Math.Round(value, 3, MidpointRounding.AwayFromZero);
+    }
+
+    private static string FormatNullableFloat(float? value)
+    {
+        return value == null ? "" : value.Value.ToString("0.###", CultureInfo.InvariantCulture);
+    }
+
+    private static JsonSerializerOptions CreateJsonOptions()
+    {
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        options.Converters.Add(new JsonStringEnumConverter());
+        return options;
     }
 
     private void RefreshRecentProjectsMenu()

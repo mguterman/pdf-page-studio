@@ -17,6 +17,8 @@ partial class MainForm
     private TableLayoutPanel projectInfoPanel;
     private Label projectNameLabel;
     private TextBox projectNameTextBox;
+    private Label projectUnitTypeLabel;
+    private ComboBox projectUnitTypeComboBox;
     private Label projectDescriptionLabel;
     private TextBox projectDescriptionTextBox;
     private TableLayoutPanel pdfWorkspacePanel;
@@ -45,12 +47,51 @@ partial class MainForm
     private ListBox actionsListBox;
     private Label propertiesTitleLabel;
     private TableLayoutPanel actionPropertiesPanel;
+    private Label unitTypeLabel;
+    private ComboBox unitTypeComboBox;
+    private Label actionTypeLabel;
+    private ComboBox actionTypeComboBox;
     private Label actionNameLabel;
     private TextBox actionNameTextBox;
     private Label pageFilterTypeLabel;
     private ComboBox pageFilterTypeComboBox;
     private Label pageFilterRangeLabel;
     private TextBox pageFilterRangeTextBox;
+    private Label leftLabel;
+    private TextBox leftTextBox;
+    private Label topLabel;
+    private TextBox topTextBox;
+    private Label rightLabel;
+    private TextBox rightTextBox;
+    private Label bottomLabel;
+    private TextBox bottomTextBox;
+    private Label targetedWidthLabel;
+    private TextBox targetedWidthTextBox;
+    private Label targetedHeightLabel;
+    private TextBox targetedHeightTextBox;
+    private Label proportionalLabel;
+    private CheckBox proportionalCheckBox;
+    private Label anchorLabel;
+    private TableLayoutPanel anchorPanel;
+    private RadioButton anchorTopLeftRadioButton;
+    private RadioButton anchorTopCenterRadioButton;
+    private RadioButton anchorTopRightRadioButton;
+    private RadioButton anchorMiddleLeftRadioButton;
+    private RadioButton anchorMiddleCenterRadioButton;
+    private RadioButton anchorMiddleRightRadioButton;
+    private RadioButton anchorBottomLeftRadioButton;
+    private RadioButton anchorBottomCenterRadioButton;
+    private RadioButton anchorBottomRightRadioButton;
+    private Label rulerColorLabel;
+    private TextBox rulerColorTextBox;
+    private Label rulerStyleLabel;
+    private ComboBox rulerStyleComboBox;
+    private Label rulerValueModeLabel;
+    private ComboBox rulerValueModeComboBox;
+    private Label rulerOrientationLabel;
+    private ComboBox rulerOrientationComboBox;
+    private Label rulerPositionLabel;
+    private TextBox rulerPositionTextBox;
     private StatusStrip mainStatusStrip;
     private ToolStripStatusLabel statusLabel;
 
@@ -80,6 +121,8 @@ partial class MainForm
         projectInfoPanel = new TableLayoutPanel();
         projectNameLabel = new Label();
         projectNameTextBox = new TextBox();
+        projectUnitTypeLabel = new Label();
+        projectUnitTypeComboBox = new ComboBox();
         projectDescriptionLabel = new Label();
         projectDescriptionTextBox = new TextBox();
         pdfWorkspacePanel = new TableLayoutPanel();
@@ -108,12 +151,51 @@ partial class MainForm
         actionsListBox = new ListBox();
         propertiesTitleLabel = new Label();
         actionPropertiesPanel = new TableLayoutPanel();
+        unitTypeLabel = new Label();
+        unitTypeComboBox = new ComboBox();
+        actionTypeLabel = new Label();
+        actionTypeComboBox = new ComboBox();
         actionNameLabel = new Label();
         actionNameTextBox = new TextBox();
         pageFilterTypeLabel = new Label();
         pageFilterTypeComboBox = new ComboBox();
         pageFilterRangeLabel = new Label();
         pageFilterRangeTextBox = new TextBox();
+        leftLabel = new Label();
+        leftTextBox = new TextBox();
+        topLabel = new Label();
+        topTextBox = new TextBox();
+        rightLabel = new Label();
+        rightTextBox = new TextBox();
+        bottomLabel = new Label();
+        bottomTextBox = new TextBox();
+        targetedWidthLabel = new Label();
+        targetedWidthTextBox = new TextBox();
+        targetedHeightLabel = new Label();
+        targetedHeightTextBox = new TextBox();
+        proportionalLabel = new Label();
+        proportionalCheckBox = new CheckBox();
+        anchorLabel = new Label();
+        anchorPanel = new TableLayoutPanel();
+        anchorTopLeftRadioButton = new RadioButton();
+        anchorTopCenterRadioButton = new RadioButton();
+        anchorTopRightRadioButton = new RadioButton();
+        anchorMiddleLeftRadioButton = new RadioButton();
+        anchorMiddleCenterRadioButton = new RadioButton();
+        anchorMiddleRightRadioButton = new RadioButton();
+        anchorBottomLeftRadioButton = new RadioButton();
+        anchorBottomCenterRadioButton = new RadioButton();
+        anchorBottomRightRadioButton = new RadioButton();
+        rulerColorLabel = new Label();
+        rulerColorTextBox = new TextBox();
+        rulerStyleLabel = new Label();
+        rulerStyleComboBox = new ComboBox();
+        rulerValueModeLabel = new Label();
+        rulerValueModeComboBox = new ComboBox();
+        rulerOrientationLabel = new Label();
+        rulerOrientationComboBox = new ComboBox();
+        rulerPositionLabel = new Label();
+        rulerPositionTextBox = new TextBox();
         mainStatusStrip = new StatusStrip();
         statusLabel = new ToolStripStatusLabel();
         mainMenuStrip.SuspendLayout();
@@ -124,6 +206,7 @@ partial class MainForm
         actionsPanel.SuspendLayout();
         actionButtonsPanel.SuspendLayout();
         actionPropertiesPanel.SuspendLayout();
+        anchorPanel.SuspendLayout();
         mainStatusStrip.SuspendLayout();
         SuspendLayout();
 
@@ -194,12 +277,15 @@ partial class MainForm
         projectInfoPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         projectInfoPanel.Controls.Add(projectNameLabel, 0, 0);
         projectInfoPanel.Controls.Add(projectNameTextBox, 1, 0);
-        projectInfoPanel.Controls.Add(projectDescriptionLabel, 0, 1);
-        projectInfoPanel.Controls.Add(projectDescriptionTextBox, 1, 1);
+        projectInfoPanel.Controls.Add(projectUnitTypeLabel, 0, 1);
+        projectInfoPanel.Controls.Add(projectUnitTypeComboBox, 1, 1);
+        projectInfoPanel.Controls.Add(projectDescriptionLabel, 0, 2);
+        projectInfoPanel.Controls.Add(projectDescriptionTextBox, 1, 2);
         projectInfoPanel.Dock = DockStyle.Fill;
         projectInfoPanel.Name = "projectInfoPanel";
         projectInfoPanel.Padding = new Padding(16);
-        projectInfoPanel.RowCount = 3;
+        projectInfoPanel.RowCount = 4;
+        projectInfoPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
         projectInfoPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
         projectInfoPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 160F));
         projectInfoPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
@@ -218,10 +304,25 @@ partial class MainForm
         projectNameTextBox.TabIndex = 1;
         projectNameTextBox.TextChanged += ProjectNameTextBox_TextChanged;
 
+        projectUnitTypeLabel.AutoSize = true;
+        projectUnitTypeLabel.Dock = DockStyle.Fill;
+        projectUnitTypeLabel.Name = "projectUnitTypeLabel";
+        projectUnitTypeLabel.TabIndex = 2;
+        projectUnitTypeLabel.Text = "Unit Type";
+        projectUnitTypeLabel.TextAlign = ContentAlignment.MiddleLeft;
+
+        projectUnitTypeComboBox.Dock = DockStyle.Left;
+        projectUnitTypeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        projectUnitTypeComboBox.Items.AddRange(new object[] { "Inch", "Cm" });
+        projectUnitTypeComboBox.Name = "projectUnitTypeComboBox";
+        projectUnitTypeComboBox.Size = new Size(120, 23);
+        projectUnitTypeComboBox.TabIndex = 3;
+        projectUnitTypeComboBox.SelectedIndexChanged += UnitTypeComboBox_SelectedIndexChanged;
+
         projectDescriptionLabel.AutoSize = true;
         projectDescriptionLabel.Dock = DockStyle.Fill;
         projectDescriptionLabel.Name = "projectDescriptionLabel";
-        projectDescriptionLabel.TabIndex = 2;
+        projectDescriptionLabel.TabIndex = 4;
         projectDescriptionLabel.Text = "Description";
         projectDescriptionLabel.TextAlign = ContentAlignment.TopLeft;
 
@@ -231,7 +332,7 @@ partial class MainForm
         projectDescriptionTextBox.Multiline = true;
         projectDescriptionTextBox.Name = "projectDescriptionTextBox";
         projectDescriptionTextBox.ScrollBars = ScrollBars.Vertical;
-        projectDescriptionTextBox.TabIndex = 3;
+        projectDescriptionTextBox.TabIndex = 5;
         projectDescriptionTextBox.TextChanged += ProjectDescriptionTextBox_TextChanged;
 
         pdfWorkspacePanel.ColumnCount = 2;
@@ -430,20 +531,75 @@ partial class MainForm
         actionPropertiesPanel.ColumnCount = 2;
         actionPropertiesPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96F));
         actionPropertiesPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        actionPropertiesPanel.Controls.Add(actionNameLabel, 0, 0);
-        actionPropertiesPanel.Controls.Add(actionNameTextBox, 1, 0);
-        actionPropertiesPanel.Controls.Add(pageFilterTypeLabel, 0, 1);
-        actionPropertiesPanel.Controls.Add(pageFilterTypeComboBox, 1, 1);
-        actionPropertiesPanel.Controls.Add(pageFilterRangeLabel, 0, 2);
-        actionPropertiesPanel.Controls.Add(pageFilterRangeTextBox, 1, 2);
+        actionPropertiesPanel.Controls.Add(unitTypeLabel, 0, 0);
+        actionPropertiesPanel.Controls.Add(unitTypeComboBox, 1, 0);
+        actionPropertiesPanel.Controls.Add(actionTypeLabel, 0, 1);
+        actionPropertiesPanel.Controls.Add(actionTypeComboBox, 1, 1);
+        actionPropertiesPanel.Controls.Add(actionNameLabel, 0, 2);
+        actionPropertiesPanel.Controls.Add(actionNameTextBox, 1, 2);
+        actionPropertiesPanel.Controls.Add(pageFilterTypeLabel, 0, 3);
+        actionPropertiesPanel.Controls.Add(pageFilterTypeComboBox, 1, 3);
+        actionPropertiesPanel.Controls.Add(pageFilterRangeLabel, 0, 4);
+        actionPropertiesPanel.Controls.Add(pageFilterRangeTextBox, 1, 4);
+        actionPropertiesPanel.Controls.Add(leftLabel, 0, 5);
+        actionPropertiesPanel.Controls.Add(leftTextBox, 1, 5);
+        actionPropertiesPanel.Controls.Add(topLabel, 0, 6);
+        actionPropertiesPanel.Controls.Add(topTextBox, 1, 6);
+        actionPropertiesPanel.Controls.Add(rightLabel, 0, 7);
+        actionPropertiesPanel.Controls.Add(rightTextBox, 1, 7);
+        actionPropertiesPanel.Controls.Add(bottomLabel, 0, 8);
+        actionPropertiesPanel.Controls.Add(bottomTextBox, 1, 8);
+        actionPropertiesPanel.Controls.Add(targetedWidthLabel, 0, 9);
+        actionPropertiesPanel.Controls.Add(targetedWidthTextBox, 1, 9);
+        actionPropertiesPanel.Controls.Add(targetedHeightLabel, 0, 10);
+        actionPropertiesPanel.Controls.Add(targetedHeightTextBox, 1, 10);
+        actionPropertiesPanel.Controls.Add(proportionalLabel, 0, 11);
+        actionPropertiesPanel.Controls.Add(proportionalCheckBox, 1, 11);
+        actionPropertiesPanel.Controls.Add(anchorLabel, 0, 12);
+        actionPropertiesPanel.Controls.Add(anchorPanel, 1, 12);
+        actionPropertiesPanel.Controls.Add(rulerColorLabel, 0, 13);
+        actionPropertiesPanel.Controls.Add(rulerColorTextBox, 1, 13);
+        actionPropertiesPanel.Controls.Add(rulerStyleLabel, 0, 14);
+        actionPropertiesPanel.Controls.Add(rulerStyleComboBox, 1, 14);
+        actionPropertiesPanel.Controls.Add(rulerValueModeLabel, 0, 15);
+        actionPropertiesPanel.Controls.Add(rulerValueModeComboBox, 1, 15);
+        actionPropertiesPanel.Controls.Add(rulerOrientationLabel, 0, 16);
+        actionPropertiesPanel.Controls.Add(rulerOrientationComboBox, 1, 16);
+        actionPropertiesPanel.Controls.Add(rulerPositionLabel, 0, 17);
+        actionPropertiesPanel.Controls.Add(rulerPositionTextBox, 1, 17);
         actionPropertiesPanel.Dock = DockStyle.Top;
         actionPropertiesPanel.Name = "actionPropertiesPanel";
-        actionPropertiesPanel.RowCount = 4;
-        actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-        actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-        actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        actionPropertiesPanel.RowCount = 20;
+        for (var rowIndex = 0; rowIndex < 19; rowIndex++)
+        {
+            actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, rowIndex == 12 ? 78F : 34F));
+        }
         actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         actionPropertiesPanel.TabIndex = 4;
+
+        unitTypeLabel.AutoSize = true;
+        unitTypeLabel.Dock = DockStyle.Fill;
+        unitTypeLabel.Name = "unitTypeLabel";
+        unitTypeLabel.Text = "Units";
+        unitTypeLabel.TextAlign = ContentAlignment.MiddleLeft;
+
+        unitTypeComboBox.Dock = DockStyle.Fill;
+        unitTypeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        unitTypeComboBox.Items.AddRange(new object[] { "Inch", "Cm" });
+        unitTypeComboBox.Name = "unitTypeComboBox";
+        unitTypeComboBox.SelectedIndexChanged += UnitTypeComboBox_SelectedIndexChanged;
+
+        actionTypeLabel.AutoSize = true;
+        actionTypeLabel.Dock = DockStyle.Fill;
+        actionTypeLabel.Name = "actionTypeLabel";
+        actionTypeLabel.Text = "Type";
+        actionTypeLabel.TextAlign = ContentAlignment.MiddleLeft;
+
+        actionTypeComboBox.Dock = DockStyle.Fill;
+        actionTypeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        actionTypeComboBox.Items.AddRange(new object[] { "Trim", "Expand", "Resize", "Zoom", "AddRuler" });
+        actionTypeComboBox.Name = "actionTypeComboBox";
+        actionTypeComboBox.SelectedIndexChanged += ActionTypeComboBox_SelectedIndexChanged;
 
         actionNameLabel.AutoSize = true;
         actionNameLabel.Dock = DockStyle.Fill;
@@ -485,6 +641,76 @@ partial class MainForm
         pageFilterRangeTextBox.TabIndex = 5;
         pageFilterRangeTextBox.TextChanged += PageFilterRangeTextBox_TextChanged;
 
+        ConfigureEditorLabel(leftLabel, "Left");
+        ConfigureEditorTextBox(leftTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorLabel(topLabel, "Top");
+        ConfigureEditorTextBox(topTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorLabel(rightLabel, "Right");
+        ConfigureEditorTextBox(rightTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorLabel(bottomLabel, "Bottom");
+        ConfigureEditorTextBox(bottomTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorLabel(targetedWidthLabel, "Width");
+        ConfigureEditorTextBox(targetedWidthTextBox, ActionNumberTextBox_TextChanged);
+        ConfigureEditorLabel(targetedHeightLabel, "Height");
+        ConfigureEditorTextBox(targetedHeightTextBox, ActionNumberTextBox_TextChanged);
+
+        ConfigureEditorLabel(proportionalLabel, "Proportional");
+        proportionalCheckBox.AutoSize = true;
+        proportionalCheckBox.Dock = DockStyle.Fill;
+        proportionalCheckBox.Name = "proportionalCheckBox";
+        proportionalCheckBox.CheckedChanged += ProportionalCheckBox_CheckedChanged;
+
+        ConfigureEditorLabel(anchorLabel, "Anchor");
+        anchorPanel.ColumnCount = 3;
+        anchorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333F));
+        anchorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333F));
+        anchorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333F));
+        anchorPanel.Controls.Add(anchorTopLeftRadioButton, 0, 0);
+        anchorPanel.Controls.Add(anchorTopCenterRadioButton, 1, 0);
+        anchorPanel.Controls.Add(anchorTopRightRadioButton, 2, 0);
+        anchorPanel.Controls.Add(anchorMiddleLeftRadioButton, 0, 1);
+        anchorPanel.Controls.Add(anchorMiddleCenterRadioButton, 1, 1);
+        anchorPanel.Controls.Add(anchorMiddleRightRadioButton, 2, 1);
+        anchorPanel.Controls.Add(anchorBottomLeftRadioButton, 0, 2);
+        anchorPanel.Controls.Add(anchorBottomCenterRadioButton, 1, 2);
+        anchorPanel.Controls.Add(anchorBottomRightRadioButton, 2, 2);
+        anchorPanel.Dock = DockStyle.Fill;
+        anchorPanel.Name = "anchorPanel";
+        anchorPanel.RowCount = 3;
+        anchorPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333F));
+        anchorPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333F));
+        anchorPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333F));
+        ConfigureAnchorButton(anchorTopLeftRadioButton);
+        ConfigureAnchorButton(anchorTopCenterRadioButton);
+        ConfigureAnchorButton(anchorTopRightRadioButton);
+        ConfigureAnchorButton(anchorMiddleLeftRadioButton);
+        ConfigureAnchorButton(anchorMiddleCenterRadioButton);
+        ConfigureAnchorButton(anchorMiddleRightRadioButton);
+        ConfigureAnchorButton(anchorBottomLeftRadioButton);
+        ConfigureAnchorButton(anchorBottomCenterRadioButton);
+        ConfigureAnchorButton(anchorBottomRightRadioButton);
+        anchorMiddleCenterRadioButton.Checked = true;
+
+        ConfigureEditorLabel(rulerColorLabel, "Color");
+        ConfigureEditorTextBox(rulerColorTextBox, RulerColorTextBox_TextChanged);
+        ConfigureEditorLabel(rulerStyleLabel, "Style");
+        rulerStyleComboBox.Dock = DockStyle.Fill;
+        rulerStyleComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        rulerStyleComboBox.Items.AddRange(new object[] { "Solid", "Dotted" });
+        rulerStyleComboBox.SelectedIndexChanged += RulerStyleComboBox_SelectedIndexChanged;
+        ConfigureEditorLabel(rulerValueModeLabel, "Mode");
+        rulerValueModeComboBox.Dock = DockStyle.Fill;
+        rulerValueModeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        rulerValueModeComboBox.Items.AddRange(new object[] { "Percent", "Unit" });
+        rulerValueModeComboBox.SelectedIndexChanged += RulerValueModeComboBox_SelectedIndexChanged;
+        ConfigureEditorLabel(rulerOrientationLabel, "Line");
+        rulerOrientationComboBox.Dock = DockStyle.Fill;
+        rulerOrientationComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        rulerOrientationComboBox.Items.AddRange(new object[] { "Vertical", "Horizontal" });
+        rulerOrientationComboBox.SelectedIndexChanged += RulerOrientationComboBox_SelectedIndexChanged;
+        ConfigureEditorLabel(rulerPositionLabel, "Position");
+        ConfigureEditorTextBox(rulerPositionTextBox, ActionNumberTextBox_TextChanged);
+
         mainStatusStrip.Items.AddRange(new ToolStripItem[] { statusLabel });
         mainStatusStrip.Location = new Point(0, 700);
         mainStatusStrip.Name = "mainStatusStrip";
@@ -521,9 +747,35 @@ partial class MainForm
         actionButtonsPanel.ResumeLayout(false);
         actionPropertiesPanel.ResumeLayout(false);
         actionPropertiesPanel.PerformLayout();
+        anchorPanel.ResumeLayout(false);
+        anchorPanel.PerformLayout();
         mainStatusStrip.ResumeLayout(false);
         mainStatusStrip.PerformLayout();
         ResumeLayout(false);
         PerformLayout();
+    }
+
+    private static void ConfigureEditorLabel(Label label, string text)
+    {
+        label.AutoSize = true;
+        label.Dock = DockStyle.Fill;
+        label.Text = text;
+        label.TextAlign = ContentAlignment.MiddleLeft;
+    }
+
+    private static void ConfigureEditorTextBox(TextBox textBox, EventHandler handler)
+    {
+        textBox.Dock = DockStyle.Fill;
+        textBox.TextChanged += handler;
+    }
+
+    private void ConfigureAnchorButton(RadioButton radioButton)
+    {
+        radioButton.Appearance = Appearance.Button;
+        radioButton.Dock = DockStyle.Fill;
+        radioButton.Margin = new Padding(1);
+        radioButton.TextAlign = ContentAlignment.MiddleCenter;
+        radioButton.Text = "";
+        radioButton.CheckedChanged += AnchorRadioButton_CheckedChanged;
     }
 }
