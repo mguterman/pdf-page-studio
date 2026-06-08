@@ -62,6 +62,7 @@
   <data name="actions.add" xml:space="preserve"><value>הוסף</value></data>
   <data name="actions.insertBefore" xml:space="preserve"><value>הכנס לפני</value></data>
   <data name="actions.insertAfter" xml:space="preserve"><value>הכנס אחרי</value></data>
+  <data name="actions.duplicate" xml:space="preserve"><value>שכפל</value></data>
   <data name="actions.delete" xml:space="preserve"><value>מחק</value></data>
   <data name="actions.up" xml:space="preserve"><value>למעלה</value></data>
   <data name="actions.down" xml:space="preserve"><value>למטה</value></data>
@@ -107,6 +108,7 @@
   <data name="status.actionDeleted" xml:space="preserve"><value>הפעולה נמחקה.</value></data>
   <data name="status.actionMovedUp" xml:space="preserve"><value>הפעולה הוזזה למעלה.</value></data>
   <data name="status.actionMovedDown" xml:space="preserve"><value>הפעולה הוזזה למטה.</value></data>
+  <data name="status.actionDuplicated" xml:space="preserve"><value>הפעולה שוכפלה.</value></data>
   <data name="status.pageFilterUpdated" xml:space="preserve"><value>מסנן העמודים עודכן.</value></data>
   <data name="status.actionAdded" xml:space="preserve"><value>הפעולה נוספה.</value></data>
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>תצוגה: פעולות עד הבחירה ({0})</value></data>

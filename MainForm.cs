@@ -231,13 +231,8 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        var actionsWithDefaultNames = _project.Actions
-            .Where(action => IsDefaultActionName(action.Name, action.Type))
-            .Select(action => action.Id)
-            .ToHashSet(StringComparer.Ordinal);
-
         TranslationService.SetLanguage(language);
-        foreach (var action in _project.Actions.Where(action => actionsWithDefaultNames.Contains(action.Id)))
+        foreach (var action in _project.Actions.Where(action => action.UseDefaultName))
         {
             action.Name = GetActionDisplayName(action.Type);
         }
@@ -335,6 +330,7 @@ public sealed partial class MainForm : Form
         addActionButton.Text = TranslationService.T("actions.add");
         insertBeforeActionButton.Text = TranslationService.T("actions.insertBefore");
         insertAfterActionButton.Text = TranslationService.T("actions.insertAfter");
+        duplicateActionButton.Text = TranslationService.T("actions.duplicate");
         deleteActionButton.Text = TranslationService.T("actions.delete");
         moveActionUpButton.Text = TranslationService.T("actions.up");
         moveActionDownButton.Text = TranslationService.T("actions.down");
@@ -357,7 +353,7 @@ public sealed partial class MainForm : Form
         rulerStyleLabel.Text = TranslationService.T("field.style");
         rulerValueModeLabel.Text = TranslationService.T("field.mode");
         rulerOrientationLabel.Text = TranslationService.T("field.line");
-        rulerPositionLabel.Text = TranslationService.T("field.position");
+        UpdateRulerEdgeLabels();
 
         ConfigureEnumCombo(projectUnitTypeComboBox, "enum.unit.", _project.UnitType);
         ConfigureEnumCombo(actionTypeComboBox, "enum.action.", GetSelectedAction()?.Type ?? PdfActionType.Trim);
@@ -515,6 +511,22 @@ public sealed partial class MainForm : Form
         RefreshCurrentPagePreview();
     }
 
+    private void DuplicateActionButton_Click(object? sender, EventArgs e)
+    {
+        var index = actionsListBox.SelectedIndex;
+        if (index < 0 || index >= _project.Actions.Count)
+        {
+            return;
+        }
+
+        var copy = CloneAction(_project.Actions[index]);
+        _project.Actions.Insert(index + 1, copy);
+        MarkDirty();
+        RefreshActions(index + 1);
+        UpdateStatus(TranslationService.T("status.actionDuplicated"));
+        RefreshCurrentPagePreview();
+    }
+
     private void MoveActionUpButton_Click(object? sender, EventArgs e)
     {
         var index = actionsListBox.SelectedIndex;
@@ -581,6 +593,7 @@ public sealed partial class MainForm : Form
         }
 
         action.Name = actionNameTextBox.Text;
+        action.UseDefaultName = false;
         MarkDirty();
         RefreshActions(actionsListBox.SelectedIndex);
         RefreshCurrentPagePreview();
@@ -645,6 +658,7 @@ public sealed partial class MainForm : Form
         {
             action.PageFilter.Type = type;
             MarkDirty();
+            RefreshActions(actionsListBox.SelectedIndex);
             RefreshCurrentPagePreview();
         }
     }
@@ -665,6 +679,7 @@ public sealed partial class MainForm : Form
         action.PageFilter.Range = ranges;
         MarkDirty();
         UpdateStatus(TranslationService.T("status.pageFilterUpdated"));
+        RefreshActions(actionsListBox.SelectedIndex);
         RefreshCurrentPagePreview();
     }
 
@@ -682,7 +697,16 @@ public sealed partial class MainForm : Form
         else if (numericBox == bottomNumericBox) action.Bottom = value;
         else if (numericBox == targetedWidthNumericBox) action.TargetedWidth = ZeroToNull(value);
         else if (numericBox == targetedHeightNumericBox) action.TargetedHeight = ZeroToNull(value);
-        else if (numericBox == rulerPositionNumericBox) action.Position = value;
+        else if (numericBox == rulerPositionNumericBox)
+        {
+            action.Position = value;
+            UpdateRulerEndFromPosition(action);
+        }
+        else if (numericBox == rulerEndNumericBox)
+        {
+            action.Position = CalculateRulerPositionFromEnd(action, value);
+            UpdateRulerPositionFromEnd(action);
+        }
         else return;
 
         MarkDirty();
@@ -736,6 +760,31 @@ public sealed partial class MainForm : Form
         RefreshCurrentPagePreview();
     }
 
+    private void RulerColorButton_Click(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+
+        using var dialog = new ColorDialog
+        {
+            Color = ParseColor(action.Color),
+            FullOpen = true,
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        action.Color = ColorTranslator.ToHtml(dialog.Color);
+        _isBinding = true;
+        rulerColorTextBox.Text = action.Color;
+        _isBinding = false;
+        MarkDirty();
+        RefreshCurrentPagePreview();
+    }
+
     private void RulerStyleComboBox_SelectedIndexChanged(object? sender, EventArgs e)
     {
         if (_isBinding || GetSelectedAction() is not { } action)
@@ -783,8 +832,88 @@ public sealed partial class MainForm : Form
         {
             action.Orientation = orientation;
             MarkDirty();
+            UpdateRulerEdgeInputs(action);
             RefreshCurrentPagePreview();
         }
+    }
+
+    private void UpdateRulerEdgeLabels()
+    {
+        var orientation = GetSelectedAction()?.Orientation ?? RulerOrientation.Vertical;
+        rulerPositionLabel.Text = orientation == RulerOrientation.Vertical
+            ? TranslationService.T("field.left")
+            : TranslationService.T("field.top");
+        rulerEndLabel.Text = orientation == RulerOrientation.Vertical
+            ? TranslationService.T("field.right")
+            : TranslationService.T("field.bottom");
+    }
+
+    private void UpdateRulerEdgeInputs(ProjectAction action)
+    {
+        UpdateRulerEdgeLabels();
+        _isBinding = true;
+        rulerPositionNumericBox.Value = FloatToDecimal(action.Position);
+        rulerEndNumericBox.Value = FloatToDecimal(CalculateRulerEndValue(action));
+        _isBinding = false;
+    }
+
+    private void UpdateRulerEndFromPosition(ProjectAction action)
+    {
+        _isBinding = true;
+        rulerEndNumericBox.Value = FloatToDecimal(CalculateRulerEndValue(action));
+        _isBinding = false;
+    }
+
+    private void UpdateRulerPositionFromEnd(ProjectAction action)
+    {
+        _isBinding = true;
+        rulerPositionNumericBox.Value = FloatToDecimal(action.Position);
+        _isBinding = false;
+    }
+
+    private float CalculateRulerEndValue(ProjectAction action)
+    {
+        var dimension = GetRulerReferenceDimension(action);
+        if (dimension <= 0)
+        {
+            return 0;
+        }
+
+        var position = action.Position ?? 0;
+        var maxValue = action.RulerValueMode == RulerValueMode.Percent ? 100f : dimension;
+        return Round(Math.Max(0, maxValue - position));
+    }
+
+    private float? CalculateRulerPositionFromEnd(ProjectAction action, float endValue)
+    {
+        var dimension = GetRulerReferenceDimension(action);
+        if (dimension <= 0)
+        {
+            return 0;
+        }
+
+        var maxValue = action.RulerValueMode == RulerValueMode.Percent ? 100f : dimension;
+        return Round(Math.Max(0, maxValue - endValue));
+    }
+
+    private static void NumericBox_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (sender is not NumericUpDown numericBox || e.KeyCode is not (Keys.Up or Keys.Down))
+        {
+            return;
+        }
+
+        numericBox.Increment = GetNumericStep(numericBox.Value, GetNumericCaretPosition(numericBox), GetNumericText(numericBox));
+    }
+
+    private static void NumericBox_MouseDown(object? sender, MouseEventArgs e)
+    {
+        if (sender is not NumericUpDown numericBox)
+        {
+            return;
+        }
+
+        numericBox.Increment = GetNumericStep(numericBox.Value, GetNumericCaretPosition(numericBox), GetNumericText(numericBox));
     }
 
     private void OpenProject(string path)
@@ -1166,10 +1295,14 @@ public sealed partial class MainForm : Form
                 action.Id = Guid.NewGuid().ToString("N");
             }
 
-            if (string.IsNullOrWhiteSpace(action.Name))
-            {
-                ApplyActionDefaults(action, overwriteName: true);
-            }
+        if (string.IsNullOrWhiteSpace(action.Name))
+        {
+            ApplyActionDefaults(action, overwriteName: true);
+        }
+        else if (IsDefaultActionName(action.Name, action.Type))
+        {
+            action.UseDefaultName = true;
+        }
 
             action.PageFilter ??= new PageFilter();
             action.PageFilter.Range ??= [];
@@ -1236,9 +1369,9 @@ public sealed partial class MainForm : Form
         SelectEnum(rulerStyleComboBox, action.Style);
         SelectEnum(rulerValueModeComboBox, action.RulerValueMode);
         SelectEnum(rulerOrientationComboBox, action.Orientation);
-        rulerPositionNumericBox.Value = FloatToDecimal(action.Position);
         SelectAnchorButton(action.AnchorHorizontal, action.AnchorVertical);
         UpdateActionEditorVisibility(action);
+        UpdateRulerEdgeInputs(action);
         _isBinding = false;
     }
 
@@ -1248,6 +1381,7 @@ public sealed partial class MainForm : Form
         var hasSelection = selectedIndex >= 0 && selectedIndex < _project.Actions.Count;
         insertBeforeActionButton.Enabled = hasSelection || _project.Actions.Count == 0;
         insertAfterActionButton.Enabled = hasSelection || _project.Actions.Count == 0;
+        duplicateActionButton.Enabled = hasSelection;
         deleteActionButton.Enabled = hasSelection;
         moveActionUpButton.Enabled = hasSelection && selectedIndex > 0;
         moveActionDownButton.Enabled = hasSelection && selectedIndex < _project.Actions.Count - 1;
@@ -1536,6 +1670,38 @@ public sealed partial class MainForm : Form
         return $"{index + 1}. {action.Name} [{GetActionDisplayName(action.Type)}] ({FormatPageFilter(action.PageFilter)})";
     }
 
+    private static ProjectAction CloneAction(ProjectAction source)
+    {
+        return new ProjectAction
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            Type = source.Type,
+            Name = source.Name,
+            UseDefaultName = source.UseDefaultName,
+            PageFilter = new PageFilter
+            {
+                Type = source.PageFilter.Type,
+                Range = source.PageFilter.Range
+                    .Select(range => new PageFilterRange { Start = range.Start, End = range.End })
+                    .ToList(),
+            },
+            Left = source.Left,
+            Top = source.Top,
+            Right = source.Right,
+            Bottom = source.Bottom,
+            TargetedWidth = source.TargetedWidth,
+            TargetedHeight = source.TargetedHeight,
+            Proportional = source.Proportional,
+            AnchorHorizontal = source.AnchorHorizontal,
+            AnchorVertical = source.AnchorVertical,
+            Color = source.Color,
+            Style = source.Style,
+            RulerValueMode = source.RulerValueMode,
+            Orientation = source.Orientation,
+            Position = source.Position,
+        };
+    }
+
     private static string FormatPageFilter(PageFilter? filter)
     {
         if (filter == null)
@@ -1618,10 +1784,8 @@ public sealed partial class MainForm : Form
     {
         if (overwriteName)
         {
-            action.Name = action.Type switch
-            {
-                _ => GetActionDisplayName(action.Type),
-            };
+            action.Name = GetActionDisplayName(action.Type);
+            action.UseDefaultName = true;
         }
 
         switch (action.Type)
@@ -1644,7 +1808,7 @@ public sealed partial class MainForm : Form
             case PdfActionType.AddRuler:
                 action.Color = string.IsNullOrWhiteSpace(action.Color) ? "#FF0000" : action.Color;
                 action.Style = action.Style;
-                action.RulerValueMode = action.RulerValueMode;
+                action.RulerValueMode = action.Position == null ? RulerValueMode.Unit : action.RulerValueMode;
                 action.Orientation = action.Orientation;
                 action.Position ??= action.RulerValueMode == RulerValueMode.Percent ? 50 : 0;
                 break;
@@ -1674,11 +1838,12 @@ public sealed partial class MainForm : Form
         SetEditorRowVisible(targetedHeightLabel, targetedHeightNumericBox, hasTargetSize);
         SetEditorRowVisible(proportionalLabel, proportionalCheckBox, hasProportional);
         SetEditorRowVisible(anchorLabel, anchorPanel, hasAnchor);
-        SetEditorRowVisible(rulerColorLabel, rulerColorTextBox, hasRuler);
+        SetEditorRowVisible(rulerColorLabel, rulerColorPanel, hasRuler);
         SetEditorRowVisible(rulerStyleLabel, rulerStyleComboBox, hasRuler);
         SetEditorRowVisible(rulerValueModeLabel, rulerValueModeComboBox, hasRuler);
         SetEditorRowVisible(rulerOrientationLabel, rulerOrientationComboBox, hasRuler);
         SetEditorRowVisible(rulerPositionLabel, rulerPositionNumericBox, hasRuler);
+        SetEditorRowVisible(rulerEndLabel, rulerEndNumericBox, hasRuler);
         actionPropertiesPanel.PerformLayout();
         actionPropertiesScrollPanel.PerformLayout();
     }
@@ -1689,17 +1854,19 @@ public sealed partial class MainForm : Form
         {
             SetEditorRow(rulerOrientationLabel, rulerOrientationComboBox, 4);
             SetEditorRow(rulerPositionLabel, rulerPositionNumericBox, 5);
-            SetEditorRow(rulerValueModeLabel, rulerValueModeComboBox, 6);
-            SetEditorRow(rulerStyleLabel, rulerStyleComboBox, 7);
-            SetEditorRow(rulerColorLabel, rulerColorTextBox, 8);
+            SetEditorRow(rulerEndLabel, rulerEndNumericBox, 6);
+            SetEditorRow(rulerValueModeLabel, rulerValueModeComboBox, 7);
+            SetEditorRow(rulerStyleLabel, rulerStyleComboBox, 8);
+            SetEditorRow(rulerColorLabel, rulerColorPanel, 9);
             return;
         }
 
-        SetEditorRow(rulerColorLabel, rulerColorTextBox, 12);
+        SetEditorRow(rulerColorLabel, rulerColorPanel, 12);
         SetEditorRow(rulerStyleLabel, rulerStyleComboBox, 13);
         SetEditorRow(rulerValueModeLabel, rulerValueModeComboBox, 14);
         SetEditorRow(rulerOrientationLabel, rulerOrientationComboBox, 15);
         SetEditorRow(rulerPositionLabel, rulerPositionNumericBox, 16);
+        SetEditorRow(rulerEndLabel, rulerEndNumericBox, 17);
     }
 
     private void SetEditorRow(Control label, Control editor, int rowIndex)
@@ -1739,6 +1906,7 @@ public sealed partial class MainForm : Form
         rulerValueModeComboBox.SelectedIndex = -1;
         rulerOrientationComboBox.SelectedIndex = -1;
         rulerPositionNumericBox.Value = 0;
+        rulerEndNumericBox.Value = 0;
     }
 
     private void SelectAnchorButton(AnchorHorizontal horizontal, AnchorVertical vertical)
@@ -1987,6 +2155,76 @@ public sealed partial class MainForm : Form
     private float UnitValueToInches(float value)
     {
         return _project.UnitType == UnitType.Cm ? value / 2.54f : value;
+    }
+
+    private static decimal GetNumericStep(decimal value, int cursorPosition)
+    {
+        return GetNumericStep(value, cursorPosition, null);
+    }
+
+    private static decimal GetNumericStep(decimal value, int cursorPosition, string? text)
+    {
+        text = string.IsNullOrWhiteSpace(text)
+            ? value.ToString("0.###", CultureInfo.CurrentCulture)
+            : text;
+        cursorPosition = Math.Clamp(cursorPosition, 0, text.Length);
+        var digitIndex = FindNumericStepDigit(text, cursorPosition);
+        if (digitIndex < 0)
+        {
+            return 1M;
+        }
+
+        var decimalIndex = text.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
+        if (decimalIndex < 0)
+        {
+            decimalIndex = text.IndexOf('.', StringComparison.Ordinal);
+        }
+
+        var exponent = 0;
+        if (decimalIndex < 0 || digitIndex < decimalIndex)
+        {
+            exponent = text.Take(digitIndex).Count(char.IsDigit);
+            var integerDigits = text.Take(decimalIndex < 0 ? text.Length : decimalIndex).Count(char.IsDigit);
+            exponent = integerDigits - exponent - 1;
+        }
+        else
+        {
+            exponent = -text.Skip(decimalIndex + 1).Take(digitIndex - decimalIndex).Count(char.IsDigit);
+        }
+
+        var step = (decimal)Math.Pow(10, exponent);
+        return Math.Max(0.001M, step);
+    }
+
+    private static int FindNumericStepDigit(string text, int cursorPosition)
+    {
+        for (var index = cursorPosition - 1; index >= 0; index--)
+        {
+            if (char.IsDigit(text[index]))
+            {
+                return index;
+            }
+        }
+
+        for (var index = cursorPosition; index < text.Length; index++)
+        {
+            if (char.IsDigit(text[index]))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    private static string GetNumericText(NumericUpDown numericBox)
+    {
+        return numericBox.Controls.OfType<TextBox>().FirstOrDefault()?.Text ?? numericBox.Text;
+    }
+
+    private static int GetNumericCaretPosition(NumericUpDown numericBox)
+    {
+        return numericBox.Controls.OfType<TextBox>().FirstOrDefault()?.SelectionStart ?? 0;
     }
 
     private static float? ZeroToNull(float value)

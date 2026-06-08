@@ -64,6 +64,7 @@ partial class MainForm
     private Button addActionButton;
     private Button insertBeforeActionButton;
     private Button insertAfterActionButton;
+    private Button duplicateActionButton;
     private Button deleteActionButton;
     private Button moveActionUpButton;
     private Button moveActionDownButton;
@@ -105,7 +106,9 @@ partial class MainForm
     private RadioButton anchorBottomCenterRadioButton;
     private RadioButton anchorBottomRightRadioButton;
     private Label rulerColorLabel;
+    private FlowLayoutPanel rulerColorPanel;
     private TextBox rulerColorTextBox;
+    private Button rulerColorButton;
     private Label rulerStyleLabel;
     private ComboBox rulerStyleComboBox;
     private Label rulerValueModeLabel;
@@ -114,6 +117,8 @@ partial class MainForm
     private ComboBox rulerOrientationComboBox;
     private Label rulerPositionLabel;
     private NumericUpDown rulerPositionNumericBox;
+    private Label rulerEndLabel;
+    private NumericUpDown rulerEndNumericBox;
     private StatusStrip mainStatusStrip;
     private ToolStripStatusLabel statusLabel;
 
@@ -190,6 +195,7 @@ partial class MainForm
         addActionButton = new Button();
         insertBeforeActionButton = new Button();
         insertAfterActionButton = new Button();
+        duplicateActionButton = new Button();
         deleteActionButton = new Button();
         moveActionUpButton = new Button();
         moveActionDownButton = new Button();
@@ -231,7 +237,9 @@ partial class MainForm
         anchorBottomCenterRadioButton = new RadioButton();
         anchorBottomRightRadioButton = new RadioButton();
         rulerColorLabel = new Label();
+        rulerColorPanel = new FlowLayoutPanel();
         rulerColorTextBox = new TextBox();
+        rulerColorButton = new Button();
         rulerStyleLabel = new Label();
         rulerStyleComboBox = new ComboBox();
         rulerValueModeLabel = new Label();
@@ -240,6 +248,8 @@ partial class MainForm
         rulerOrientationComboBox = new ComboBox();
         rulerPositionLabel = new Label();
         rulerPositionNumericBox = new NumericUpDown();
+        rulerEndLabel = new Label();
+        rulerEndNumericBox = new NumericUpDown();
         mainStatusStrip = new StatusStrip();
         statusLabel = new ToolStripStatusLabel();
         mainMenuStrip.SuspendLayout();
@@ -606,7 +616,7 @@ partial class MainForm
         actionsPanel.RowCount = 6;
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 74F));
+        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 104F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 52F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 48F));
@@ -649,6 +659,7 @@ partial class MainForm
         actionButtonsPanel.Controls.Add(addActionButton);
         actionButtonsPanel.Controls.Add(insertBeforeActionButton);
         actionButtonsPanel.Controls.Add(insertAfterActionButton);
+        actionButtonsPanel.Controls.Add(duplicateActionButton);
         actionButtonsPanel.Controls.Add(deleteActionButton);
         actionButtonsPanel.Controls.Add(moveActionUpButton);
         actionButtonsPanel.Controls.Add(moveActionDownButton);
@@ -677,23 +688,30 @@ partial class MainForm
         insertAfterActionButton.UseVisualStyleBackColor = true;
         insertAfterActionButton.Click += InsertAfterActionButton_Click;
 
+        duplicateActionButton.Name = "duplicateActionButton";
+        duplicateActionButton.Size = new Size(88, 28);
+        duplicateActionButton.TabIndex = 3;
+        duplicateActionButton.Text = TranslationService.T("actions.duplicate");
+        duplicateActionButton.UseVisualStyleBackColor = true;
+        duplicateActionButton.Click += DuplicateActionButton_Click;
+
         deleteActionButton.Name = "deleteActionButton";
         deleteActionButton.Size = new Size(68, 28);
-        deleteActionButton.TabIndex = 3;
+        deleteActionButton.TabIndex = 4;
         deleteActionButton.Text = TranslationService.T("actions.delete");
         deleteActionButton.UseVisualStyleBackColor = true;
         deleteActionButton.Click += DeleteActionButton_Click;
 
         moveActionUpButton.Name = "moveActionUpButton";
         moveActionUpButton.Size = new Size(68, 28);
-        moveActionUpButton.TabIndex = 4;
+        moveActionUpButton.TabIndex = 5;
         moveActionUpButton.Text = TranslationService.T("actions.up");
         moveActionUpButton.UseVisualStyleBackColor = true;
         moveActionUpButton.Click += MoveActionUpButton_Click;
 
         moveActionDownButton.Name = "moveActionDownButton";
         moveActionDownButton.Size = new Size(68, 28);
-        moveActionDownButton.TabIndex = 5;
+        moveActionDownButton.TabIndex = 6;
         moveActionDownButton.Text = TranslationService.T("actions.down");
         moveActionDownButton.UseVisualStyleBackColor = true;
         moveActionDownButton.Click += MoveActionDownButton_Click;
@@ -749,7 +767,7 @@ partial class MainForm
         actionPropertiesPanel.Controls.Add(anchorLabel, 0, 11);
         actionPropertiesPanel.Controls.Add(anchorPanel, 1, 11);
         actionPropertiesPanel.Controls.Add(rulerColorLabel, 0, 12);
-        actionPropertiesPanel.Controls.Add(rulerColorTextBox, 1, 12);
+        actionPropertiesPanel.Controls.Add(rulerColorPanel, 1, 12);
         actionPropertiesPanel.Controls.Add(rulerStyleLabel, 0, 13);
         actionPropertiesPanel.Controls.Add(rulerStyleComboBox, 1, 13);
         actionPropertiesPanel.Controls.Add(rulerValueModeLabel, 0, 14);
@@ -758,10 +776,12 @@ partial class MainForm
         actionPropertiesPanel.Controls.Add(rulerOrientationComboBox, 1, 15);
         actionPropertiesPanel.Controls.Add(rulerPositionLabel, 0, 16);
         actionPropertiesPanel.Controls.Add(rulerPositionNumericBox, 1, 16);
+        actionPropertiesPanel.Controls.Add(rulerEndLabel, 0, 17);
+        actionPropertiesPanel.Controls.Add(rulerEndNumericBox, 1, 17);
         actionPropertiesPanel.Dock = DockStyle.Top;
         actionPropertiesPanel.Name = "actionPropertiesPanel";
-        actionPropertiesPanel.RowCount = 17;
-        for (var rowIndex = 0; rowIndex < 17; rowIndex++)
+        actionPropertiesPanel.RowCount = 18;
+        for (var rowIndex = 0; rowIndex < 18; rowIndex++)
         {
             actionPropertiesPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, rowIndex == 11 ? 78F : 34F));
         }
@@ -868,7 +888,18 @@ partial class MainForm
         anchorMiddleCenterRadioButton.Checked = true;
 
         ConfigureEditorLabel(rulerColorLabel, TranslationService.T("field.color"));
+        rulerColorPanel.Controls.Add(rulerColorTextBox);
+        rulerColorPanel.Controls.Add(rulerColorButton);
+        rulerColorPanel.Dock = DockStyle.Fill;
+        rulerColorPanel.Margin = new Padding(0);
+        rulerColorPanel.WrapContents = false;
         ConfigureEditorTextBox(rulerColorTextBox, RulerColorTextBox_TextChanged);
+        rulerColorTextBox.Width = 112;
+        rulerColorButton.Name = "rulerColorButton";
+        rulerColorButton.Size = new Size(32, 23);
+        rulerColorButton.Text = "...";
+        rulerColorButton.UseVisualStyleBackColor = true;
+        rulerColorButton.Click += RulerColorButton_Click;
         ConfigureEditorLabel(rulerStyleLabel, TranslationService.T("field.style"));
         rulerStyleComboBox.Dock = DockStyle.Fill;
         rulerStyleComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -881,8 +912,10 @@ partial class MainForm
         rulerOrientationComboBox.Dock = DockStyle.Fill;
         rulerOrientationComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
         rulerOrientationComboBox.SelectedIndexChanged += RulerOrientationComboBox_SelectedIndexChanged;
-        ConfigureEditorLabel(rulerPositionLabel, TranslationService.T("field.position"));
+        ConfigureEditorLabel(rulerPositionLabel, TranslationService.T("field.left"));
         ConfigureEditorNumericBox(rulerPositionNumericBox, ActionNumberNumericBox_ValueChanged);
+        ConfigureEditorLabel(rulerEndLabel, TranslationService.T("field.right"));
+        ConfigureEditorNumericBox(rulerEndNumericBox, ActionNumberNumericBox_ValueChanged);
 
         mainStatusStrip.Items.AddRange(new ToolStripItem[] { statusLabel });
         mainStatusStrip.Location = new Point(0, 700);
@@ -954,6 +987,8 @@ partial class MainForm
         numericBox.Maximum = 100000M;
         numericBox.Minimum = 0M;
         numericBox.ThousandsSeparator = true;
+        numericBox.KeyDown += NumericBox_KeyDown;
+        numericBox.MouseDown += NumericBox_MouseDown;
         numericBox.ValueChanged += handler;
     }
 

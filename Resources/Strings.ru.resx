@@ -62,6 +62,7 @@
   <data name="actions.add" xml:space="preserve"><value>Добавить</value></data>
   <data name="actions.insertBefore" xml:space="preserve"><value>Вставить до</value></data>
   <data name="actions.insertAfter" xml:space="preserve"><value>Вставить после</value></data>
+  <data name="actions.duplicate" xml:space="preserve"><value>Дублировать</value></data>
   <data name="actions.delete" xml:space="preserve"><value>Удалить</value></data>
   <data name="actions.up" xml:space="preserve"><value>Вверх</value></data>
   <data name="actions.down" xml:space="preserve"><value>Вниз</value></data>
@@ -107,6 +108,7 @@
   <data name="status.actionDeleted" xml:space="preserve"><value>Действие удалено.</value></data>
   <data name="status.actionMovedUp" xml:space="preserve"><value>Действие перемещено вверх.</value></data>
   <data name="status.actionMovedDown" xml:space="preserve"><value>Действие перемещено вниз.</value></data>
+  <data name="status.actionDuplicated" xml:space="preserve"><value>Действие продублировано.</value></data>
   <data name="status.pageFilterUpdated" xml:space="preserve"><value>Фильтр страниц обновлён.</value></data>
   <data name="status.actionAdded" xml:space="preserve"><value>Действие добавлено.</value></data>
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>Preview: действия до выбранного ({0})</value></data>
