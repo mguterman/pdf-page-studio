@@ -16,7 +16,7 @@ public sealed class ProjectAction
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public PdfActionType Type { get; set; } = PdfActionType.Trim;
     public string Name { get; set; } = "Trim";
-    public bool UseDefaultName { get; set; } = true;
+    public bool? UseDefaultName { get; set; }
     public PageFilter PageFilter { get; set; } = new();
     public float? Left { get; set; }
     public float? Top { get; set; }

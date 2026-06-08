@@ -232,7 +232,7 @@ public sealed partial class MainForm : Form
         }
 
         TranslationService.SetLanguage(language);
-        foreach (var action in _project.Actions.Where(action => action.UseDefaultName))
+        foreach (var action in _project.Actions.Where(action => action.UseDefaultName == true))
         {
             action.Name = GetActionDisplayName(action.Type);
         }
@@ -267,12 +267,41 @@ public sealed partial class MainForm : Form
             return true;
         }
 
-        if (type == PdfActionType.AddRuler && string.Equals(name, "Add Ruler", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
+        return GetKnownDefaultActionNames(type)
+            .Any(defaultName => string.Equals(name, defaultName, StringComparison.CurrentCultureIgnoreCase));
+    }
 
-        return string.Equals(name, GetActionDisplayName(type), StringComparison.CurrentCultureIgnoreCase);
+    private static IEnumerable<string> GetKnownDefaultActionNames(PdfActionType type)
+    {
+        yield return type.ToString();
+        switch (type)
+        {
+            case PdfActionType.Trim:
+                yield return "Trim";
+                yield return "Обрезать";
+                yield return "חיתוך";
+                break;
+            case PdfActionType.Expand:
+                yield return "Expand";
+                yield return "Расширить";
+                yield return "הרחבה";
+                break;
+            case PdfActionType.Resize:
+                yield return "Resize";
+                yield return "Изменить размер";
+                yield return "שינוי גודל";
+                break;
+            case PdfActionType.Zoom:
+                yield return "Zoom";
+                yield return "Масштабировать";
+                yield return "זום";
+                break;
+            case PdfActionType.AddRuler:
+                yield return "Add Ruler";
+                yield return "Добавить линейку";
+                yield return "הוסף סרגל";
+                break;
+        }
     }
 
     private void ApplyTranslations()
@@ -1295,14 +1324,14 @@ public sealed partial class MainForm : Form
                 action.Id = Guid.NewGuid().ToString("N");
             }
 
-        if (string.IsNullOrWhiteSpace(action.Name))
-        {
-            ApplyActionDefaults(action, overwriteName: true);
-        }
-        else if (IsDefaultActionName(action.Name, action.Type))
-        {
-            action.UseDefaultName = true;
-        }
+            if (string.IsNullOrWhiteSpace(action.Name))
+            {
+                ApplyActionDefaults(action, overwriteName: true);
+            }
+            if (action.UseDefaultName != false)
+            {
+                action.UseDefaultName = IsDefaultActionName(action.Name, action.Type);
+            }
 
             action.PageFilter ??= new PageFilter();
             action.PageFilter.Range ??= [];
