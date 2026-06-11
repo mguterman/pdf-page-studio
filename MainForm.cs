@@ -296,6 +296,11 @@ public sealed partial class MainForm : Form
                 yield return "Масштабировать";
                 yield return "זום";
                 break;
+            case PdfActionType.AdjustSize:
+                yield return "Adjust Size";
+                yield return "Подогнать размер";
+                yield return "התאם גודל";
+                break;
             case PdfActionType.AddRuler:
                 yield return "Add Ruler";
                 yield return "Добавить линейку";
@@ -724,8 +729,14 @@ public sealed partial class MainForm : Form
         else if (numericBox == topNumericBox) action.Top = value;
         else if (numericBox == rightNumericBox) action.Right = value;
         else if (numericBox == bottomNumericBox) action.Bottom = value;
-        else if (numericBox == targetedWidthNumericBox) action.TargetedWidth = ZeroToNull(value);
-        else if (numericBox == targetedHeightNumericBox) action.TargetedHeight = ZeroToNull(value);
+        else if (numericBox == targetedWidthNumericBox)
+        {
+            action.TargetedWidth = action.Type == PdfActionType.AdjustSize && !action.EnableWidth ? null : ZeroToNull(value);
+        }
+        else if (numericBox == targetedHeightNumericBox)
+        {
+            action.TargetedHeight = action.Type == PdfActionType.AdjustSize && !action.EnableHeight ? null : ZeroToNull(value);
+        }
         else if (numericBox == rulerPositionNumericBox)
         {
             action.Position = value;
@@ -737,6 +748,52 @@ public sealed partial class MainForm : Form
             UpdateRulerPositionFromEnd(action);
         }
         else return;
+
+        MarkDirty();
+        RefreshCurrentPagePreview();
+    }
+
+    private void TargetedWidthEnabledCheckBox_CheckedChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+        if (action.Type != PdfActionType.AdjustSize)
+        {
+            return;
+        }
+
+        action.EnableWidth = targetedWidthEnabledCheckBox.Checked;
+        targetedWidthNumericBox.Enabled = action.EnableWidth;
+        if (!action.EnableWidth)
+        {
+            action.TargetedWidth = null;
+            targetedWidthNumericBox.Value = 0;
+        }
+
+        MarkDirty();
+        RefreshCurrentPagePreview();
+    }
+
+    private void TargetedHeightEnabledCheckBox_CheckedChanged(object? sender, EventArgs e)
+    {
+        if (_isBinding || GetSelectedAction() is not { } action)
+        {
+            return;
+        }
+        if (action.Type != PdfActionType.AdjustSize)
+        {
+            return;
+        }
+
+        action.EnableHeight = targetedHeightEnabledCheckBox.Checked;
+        targetedHeightNumericBox.Enabled = action.EnableHeight;
+        if (!action.EnableHeight)
+        {
+            action.TargetedHeight = null;
+            targetedHeightNumericBox.Value = 0;
+        }
 
         MarkDirty();
         RefreshCurrentPagePreview();
@@ -1324,10 +1381,10 @@ public sealed partial class MainForm : Form
                 action.Id = Guid.NewGuid().ToString("N");
             }
 
-            if (string.IsNullOrWhiteSpace(action.Name))
-            {
-                ApplyActionDefaults(action, overwriteName: true);
-            }
+        if (string.IsNullOrWhiteSpace(action.Name))
+        {
+            ApplyActionDefaults(action, overwriteName: true);
+        }
             if (action.UseDefaultName != false)
             {
                 action.UseDefaultName = IsDefaultActionName(action.Name, action.Type);
@@ -1335,6 +1392,11 @@ public sealed partial class MainForm : Form
 
             action.PageFilter ??= new PageFilter();
             action.PageFilter.Range ??= [];
+            if (action.Type == PdfActionType.AdjustSize)
+            {
+                action.EnableWidth = action.EnableWidth || action.TargetedWidth is > 0;
+                action.EnableHeight = action.EnableHeight || action.TargetedHeight is > 0;
+            }
             ApplyActionDefaults(action, overwriteName: false);
         }
     }
@@ -1393,6 +1455,13 @@ public sealed partial class MainForm : Form
         bottomNumericBox.Value = FloatToDecimal(action.Bottom);
         targetedWidthNumericBox.Value = FloatToDecimal(action.TargetedWidth);
         targetedHeightNumericBox.Value = FloatToDecimal(action.TargetedHeight);
+        var usesOptionalTargetSize = action.Type == PdfActionType.AdjustSize;
+        targetedWidthEnabledCheckBox.Visible = usesOptionalTargetSize;
+        targetedHeightEnabledCheckBox.Visible = usesOptionalTargetSize;
+        targetedWidthEnabledCheckBox.Checked = usesOptionalTargetSize && action.EnableWidth;
+        targetedHeightEnabledCheckBox.Checked = usesOptionalTargetSize && action.EnableHeight;
+        targetedWidthNumericBox.Enabled = !usesOptionalTargetSize || action.EnableWidth;
+        targetedHeightNumericBox.Enabled = !usesOptionalTargetSize || action.EnableHeight;
         proportionalCheckBox.Checked = action.Proportional ?? true;
         rulerColorTextBox.Text = action.Color;
         SelectEnum(rulerStyleComboBox, action.Style);
@@ -1491,6 +1560,7 @@ public sealed partial class MainForm : Form
             PdfActionType.Expand => ApplyExpandPreview(source, action, dpi, ref pageSizePoints),
             PdfActionType.Resize => ApplyResizePreview(source, action, dpi, ref pageSizePoints),
             PdfActionType.Zoom => ApplyZoomPreview(source, action),
+            PdfActionType.AdjustSize => ApplyAdjustSizePreview(source, action, dpi, ref pageSizePoints),
             PdfActionType.AddRuler => ApplyRulerPreview(source, action, dpi),
             _ => new Bitmap(source),
         };
@@ -1609,6 +1679,34 @@ public sealed partial class MainForm : Form
         return result;
     }
 
+    private Bitmap ApplyAdjustSizePreview(Bitmap source, ProjectAction action, float dpi, ref SizeF pageSizePoints)
+    {
+        var currentWidthInches = pageSizePoints.Width / 72f;
+        var currentHeightInches = pageSizePoints.Height / 72f;
+        var targetWidthInches = action.EnableWidth && action.TargetedWidth is > 0
+            ? Math.Max(currentWidthInches, UnitValueToInches(action.TargetedWidth.Value))
+            : currentWidthInches;
+        var targetHeightInches = action.EnableHeight && action.TargetedHeight is > 0
+            ? Math.Max(currentHeightInches, UnitValueToInches(action.TargetedHeight.Value))
+            : currentHeightInches;
+        if (Math.Abs(targetWidthInches - currentWidthInches) < 0.0001f &&
+            Math.Abs(targetHeightInches - currentHeightInches) < 0.0001f)
+        {
+            return new Bitmap(source);
+        }
+
+        var width = Math.Max(source.Width, (int)Math.Round(targetWidthInches * dpi));
+        var height = Math.Max(source.Height, (int)Math.Round(targetHeightInches * dpi));
+        var x = (width - source.Width) / 2;
+        var y = (height - source.Height) / 2;
+        var result = CreateCanvas(width, height);
+        using var graphics = Graphics.FromImage(result);
+        ConfigureHighQuality(graphics);
+        graphics.DrawImage(source, new Rectangle(x, y, source.Width, source.Height));
+        pageSizePoints = new SizeF(targetWidthInches * 72f, targetHeightInches * 72f);
+        return result;
+    }
+
     private Bitmap ApplyRulerPreview(Bitmap source, ProjectAction action, float dpi)
     {
         var result = new Bitmap(source);
@@ -1720,6 +1818,8 @@ public sealed partial class MainForm : Form
             Bottom = source.Bottom,
             TargetedWidth = source.TargetedWidth,
             TargetedHeight = source.TargetedHeight,
+            EnableWidth = source.EnableWidth,
+            EnableHeight = source.EnableHeight,
             Proportional = source.Proportional,
             AnchorHorizontal = source.AnchorHorizontal,
             AnchorVertical = source.AnchorVertical,
@@ -1834,6 +1934,10 @@ public sealed partial class MainForm : Form
                 action.AnchorHorizontal = action.AnchorHorizontal;
                 action.AnchorVertical = action.AnchorVertical;
                 break;
+            case PdfActionType.AdjustSize:
+                action.EnableWidth = action.EnableWidth || action.TargetedWidth is > 0;
+                action.EnableHeight = action.EnableHeight || action.TargetedHeight is > 0;
+                break;
             case PdfActionType.AddRuler:
                 action.Color = string.IsNullOrWhiteSpace(action.Color) ? "#FF0000" : action.Color;
                 action.Style = action.Style;
@@ -1853,7 +1957,7 @@ public sealed partial class MainForm : Form
     {
         var type = action?.Type;
         var hasMargins = type is PdfActionType.Trim or PdfActionType.Expand;
-        var hasTargetSize = type is PdfActionType.Resize or PdfActionType.Zoom;
+        var hasTargetSize = type is PdfActionType.Resize or PdfActionType.Zoom or PdfActionType.AdjustSize;
         var hasProportional = type is PdfActionType.Resize or PdfActionType.Zoom;
         var hasAnchor = type == PdfActionType.Zoom;
         var hasRuler = type == PdfActionType.AddRuler;
@@ -1863,8 +1967,8 @@ public sealed partial class MainForm : Form
         SetEditorRowVisible(topLabel, topNumericBox, hasMargins);
         SetEditorRowVisible(rightLabel, rightNumericBox, hasMargins);
         SetEditorRowVisible(bottomLabel, bottomNumericBox, hasMargins);
-        SetEditorRowVisible(targetedWidthLabel, targetedWidthNumericBox, hasTargetSize);
-        SetEditorRowVisible(targetedHeightLabel, targetedHeightNumericBox, hasTargetSize);
+        SetEditorRowVisible(targetedWidthLabel, targetedWidthPanel, hasTargetSize);
+        SetEditorRowVisible(targetedHeightLabel, targetedHeightPanel, hasTargetSize);
         SetEditorRowVisible(proportionalLabel, proportionalCheckBox, hasProportional);
         SetEditorRowVisible(anchorLabel, anchorPanel, hasAnchor);
         SetEditorRowVisible(rulerColorLabel, rulerColorPanel, hasRuler);
@@ -1929,6 +2033,10 @@ public sealed partial class MainForm : Form
         bottomNumericBox.Value = 0;
         targetedWidthNumericBox.Value = 0;
         targetedHeightNumericBox.Value = 0;
+        targetedWidthEnabledCheckBox.Checked = false;
+        targetedHeightEnabledCheckBox.Checked = false;
+        targetedWidthNumericBox.Enabled = false;
+        targetedHeightNumericBox.Enabled = false;
         proportionalCheckBox.Checked = true;
         rulerColorTextBox.Text = "";
         rulerStyleComboBox.SelectedIndex = -1;
@@ -2096,6 +2204,9 @@ public sealed partial class MainForm : Form
             case PdfActionType.Resize:
                 ApplyResizePageSizeChange(action, ref pageSizePoints);
                 break;
+            case PdfActionType.AdjustSize:
+                ApplyAdjustSizePageSizeChange(action, ref pageSizePoints);
+                break;
         }
     }
 
@@ -2126,6 +2237,15 @@ public sealed partial class MainForm : Form
         targetWidthInches = targetWidthInches is > 0 ? targetWidthInches : currentWidthInches;
         targetHeightInches = targetHeightInches is > 0 ? targetHeightInches : currentHeightInches;
         pageSizePoints = new SizeF(targetWidthInches.Value * 72f, targetHeightInches.Value * 72f);
+    }
+
+    private void ApplyAdjustSizePageSizeChange(ProjectAction action, ref SizeF pageSizePoints)
+    {
+        var targetWidth = action.EnableWidth && action.TargetedWidth is > 0 ? UnitValueToPoints(action.TargetedWidth.Value) : pageSizePoints.Width;
+        var targetHeight = action.EnableHeight && action.TargetedHeight is > 0 ? UnitValueToPoints(action.TargetedHeight.Value) : pageSizePoints.Height;
+        pageSizePoints = new SizeF(
+            Math.Max(pageSizePoints.Width, targetWidth),
+            Math.Max(pageSizePoints.Height, targetHeight));
     }
 
     private static bool TryGetSelectedEnum<TEnum>(ComboBox comboBox, out TEnum value)

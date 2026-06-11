@@ -124,6 +124,7 @@
   <data name="enum.action.Expand" xml:space="preserve"><value>Расширить</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>Изменить размер</value></data>
   <data name="enum.action.Zoom" xml:space="preserve"><value>Масштабировать</value></data>
+  <data name="enum.action.AdjustSize" xml:space="preserve"><value>Подогнать размер</value></data>
   <data name="enum.action.AddRuler" xml:space="preserve"><value>Добавить линейку</value></data>
   <data name="enum.pageFilter.Any" xml:space="preserve"><value>Любые</value></data>
   <data name="enum.pageFilter.Odd" xml:space="preserve"><value>Нечётные</value></data>

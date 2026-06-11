@@ -124,6 +124,7 @@
   <data name="enum.action.Expand" xml:space="preserve"><value>הרחבה</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>שינוי גודל</value></data>
   <data name="enum.action.Zoom" xml:space="preserve"><value>זום</value></data>
+  <data name="enum.action.AdjustSize" xml:space="preserve"><value>התאם גודל</value></data>
   <data name="enum.action.AddRuler" xml:space="preserve"><value>הוסף סרגל</value></data>
   <data name="enum.pageFilter.Any" xml:space="preserve"><value>כל סוג</value></data>
   <data name="enum.pageFilter.Odd" xml:space="preserve"><value>אי זוגיים</value></data>

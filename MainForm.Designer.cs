@@ -89,9 +89,13 @@ partial class MainForm
     private Label bottomLabel;
     private NumericUpDown bottomNumericBox;
     private Label targetedWidthLabel;
+    private FlowLayoutPanel targetedWidthPanel;
     private NumericUpDown targetedWidthNumericBox;
+    private CheckBox targetedWidthEnabledCheckBox;
     private Label targetedHeightLabel;
+    private FlowLayoutPanel targetedHeightPanel;
     private NumericUpDown targetedHeightNumericBox;
+    private CheckBox targetedHeightEnabledCheckBox;
     private Label proportionalLabel;
     private CheckBox proportionalCheckBox;
     private Label anchorLabel;
@@ -220,9 +224,13 @@ partial class MainForm
         bottomLabel = new Label();
         bottomNumericBox = new NumericUpDown();
         targetedWidthLabel = new Label();
+        targetedWidthPanel = new FlowLayoutPanel();
         targetedWidthNumericBox = new NumericUpDown();
+        targetedWidthEnabledCheckBox = new CheckBox();
         targetedHeightLabel = new Label();
+        targetedHeightPanel = new FlowLayoutPanel();
         targetedHeightNumericBox = new NumericUpDown();
+        targetedHeightEnabledCheckBox = new CheckBox();
         proportionalLabel = new Label();
         proportionalCheckBox = new CheckBox();
         anchorLabel = new Label();
@@ -759,9 +767,9 @@ partial class MainForm
         actionPropertiesPanel.Controls.Add(bottomLabel, 0, 7);
         actionPropertiesPanel.Controls.Add(bottomNumericBox, 1, 7);
         actionPropertiesPanel.Controls.Add(targetedWidthLabel, 0, 8);
-        actionPropertiesPanel.Controls.Add(targetedWidthNumericBox, 1, 8);
+        actionPropertiesPanel.Controls.Add(targetedWidthPanel, 1, 8);
         actionPropertiesPanel.Controls.Add(targetedHeightLabel, 0, 9);
-        actionPropertiesPanel.Controls.Add(targetedHeightNumericBox, 1, 9);
+        actionPropertiesPanel.Controls.Add(targetedHeightPanel, 1, 9);
         actionPropertiesPanel.Controls.Add(proportionalLabel, 0, 10);
         actionPropertiesPanel.Controls.Add(proportionalCheckBox, 1, 10);
         actionPropertiesPanel.Controls.Add(anchorLabel, 0, 11);
@@ -846,9 +854,13 @@ partial class MainForm
         ConfigureEditorLabel(bottomLabel, TranslationService.T("field.bottom"));
         ConfigureEditorNumericBox(bottomNumericBox, ActionNumberNumericBox_ValueChanged);
         ConfigureEditorLabel(targetedWidthLabel, TranslationService.T("field.width"));
+        ConfigureTargetParameterPanel(targetedWidthPanel, targetedWidthNumericBox, targetedWidthEnabledCheckBox);
         ConfigureEditorNumericBox(targetedWidthNumericBox, ActionNumberNumericBox_ValueChanged);
+        targetedWidthEnabledCheckBox.CheckedChanged += TargetedWidthEnabledCheckBox_CheckedChanged;
         ConfigureEditorLabel(targetedHeightLabel, TranslationService.T("field.height"));
+        ConfigureTargetParameterPanel(targetedHeightPanel, targetedHeightNumericBox, targetedHeightEnabledCheckBox);
         ConfigureEditorNumericBox(targetedHeightNumericBox, ActionNumberNumericBox_ValueChanged);
+        targetedHeightEnabledCheckBox.CheckedChanged += TargetedHeightEnabledCheckBox_CheckedChanged;
 
         ConfigureEditorLabel(proportionalLabel, TranslationService.T("field.proportional"));
         proportionalCheckBox.AutoSize = true;
@@ -990,6 +1002,18 @@ partial class MainForm
         numericBox.KeyDown += NumericBox_KeyDown;
         numericBox.MouseDown += NumericBox_MouseDown;
         numericBox.ValueChanged += handler;
+    }
+
+    private static void ConfigureTargetParameterPanel(FlowLayoutPanel panel, NumericUpDown numericBox, CheckBox checkBox)
+    {
+        panel.Controls.Add(numericBox);
+        panel.Controls.Add(checkBox);
+        panel.Dock = DockStyle.Fill;
+        panel.Margin = new Padding(0);
+        panel.WrapContents = false;
+        numericBox.Width = 128;
+        checkBox.AutoSize = true;
+        checkBox.Margin = new Padding(8, 4, 0, 0);
     }
 
     private void ConfigureAnchorButton(RadioButton radioButton)

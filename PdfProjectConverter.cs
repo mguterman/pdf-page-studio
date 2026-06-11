@@ -73,6 +73,9 @@ public static class PdfProjectConverter
             case PdfActionType.Zoom:
                 ApplyZoom(plan, action);
                 break;
+            case PdfActionType.AdjustSize:
+                ApplyAdjustSize(plan, action, unitType);
+                break;
         }
     }
 
@@ -166,6 +169,27 @@ public static class PdfProjectConverter
         var offsetX = GetAnchorOffset(plan.Width, contentWidth, action.AnchorHorizontal);
         var offsetY = GetAnchorOffset(plan.Height, contentHeight, action.AnchorVertical);
         ScaleAboutBottomLeft(plan, scaleX, scaleY, offsetX, offsetY);
+    }
+
+    private static void ApplyAdjustSize(PagePlan plan, ProjectAction action, UnitType unitType)
+    {
+        var targetWidth = action.EnableWidth && action.TargetedWidth is > 0
+            ? Math.Max(plan.Width, UnitValueToPoints(action.TargetedWidth.Value, unitType))
+            : plan.Width;
+        var targetHeight = action.EnableHeight && action.TargetedHeight is > 0
+            ? Math.Max(plan.Height, UnitValueToPoints(action.TargetedHeight.Value, unitType))
+            : plan.Height;
+        var addWidth = targetWidth - plan.Width;
+        var addHeight = targetHeight - plan.Height;
+        if (addWidth <= 0 && addHeight <= 0)
+        {
+            return;
+        }
+
+        plan.TranslateX += addWidth / 2f;
+        plan.TranslateY += addHeight / 2f;
+        plan.Width = Math.Max(MinimumPageSize, targetWidth);
+        plan.Height = Math.Max(MinimumPageSize, targetHeight);
     }
 
     private static void ScaleAboutBottomLeft(PagePlan plan, float scaleX, float scaleY, float offsetX, float offsetY)

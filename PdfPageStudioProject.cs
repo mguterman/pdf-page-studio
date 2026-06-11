@@ -24,6 +24,8 @@ public sealed class ProjectAction
     public float? Bottom { get; set; }
     public float? TargetedWidth { get; set; }
     public float? TargetedHeight { get; set; }
+    public bool EnableWidth { get; set; }
+    public bool EnableHeight { get; set; }
     public bool? Proportional { get; set; }
     public AnchorHorizontal AnchorHorizontal { get; set; } = AnchorHorizontal.Center;
     public AnchorVertical AnchorVertical { get; set; } = AnchorVertical.Center;
@@ -58,6 +60,7 @@ public enum PdfActionType
     Expand,
     Resize,
     Zoom,
+    AdjustSize,
     AddRuler,
 }
 
