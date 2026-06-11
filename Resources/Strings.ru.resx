@@ -66,6 +66,19 @@
   <data name="actions.delete" xml:space="preserve"><value>Удалить</value></data>
   <data name="actions.up" xml:space="preserve"><value>Вверх</value></data>
   <data name="actions.down" xml:space="preserve"><value>Вниз</value></data>
+  <data name="actions.column.enabled" xml:space="preserve"><value>Вкл</value></data>
+  <data name="actions.column.index" xml:space="preserve"><value>#</value></data>
+  <data name="actions.column.name" xml:space="preserve"><value>Имя</value></data>
+  <data name="actions.column.type" xml:space="preserve"><value>Тип</value></data>
+  <data name="actions.column.pages" xml:space="preserve"><value>Стр.</value></data>
+  <data name="actions.add.tooltip" xml:space="preserve"><value>Добавить новое действие</value></data>
+  <data name="actions.insertBefore.tooltip" xml:space="preserve"><value>Вставить действие перед выбранным</value></data>
+  <data name="actions.insertAfter.tooltip" xml:space="preserve"><value>Вставить действие после выбранного</value></data>
+  <data name="actions.duplicate.tooltip" xml:space="preserve"><value>Дублировать выбранное действие</value></data>
+  <data name="actions.enabled.tooltip" xml:space="preserve"><value>Включить или выключить это действие</value></data>
+  <data name="actions.up.tooltip" xml:space="preserve"><value>Переместить действие вверх</value></data>
+  <data name="actions.down.tooltip" xml:space="preserve"><value>Переместить действие вниз</value></data>
+  <data name="actions.delete.tooltip" xml:space="preserve"><value>Удалить действие</value></data>
   <data name="properties.title" xml:space="preserve"><value>Параметры</value></data>
   <data name="field.type" xml:space="preserve"><value>Тип</value></data>
   <data name="field.name" xml:space="preserve"><value>Имя</value></data>

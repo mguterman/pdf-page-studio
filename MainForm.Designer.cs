@@ -59,15 +59,17 @@ partial class MainForm
     private Label actionsTitleLabel;
     private FlowLayoutPanel actionButtonsPanel;
     private Button addActionButton;
-    private Button insertBeforeActionButton;
-    private Button insertAfterActionButton;
-    private Button duplicateActionButton;
     private DataGridView actionsGridView;
     private DataGridViewCheckBoxColumn actionEnabledColumn;
+    private DataGridViewTextBoxColumn actionIndexColumn;
     private DataGridViewTextBoxColumn actionNameColumn;
+    private DataGridViewTextBoxColumn actionTypeColumn;
+    private DataGridViewTextBoxColumn actionPagesColumn;
     private DataGridViewButtonColumn actionMoveUpColumn;
     private DataGridViewButtonColumn actionMoveDownColumn;
+    private DataGridViewButtonColumn actionDuplicateColumn;
     private DataGridViewButtonColumn actionDeleteColumn;
+    private ToolTip actionToolTip;
     private Label propertiesTitleLabel;
     private Panel actionPropertiesScrollPanel;
     private TableLayoutPanel actionPropertiesPanel;
@@ -193,15 +195,17 @@ partial class MainForm
         actionsTitleLabel = new Label();
         actionButtonsPanel = new FlowLayoutPanel();
         addActionButton = new Button();
-        insertBeforeActionButton = new Button();
-        insertAfterActionButton = new Button();
-        duplicateActionButton = new Button();
         actionsGridView = new DataGridView();
         actionEnabledColumn = new DataGridViewCheckBoxColumn();
+        actionIndexColumn = new DataGridViewTextBoxColumn();
         actionNameColumn = new DataGridViewTextBoxColumn();
+        actionTypeColumn = new DataGridViewTextBoxColumn();
+        actionPagesColumn = new DataGridViewTextBoxColumn();
         actionMoveUpColumn = new DataGridViewButtonColumn();
         actionMoveDownColumn = new DataGridViewButtonColumn();
+        actionDuplicateColumn = new DataGridViewButtonColumn();
         actionDeleteColumn = new DataGridViewButtonColumn();
+        actionToolTip = new ToolTip(components);
         propertiesTitleLabel = new Label();
         actionPropertiesScrollPanel = new Panel();
         actionPropertiesPanel = new TableLayoutPanel();
@@ -448,7 +452,7 @@ partial class MainForm
 
         pdfWorkspacePanel.ColumnCount = 2;
         pdfWorkspacePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        pdfWorkspacePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 340F));
+        pdfWorkspacePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 480F));
         pdfWorkspacePanel.Controls.Add(pdfNavigationToolStrip, 0, 0);
         pdfWorkspacePanel.Controls.Add(pdfPageViewer, 0, 1);
         pdfWorkspacePanel.Controls.Add(actionsPanel, 1, 0);
@@ -634,9 +638,6 @@ partial class MainForm
         actionsTitleLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         actionButtonsPanel.Controls.Add(addActionButton);
-        actionButtonsPanel.Controls.Add(insertBeforeActionButton);
-        actionButtonsPanel.Controls.Add(insertAfterActionButton);
-        actionButtonsPanel.Controls.Add(duplicateActionButton);
         actionButtonsPanel.Dock = DockStyle.Fill;
         actionButtonsPanel.Name = "actionButtonsPanel";
         actionButtonsPanel.TabIndex = 1;
@@ -648,27 +649,6 @@ partial class MainForm
         addActionButton.UseVisualStyleBackColor = true;
         addActionButton.Click += AddActionButton_Click;
 
-        insertBeforeActionButton.Name = "insertBeforeActionButton";
-        insertBeforeActionButton.Size = new Size(102, 28);
-        insertBeforeActionButton.TabIndex = 1;
-        insertBeforeActionButton.Text = TranslationService.T("actions.insertBefore");
-        insertBeforeActionButton.UseVisualStyleBackColor = true;
-        insertBeforeActionButton.Click += InsertBeforeActionButton_Click;
-
-        insertAfterActionButton.Name = "insertAfterActionButton";
-        insertAfterActionButton.Size = new Size(94, 28);
-        insertAfterActionButton.TabIndex = 2;
-        insertAfterActionButton.Text = TranslationService.T("actions.insertAfter");
-        insertAfterActionButton.UseVisualStyleBackColor = true;
-        insertAfterActionButton.Click += InsertAfterActionButton_Click;
-
-        duplicateActionButton.Name = "duplicateActionButton";
-        duplicateActionButton.Size = new Size(88, 28);
-        duplicateActionButton.TabIndex = 3;
-        duplicateActionButton.Text = TranslationService.T("actions.duplicate");
-        duplicateActionButton.UseVisualStyleBackColor = true;
-        duplicateActionButton.Click += DuplicateActionButton_Click;
-
         actionsGridView.AllowUserToAddRows = false;
         actionsGridView.AllowUserToDeleteRows = false;
         actionsGridView.AllowUserToResizeRows = false;
@@ -677,8 +657,8 @@ partial class MainForm
         actionsGridView.BorderStyle = BorderStyle.FixedSingle;
         actionsGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
         actionsGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        actionsGridView.ColumnHeadersVisible = false;
-        actionsGridView.Columns.AddRange(new DataGridViewColumn[] { actionEnabledColumn, actionNameColumn, actionMoveUpColumn, actionMoveDownColumn, actionDeleteColumn });
+        actionsGridView.ColumnHeadersVisible = true;
+        actionsGridView.Columns.AddRange(new DataGridViewColumn[] { actionEnabledColumn, actionIndexColumn, actionNameColumn, actionTypeColumn, actionPagesColumn, actionMoveUpColumn, actionMoveDownColumn, actionDuplicateColumn, actionDeleteColumn });
         actionsGridView.DefaultCellStyle.BackColor = Color.White;
         actionsGridView.DefaultCellStyle.ForeColor = SystemColors.ControlText;
         actionsGridView.DefaultCellStyle.Padding = new Padding(4, 2, 4, 2);
@@ -692,6 +672,7 @@ partial class MainForm
         actionsGridView.RowHeadersVisible = false;
         actionsGridView.RowTemplate.Height = 36;
         actionsGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        actionsGridView.ShowCellToolTips = true;
         actionsGridView.TabIndex = 2;
         actionsGridView.CellClick += ActionsGridView_CellClick;
         actionsGridView.CellContentClick += ActionsGridView_CellContentClick;
@@ -705,26 +686,54 @@ partial class MainForm
         actionEnabledColumn.Resizable = DataGridViewTriState.False;
         actionEnabledColumn.Width = 36;
 
+        actionIndexColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        actionIndexColumn.HeaderText = "#";
+        actionIndexColumn.Name = "actionIndexColumn";
+        actionIndexColumn.ReadOnly = true;
+        actionIndexColumn.Resizable = DataGridViewTriState.False;
+        actionIndexColumn.Width = 34;
+
         actionNameColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-        actionNameColumn.HeaderText = "Action";
+        actionNameColumn.HeaderText = "Name";
         actionNameColumn.Name = "actionNameColumn";
         actionNameColumn.ReadOnly = true;
+        actionNameColumn.MinimumWidth = 120;
+
+        actionTypeColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        actionTypeColumn.HeaderText = "Type";
+        actionTypeColumn.Name = "actionTypeColumn";
+        actionTypeColumn.ReadOnly = true;
+        actionTypeColumn.Width = 90;
+
+        actionPagesColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        actionPagesColumn.HeaderText = "Pages";
+        actionPagesColumn.Name = "actionPagesColumn";
+        actionPagesColumn.ReadOnly = true;
+        actionPagesColumn.Width = 82;
 
         actionMoveUpColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         actionMoveUpColumn.HeaderText = "";
         actionMoveUpColumn.Name = "actionMoveUpColumn";
         actionMoveUpColumn.ReadOnly = true;
-        actionMoveUpColumn.Text = "▲";
-        actionMoveUpColumn.UseColumnTextForButtonValue = true;
+        actionMoveUpColumn.Text = "^";
+        actionMoveUpColumn.UseColumnTextForButtonValue = false;
         actionMoveUpColumn.Width = 34;
 
         actionMoveDownColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         actionMoveDownColumn.HeaderText = "";
         actionMoveDownColumn.Name = "actionMoveDownColumn";
         actionMoveDownColumn.ReadOnly = true;
-        actionMoveDownColumn.Text = "▼";
-        actionMoveDownColumn.UseColumnTextForButtonValue = true;
+        actionMoveDownColumn.Text = "v";
+        actionMoveDownColumn.UseColumnTextForButtonValue = false;
         actionMoveDownColumn.Width = 34;
+
+        actionDuplicateColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        actionDuplicateColumn.HeaderText = "";
+        actionDuplicateColumn.Name = "actionDuplicateColumn";
+        actionDuplicateColumn.ReadOnly = true;
+        actionDuplicateColumn.Text = "+";
+        actionDuplicateColumn.UseColumnTextForButtonValue = true;
+        actionDuplicateColumn.Width = 34;
 
         actionDeleteColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         actionDeleteColumn.HeaderText = "";

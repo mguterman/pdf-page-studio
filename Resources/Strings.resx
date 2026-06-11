@@ -66,6 +66,19 @@
   <data name="actions.delete" xml:space="preserve"><value>Delete</value></data>
   <data name="actions.up" xml:space="preserve"><value>Up</value></data>
   <data name="actions.down" xml:space="preserve"><value>Down</value></data>
+  <data name="actions.column.enabled" xml:space="preserve"><value>On</value></data>
+  <data name="actions.column.index" xml:space="preserve"><value>#</value></data>
+  <data name="actions.column.name" xml:space="preserve"><value>Name</value></data>
+  <data name="actions.column.type" xml:space="preserve"><value>Type</value></data>
+  <data name="actions.column.pages" xml:space="preserve"><value>Pages</value></data>
+  <data name="actions.add.tooltip" xml:space="preserve"><value>Add a new action</value></data>
+  <data name="actions.insertBefore.tooltip" xml:space="preserve"><value>Insert an action before the selected action</value></data>
+  <data name="actions.insertAfter.tooltip" xml:space="preserve"><value>Insert an action after the selected action</value></data>
+  <data name="actions.duplicate.tooltip" xml:space="preserve"><value>Duplicate the selected action</value></data>
+  <data name="actions.enabled.tooltip" xml:space="preserve"><value>Enable or disable this action</value></data>
+  <data name="actions.up.tooltip" xml:space="preserve"><value>Move action up</value></data>
+  <data name="actions.down.tooltip" xml:space="preserve"><value>Move action down</value></data>
+  <data name="actions.delete.tooltip" xml:space="preserve"><value>Delete action</value></data>
   <data name="properties.title" xml:space="preserve"><value>Properties</value></data>
   <data name="field.type" xml:space="preserve"><value>Type</value></data>
   <data name="field.name" xml:space="preserve"><value>Name</value></data>

@@ -66,6 +66,19 @@
   <data name="actions.delete" xml:space="preserve"><value>מחק</value></data>
   <data name="actions.up" xml:space="preserve"><value>למעלה</value></data>
   <data name="actions.down" xml:space="preserve"><value>למטה</value></data>
+  <data name="actions.column.enabled" xml:space="preserve"><value>פעיל</value></data>
+  <data name="actions.column.index" xml:space="preserve"><value>#</value></data>
+  <data name="actions.column.name" xml:space="preserve"><value>שם</value></data>
+  <data name="actions.column.type" xml:space="preserve"><value>סוג</value></data>
+  <data name="actions.column.pages" xml:space="preserve"><value>עמודים</value></data>
+  <data name="actions.add.tooltip" xml:space="preserve"><value>הוסף פעולה חדשה</value></data>
+  <data name="actions.insertBefore.tooltip" xml:space="preserve"><value>הכנס פעולה לפני הפעולה שנבחרה</value></data>
+  <data name="actions.insertAfter.tooltip" xml:space="preserve"><value>הכנס פעולה אחרי הפעולה שנבחרה</value></data>
+  <data name="actions.duplicate.tooltip" xml:space="preserve"><value>שכפל את הפעולה שנבחרה</value></data>
+  <data name="actions.enabled.tooltip" xml:space="preserve"><value>הפעל או כבה פעולה זו</value></data>
+  <data name="actions.up.tooltip" xml:space="preserve"><value>העבר פעולה למעלה</value></data>
+  <data name="actions.down.tooltip" xml:space="preserve"><value>העבר פעולה למטה</value></data>
+  <data name="actions.delete.tooltip" xml:space="preserve"><value>מחק פעולה</value></data>
   <data name="properties.title" xml:space="preserve"><value>מאפיינים</value></data>
   <data name="field.type" xml:space="preserve"><value>סוג</value></data>
   <data name="field.name" xml:space="preserve"><value>שם</value></data>

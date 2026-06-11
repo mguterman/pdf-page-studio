@@ -360,9 +360,12 @@ public sealed partial class MainForm : Form
 
         actionsTitleLabel.Text = TranslationService.T("actions.title");
         addActionButton.Text = TranslationService.T("actions.add");
-        insertBeforeActionButton.Text = TranslationService.T("actions.insertBefore");
-        insertAfterActionButton.Text = TranslationService.T("actions.insertAfter");
-        duplicateActionButton.Text = TranslationService.T("actions.duplicate");
+        actionEnabledColumn.HeaderText = TranslationService.T("actions.column.enabled");
+        actionIndexColumn.HeaderText = TranslationService.T("actions.column.index");
+        actionNameColumn.HeaderText = TranslationService.T("actions.column.name");
+        actionTypeColumn.HeaderText = TranslationService.T("actions.column.type");
+        actionPagesColumn.HeaderText = TranslationService.T("actions.column.pages");
+        actionToolTip.SetToolTip(addActionButton, TranslationService.T("actions.add.tooltip"));
         propertiesTitleLabel.Text = TranslationService.T("properties.title");
 
         actionTypeLabel.Text = TranslationService.T("field.type");
@@ -513,20 +516,6 @@ public sealed partial class MainForm : Form
         ShowAddActionMenu(addActionButton, _project.Actions.Count);
     }
 
-    private void InsertBeforeActionButton_Click(object? sender, EventArgs e)
-    {
-        var selectedIndex = GetSelectedActionIndex();
-        var index = selectedIndex >= 0 ? selectedIndex : 0;
-        ShowAddActionMenu(insertBeforeActionButton, index);
-    }
-
-    private void InsertAfterActionButton_Click(object? sender, EventArgs e)
-    {
-        var selectedIndex = GetSelectedActionIndex();
-        var index = selectedIndex >= 0 ? selectedIndex + 1 : _project.Actions.Count;
-        ShowAddActionMenu(insertAfterActionButton, index);
-    }
-
     private void DeleteActionButton_Click(object? sender, EventArgs e)
     {
         DeleteAction(GetSelectedActionIndex());
@@ -534,7 +523,11 @@ public sealed partial class MainForm : Form
 
     private void DuplicateActionButton_Click(object? sender, EventArgs e)
     {
-        var index = GetSelectedActionIndex();
+        DuplicateAction(GetSelectedActionIndex());
+    }
+
+    private void DuplicateAction(int index)
+    {
         if (index < 0 || index >= _project.Actions.Count)
         {
             return;
@@ -620,11 +613,25 @@ public sealed partial class MainForm : Form
 
         if (e.ColumnIndex == actionMoveUpColumn.Index)
         {
+            if (e.RowIndex == 0)
+            {
+                return;
+            }
+
             MoveAction(e.RowIndex, -1);
         }
         else if (e.ColumnIndex == actionMoveDownColumn.Index)
         {
+            if (e.RowIndex == _project.Actions.Count - 1)
+            {
+                return;
+            }
+
             MoveAction(e.RowIndex, 1);
+        }
+        else if (e.ColumnIndex == actionDuplicateColumn.Index)
+        {
+            DuplicateAction(e.RowIndex);
         }
         else if (e.ColumnIndex == actionDeleteColumn.Index)
         {
@@ -1457,7 +1464,38 @@ public sealed partial class MainForm : Form
         for (var index = 0; index < _project.Actions.Count; index++)
         {
             var action = _project.Actions[index];
-            actionsGridView.Rows.Add(action.Enabled, FormatActionListItem(index, action), "▲", "▼", "X");
+            var rowIndex = actionsGridView.Rows.Add(
+                action.Enabled,
+                index + 1,
+                action.Name,
+                GetActionDisplayName(action.Type),
+                FormatPageFilter(action.PageFilter),
+                index == 0 ? "" : "^",
+                index == _project.Actions.Count - 1 ? "" : "v",
+                "+",
+                "X");
+
+            var row = actionsGridView.Rows[rowIndex];
+            row.Cells[actionEnabledColumn.Index].ToolTipText = TranslationService.T("actions.enabled.tooltip");
+            row.Cells[actionNameColumn.Index].ToolTipText = action.Name;
+            row.Cells[actionTypeColumn.Index].ToolTipText = GetActionDisplayName(action.Type);
+            row.Cells[actionPagesColumn.Index].ToolTipText = FormatPageFilter(action.PageFilter);
+            row.Cells[actionMoveUpColumn.Index].ToolTipText = index == 0 ? "" : TranslationService.T("actions.up.tooltip");
+            row.Cells[actionMoveDownColumn.Index].ToolTipText = index == _project.Actions.Count - 1 ? "" : TranslationService.T("actions.down.tooltip");
+            row.Cells[actionDuplicateColumn.Index].ToolTipText = TranslationService.T("actions.duplicate.tooltip");
+            row.Cells[actionDeleteColumn.Index].ToolTipText = TranslationService.T("actions.delete.tooltip");
+
+            if (index == 0)
+            {
+                row.Cells[actionMoveUpColumn.Index].Style.ForeColor = SystemColors.GrayText;
+                row.Cells[actionMoveUpColumn.Index].Style.SelectionForeColor = SystemColors.GrayText;
+            }
+
+            if (index == _project.Actions.Count - 1)
+            {
+                row.Cells[actionMoveDownColumn.Index].Style.ForeColor = SystemColors.GrayText;
+                row.Cells[actionMoveDownColumn.Index].Style.SelectionForeColor = SystemColors.GrayText;
+            }
         }
 
         if (_project.Actions.Count > 0)
@@ -1540,11 +1578,7 @@ public sealed partial class MainForm : Form
 
     private void UpdateActionButtons()
     {
-        var selectedIndex = GetSelectedActionIndex();
-        var hasSelection = selectedIndex >= 0 && selectedIndex < _project.Actions.Count;
-        insertBeforeActionButton.Enabled = hasSelection || _project.Actions.Count == 0;
-        insertAfterActionButton.Enabled = hasSelection || _project.Actions.Count == 0;
-        duplicateActionButton.Enabled = hasSelection;
+        addActionButton.Enabled = true;
     }
 
     private void UpdatePreviewStatus()
