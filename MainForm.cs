@@ -360,12 +360,16 @@ public sealed partial class MainForm : Form
 
         actionsTitleLabel.Text = TranslationService.T("actions.title");
         addActionButton.Text = TranslationService.T("actions.add");
+        addLineButton.Text = TranslationService.T("actions.addLine");
+        addFrameButton.Text = TranslationService.T("actions.addFrame");
         actionEnabledColumn.HeaderText = TranslationService.T("actions.column.enabled");
         actionIndexColumn.HeaderText = TranslationService.T("actions.column.index");
         actionNameColumn.HeaderText = TranslationService.T("actions.column.name");
         actionTypeColumn.HeaderText = TranslationService.T("actions.column.type");
         actionPagesColumn.HeaderText = TranslationService.T("actions.column.pages");
         actionToolTip.SetToolTip(addActionButton, TranslationService.T("actions.add.tooltip"));
+        actionToolTip.SetToolTip(addLineButton, TranslationService.T("actions.addLine.tooltip"));
+        actionToolTip.SetToolTip(addFrameButton, TranslationService.T("actions.addFrame.tooltip"));
         propertiesTitleLabel.Text = TranslationService.T("properties.title");
 
         actionTypeLabel.Text = TranslationService.T("field.type");
@@ -1579,6 +1583,8 @@ public sealed partial class MainForm : Form
     private void UpdateActionButtons()
     {
         addActionButton.Enabled = true;
+        addLineButton.Enabled = true;
+        addFrameButton.Enabled = true;
     }
 
     private void UpdatePreviewStatus()

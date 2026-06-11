@@ -59,6 +59,8 @@ partial class MainForm
     private Label actionsTitleLabel;
     private FlowLayoutPanel actionButtonsPanel;
     private Button addActionButton;
+    private Button addLineButton;
+    private Button addFrameButton;
     private DataGridView actionsGridView;
     private DataGridViewCheckBoxColumn actionEnabledColumn;
     private DataGridViewTextBoxColumn actionIndexColumn;
@@ -195,6 +197,8 @@ partial class MainForm
         actionsTitleLabel = new Label();
         actionButtonsPanel = new FlowLayoutPanel();
         addActionButton = new Button();
+        addLineButton = new Button();
+        addFrameButton = new Button();
         actionsGridView = new DataGridView();
         actionEnabledColumn = new DataGridViewCheckBoxColumn();
         actionIndexColumn = new DataGridViewTextBoxColumn();
@@ -638,16 +642,30 @@ partial class MainForm
         actionsTitleLabel.TextAlign = ContentAlignment.MiddleLeft;
 
         actionButtonsPanel.Controls.Add(addActionButton);
+        actionButtonsPanel.Controls.Add(addLineButton);
+        actionButtonsPanel.Controls.Add(addFrameButton);
         actionButtonsPanel.Dock = DockStyle.Fill;
         actionButtonsPanel.Name = "actionButtonsPanel";
         actionButtonsPanel.TabIndex = 1;
 
         addActionButton.Name = "addActionButton";
-        addActionButton.Size = new Size(68, 28);
+        addActionButton.Size = new Size(86, 28);
         addActionButton.TabIndex = 0;
         addActionButton.Text = TranslationService.T("actions.add");
         addActionButton.UseVisualStyleBackColor = true;
         addActionButton.Click += AddActionButton_Click;
+
+        addLineButton.Name = "addLineButton";
+        addLineButton.Size = new Size(76, 28);
+        addLineButton.TabIndex = 1;
+        addLineButton.Text = TranslationService.T("actions.addLine");
+        addLineButton.UseVisualStyleBackColor = true;
+
+        addFrameButton.Name = "addFrameButton";
+        addFrameButton.Size = new Size(82, 28);
+        addFrameButton.TabIndex = 2;
+        addFrameButton.Text = TranslationService.T("actions.addFrame");
+        addFrameButton.UseVisualStyleBackColor = true;
 
         actionsGridView.AllowUserToAddRows = false;
         actionsGridView.AllowUserToDeleteRows = false;

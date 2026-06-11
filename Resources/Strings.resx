@@ -59,7 +59,9 @@
   <data name="actions.title" xml:space="preserve"><value>Actions</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>Apply All</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>Until Current</value></data>
-  <data name="actions.add" xml:space="preserve"><value>Add</value></data>
+  <data name="actions.add" xml:space="preserve"><value>Transform</value></data>
+  <data name="actions.addLine" xml:space="preserve"><value>Add Line</value></data>
+  <data name="actions.addFrame" xml:space="preserve"><value>Add Frame</value></data>
   <data name="actions.insertBefore" xml:space="preserve"><value>Insert Before</value></data>
   <data name="actions.insertAfter" xml:space="preserve"><value>Insert After</value></data>
   <data name="actions.duplicate" xml:space="preserve"><value>Duplicate</value></data>
@@ -71,7 +73,9 @@
   <data name="actions.column.name" xml:space="preserve"><value>Name</value></data>
   <data name="actions.column.type" xml:space="preserve"><value>Type</value></data>
   <data name="actions.column.pages" xml:space="preserve"><value>Pages</value></data>
-  <data name="actions.add.tooltip" xml:space="preserve"><value>Add a new action</value></data>
+  <data name="actions.add.tooltip" xml:space="preserve"><value>Add a transformation action</value></data>
+  <data name="actions.addLine.tooltip" xml:space="preserve"><value>Add a line action</value></data>
+  <data name="actions.addFrame.tooltip" xml:space="preserve"><value>Add a frame action</value></data>
   <data name="actions.insertBefore.tooltip" xml:space="preserve"><value>Insert an action before the selected action</value></data>
   <data name="actions.insertAfter.tooltip" xml:space="preserve"><value>Insert an action after the selected action</value></data>
   <data name="actions.duplicate.tooltip" xml:space="preserve"><value>Duplicate the selected action</value></data>

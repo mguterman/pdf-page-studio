@@ -59,7 +59,9 @@
   <data name="actions.title" xml:space="preserve"><value>פעולות</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>הכל</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>עד הנוכחי</value></data>
-  <data name="actions.add" xml:space="preserve"><value>הוסף</value></data>
+  <data name="actions.add" xml:space="preserve"><value>שינוי</value></data>
+  <data name="actions.addLine" xml:space="preserve"><value>הוסף קו</value></data>
+  <data name="actions.addFrame" xml:space="preserve"><value>הוסף מסגרת</value></data>
   <data name="actions.insertBefore" xml:space="preserve"><value>הכנס לפני</value></data>
   <data name="actions.insertAfter" xml:space="preserve"><value>הכנס אחרי</value></data>
   <data name="actions.duplicate" xml:space="preserve"><value>שכפל</value></data>
@@ -71,7 +73,9 @@
   <data name="actions.column.name" xml:space="preserve"><value>שם</value></data>
   <data name="actions.column.type" xml:space="preserve"><value>סוג</value></data>
   <data name="actions.column.pages" xml:space="preserve"><value>עמודים</value></data>
-  <data name="actions.add.tooltip" xml:space="preserve"><value>הוסף פעולה חדשה</value></data>
+  <data name="actions.add.tooltip" xml:space="preserve"><value>הוסף פעולת שינוי</value></data>
+  <data name="actions.addLine.tooltip" xml:space="preserve"><value>הוסף פעולת קו</value></data>
+  <data name="actions.addFrame.tooltip" xml:space="preserve"><value>הוסף פעולת מסגרת</value></data>
   <data name="actions.insertBefore.tooltip" xml:space="preserve"><value>הכנס פעולה לפני הפעולה שנבחרה</value></data>
   <data name="actions.insertAfter.tooltip" xml:space="preserve"><value>הכנס פעולה אחרי הפעולה שנבחרה</value></data>
   <data name="actions.duplicate.tooltip" xml:space="preserve"><value>שכפל את הפעולה שנבחרה</value></data>

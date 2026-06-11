@@ -59,7 +59,9 @@
   <data name="actions.title" xml:space="preserve"><value>Действия</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>Все</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>До текущего</value></data>
-  <data name="actions.add" xml:space="preserve"><value>Добавить</value></data>
+  <data name="actions.add" xml:space="preserve"><value>Преобразовать</value></data>
+  <data name="actions.addLine" xml:space="preserve"><value>Линия</value></data>
+  <data name="actions.addFrame" xml:space="preserve"><value>Рамка</value></data>
   <data name="actions.insertBefore" xml:space="preserve"><value>Вставить до</value></data>
   <data name="actions.insertAfter" xml:space="preserve"><value>Вставить после</value></data>
   <data name="actions.duplicate" xml:space="preserve"><value>Дублировать</value></data>
@@ -71,7 +73,9 @@
   <data name="actions.column.name" xml:space="preserve"><value>Имя</value></data>
   <data name="actions.column.type" xml:space="preserve"><value>Тип</value></data>
   <data name="actions.column.pages" xml:space="preserve"><value>Стр.</value></data>
-  <data name="actions.add.tooltip" xml:space="preserve"><value>Добавить новое действие</value></data>
+  <data name="actions.add.tooltip" xml:space="preserve"><value>Добавить действие преобразования</value></data>
+  <data name="actions.addLine.tooltip" xml:space="preserve"><value>Добавить действие линии</value></data>
+  <data name="actions.addFrame.tooltip" xml:space="preserve"><value>Добавить действие рамки</value></data>
   <data name="actions.insertBefore.tooltip" xml:space="preserve"><value>Вставить действие перед выбранным</value></data>
   <data name="actions.insertAfter.tooltip" xml:space="preserve"><value>Вставить действие после выбранного</value></data>
   <data name="actions.duplicate.tooltip" xml:space="preserve"><value>Дублировать выбранное действие</value></data>
