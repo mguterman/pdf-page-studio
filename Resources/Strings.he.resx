@@ -59,6 +59,7 @@
   <data name="actions.title" xml:space="preserve"><value>פעולות</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>הכל</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>עד הנוכחי</value></data>
+  <data name="actions.selectAll" xml:space="preserve"><value>בחר הכל</value></data>
   <data name="actions.add" xml:space="preserve"><value>שינוי</value></data>
   <data name="actions.addLine" xml:space="preserve"><value>הוסף קו</value></data>
   <data name="actions.addFrame" xml:space="preserve"><value>הוסף מסגרת</value></data>
@@ -73,6 +74,7 @@
   <data name="actions.column.name" xml:space="preserve"><value>שם</value></data>
   <data name="actions.column.type" xml:space="preserve"><value>סוג</value></data>
   <data name="actions.column.pages" xml:space="preserve"><value>עמודים</value></data>
+  <data name="actions.selectAll.tooltip" xml:space="preserve"><value>בחר או בטל בחירה של כל הפעולות</value></data>
   <data name="actions.add.tooltip" xml:space="preserve"><value>הוסף פעולת שינוי</value></data>
   <data name="actions.addLine.tooltip" xml:space="preserve"><value>הוסף פעולת קו</value></data>
   <data name="actions.addFrame.tooltip" xml:space="preserve"><value>הוסף פעולת מסגרת</value></data>

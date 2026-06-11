@@ -58,6 +58,7 @@ partial class MainForm
     private TableLayoutPanel actionsPanel;
     private Label actionsTitleLabel;
     private FlowLayoutPanel actionButtonsPanel;
+    private CheckBox selectAllActionsCheckBox;
     private Button addActionButton;
     private Button addLineButton;
     private Button addFrameButton;
@@ -196,6 +197,7 @@ partial class MainForm
         actionsPanel = new TableLayoutPanel();
         actionsTitleLabel = new Label();
         actionButtonsPanel = new FlowLayoutPanel();
+        selectAllActionsCheckBox = new CheckBox();
         addActionButton = new Button();
         addLineButton = new Button();
         addFrameButton = new Button();
@@ -641,6 +643,7 @@ partial class MainForm
         actionsTitleLabel.Text = TranslationService.T("actions.title");
         actionsTitleLabel.TextAlign = ContentAlignment.MiddleLeft;
 
+        actionButtonsPanel.Controls.Add(selectAllActionsCheckBox);
         actionButtonsPanel.Controls.Add(addActionButton);
         actionButtonsPanel.Controls.Add(addLineButton);
         actionButtonsPanel.Controls.Add(addFrameButton);
@@ -648,22 +651,31 @@ partial class MainForm
         actionButtonsPanel.Name = "actionButtonsPanel";
         actionButtonsPanel.TabIndex = 1;
 
+        selectAllActionsCheckBox.AutoSize = true;
+        selectAllActionsCheckBox.Name = "selectAllActionsCheckBox";
+        selectAllActionsCheckBox.Size = new Size(78, 19);
+        selectAllActionsCheckBox.TabIndex = 0;
+        selectAllActionsCheckBox.Text = TranslationService.T("actions.selectAll");
+        selectAllActionsCheckBox.ThreeState = true;
+        selectAllActionsCheckBox.UseVisualStyleBackColor = true;
+        selectAllActionsCheckBox.Click += SelectAllActionsCheckBox_Click;
+
         addActionButton.Name = "addActionButton";
         addActionButton.Size = new Size(86, 28);
-        addActionButton.TabIndex = 0;
+        addActionButton.TabIndex = 1;
         addActionButton.Text = TranslationService.T("actions.add");
         addActionButton.UseVisualStyleBackColor = true;
         addActionButton.Click += AddActionButton_Click;
 
         addLineButton.Name = "addLineButton";
         addLineButton.Size = new Size(76, 28);
-        addLineButton.TabIndex = 1;
+        addLineButton.TabIndex = 2;
         addLineButton.Text = TranslationService.T("actions.addLine");
         addLineButton.UseVisualStyleBackColor = true;
 
         addFrameButton.Name = "addFrameButton";
         addFrameButton.Size = new Size(82, 28);
-        addFrameButton.TabIndex = 2;
+        addFrameButton.TabIndex = 3;
         addFrameButton.Text = TranslationService.T("actions.addFrame");
         addFrameButton.UseVisualStyleBackColor = true;
 

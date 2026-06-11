@@ -359,6 +359,7 @@ public sealed partial class MainForm : Form
         convertMultiplePdfMenuItem.Text = TranslationService.T("convert.menu.multiple");
 
         actionsTitleLabel.Text = TranslationService.T("actions.title");
+        selectAllActionsCheckBox.Text = TranslationService.T("actions.selectAll");
         addActionButton.Text = TranslationService.T("actions.add");
         addLineButton.Text = TranslationService.T("actions.addLine");
         addFrameButton.Text = TranslationService.T("actions.addFrame");
@@ -367,6 +368,7 @@ public sealed partial class MainForm : Form
         actionNameColumn.HeaderText = TranslationService.T("actions.column.name");
         actionTypeColumn.HeaderText = TranslationService.T("actions.column.type");
         actionPagesColumn.HeaderText = TranslationService.T("actions.column.pages");
+        actionToolTip.SetToolTip(selectAllActionsCheckBox, TranslationService.T("actions.selectAll.tooltip"));
         actionToolTip.SetToolTip(addActionButton, TranslationService.T("actions.add.tooltip"));
         actionToolTip.SetToolTip(addLineButton, TranslationService.T("actions.addLine.tooltip"));
         actionToolTip.SetToolTip(addFrameButton, TranslationService.T("actions.addFrame.tooltip"));
@@ -518,6 +520,24 @@ public sealed partial class MainForm : Form
     private void AddActionButton_Click(object? sender, EventArgs e)
     {
         ShowAddActionMenu(addActionButton, _project.Actions.Count);
+    }
+
+    private void SelectAllActionsCheckBox_Click(object? sender, EventArgs e)
+    {
+        if (_isBinding || _project.Actions.Count == 0)
+        {
+            return;
+        }
+
+        var enableAll = _project.Actions.Any(action => !action.Enabled);
+        foreach (var action in _project.Actions)
+        {
+            action.Enabled = enableAll;
+        }
+
+        MarkDirty();
+        RefreshActions(GetSelectedActionIndex());
+        RefreshCurrentPagePreview();
     }
 
     private void DeleteActionButton_Click(object? sender, EventArgs e)
@@ -1465,6 +1485,7 @@ public sealed partial class MainForm : Form
     {
         _isBinding = true;
         actionsGridView.Rows.Clear();
+        RefreshActionSelectAllCheckBox();
         for (var index = 0; index < _project.Actions.Count; index++)
         {
             var action = _project.Actions[index];
@@ -1517,6 +1538,23 @@ public sealed partial class MainForm : Form
         _isBinding = false;
         BindSelectedAction();
         UpdateActionButtons();
+    }
+
+    private void RefreshActionSelectAllCheckBox()
+    {
+        selectAllActionsCheckBox.Enabled = _project.Actions.Count > 0;
+        if (_project.Actions.Count == 0)
+        {
+            selectAllActionsCheckBox.CheckState = CheckState.Unchecked;
+            return;
+        }
+
+        var enabledCount = _project.Actions.Count(action => action.Enabled);
+        selectAllActionsCheckBox.CheckState = enabledCount == 0
+            ? CheckState.Unchecked
+            : enabledCount == _project.Actions.Count
+                ? CheckState.Checked
+                : CheckState.Indeterminate;
     }
 
     private void BindSelectedAction()
@@ -1585,6 +1623,7 @@ public sealed partial class MainForm : Form
         addActionButton.Enabled = true;
         addLineButton.Enabled = true;
         addFrameButton.Enabled = true;
+        RefreshActionSelectAllCheckBox();
     }
 
     private void UpdatePreviewStatus()

@@ -59,6 +59,7 @@
   <data name="actions.title" xml:space="preserve"><value>Действия</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>Все</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>До текущего</value></data>
+  <data name="actions.selectAll" xml:space="preserve"><value>Все</value></data>
   <data name="actions.add" xml:space="preserve"><value>Преобразовать</value></data>
   <data name="actions.addLine" xml:space="preserve"><value>Линия</value></data>
   <data name="actions.addFrame" xml:space="preserve"><value>Рамка</value></data>
@@ -73,6 +74,7 @@
   <data name="actions.column.name" xml:space="preserve"><value>Имя</value></data>
   <data name="actions.column.type" xml:space="preserve"><value>Тип</value></data>
   <data name="actions.column.pages" xml:space="preserve"><value>Стр.</value></data>
+  <data name="actions.selectAll.tooltip" xml:space="preserve"><value>Выбрать или снять выбор со всех действий</value></data>
   <data name="actions.add.tooltip" xml:space="preserve"><value>Добавить действие преобразования</value></data>
   <data name="actions.addLine.tooltip" xml:space="preserve"><value>Добавить действие линии</value></data>
   <data name="actions.addFrame.tooltip" xml:space="preserve"><value>Добавить действие рамки</value></data>

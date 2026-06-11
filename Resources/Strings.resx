@@ -59,6 +59,7 @@
   <data name="actions.title" xml:space="preserve"><value>Actions</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>Apply All</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>Until Current</value></data>
+  <data name="actions.selectAll" xml:space="preserve"><value>Select all</value></data>
   <data name="actions.add" xml:space="preserve"><value>Transform</value></data>
   <data name="actions.addLine" xml:space="preserve"><value>Add Line</value></data>
   <data name="actions.addFrame" xml:space="preserve"><value>Add Frame</value></data>
@@ -73,6 +74,7 @@
   <data name="actions.column.name" xml:space="preserve"><value>Name</value></data>
   <data name="actions.column.type" xml:space="preserve"><value>Type</value></data>
   <data name="actions.column.pages" xml:space="preserve"><value>Pages</value></data>
+  <data name="actions.selectAll.tooltip" xml:space="preserve"><value>Select or unselect all actions</value></data>
   <data name="actions.add.tooltip" xml:space="preserve"><value>Add a transformation action</value></data>
   <data name="actions.addLine.tooltip" xml:space="preserve"><value>Add a line action</value></data>
   <data name="actions.addFrame.tooltip" xml:space="preserve"><value>Add a frame action</value></data>
