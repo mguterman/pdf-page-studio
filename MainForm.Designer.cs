@@ -630,9 +630,9 @@ partial class MainForm
         actionsPanel.RowCount = 5;
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 72F));
-        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 52F));
-        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 48F));
+        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 0F));
+        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 0F));
         actionsPanel.TabIndex = 2;
 
         actionsTitleLabel.AutoSize = true;
@@ -706,6 +706,7 @@ partial class MainForm
         actionsGridView.TabIndex = 2;
         actionsGridView.CellClick += ActionsGridView_CellClick;
         actionsGridView.CellContentClick += ActionsGridView_CellContentClick;
+        actionsGridView.CellDoubleClick += ActionsGridView_CellDoubleClick;
         actionsGridView.CellValueChanged += ActionsGridView_CellValueChanged;
         actionsGridView.CurrentCellDirtyStateChanged += ActionsGridView_CurrentCellDirtyStateChanged;
         actionsGridView.SelectionChanged += ActionsGridView_SelectionChanged;
@@ -780,12 +781,14 @@ partial class MainForm
         propertiesTitleLabel.TabIndex = 3;
         propertiesTitleLabel.Text = TranslationService.T("properties.title");
         propertiesTitleLabel.TextAlign = ContentAlignment.MiddleLeft;
+        propertiesTitleLabel.Visible = false;
 
         actionPropertiesScrollPanel.AutoScroll = true;
         actionPropertiesScrollPanel.Controls.Add(actionPropertiesPanel);
         actionPropertiesScrollPanel.Dock = DockStyle.Fill;
         actionPropertiesScrollPanel.Name = "actionPropertiesScrollPanel";
         actionPropertiesScrollPanel.TabIndex = 4;
+        actionPropertiesScrollPanel.Visible = false;
 
         actionPropertiesPanel.AutoSize = true;
         actionPropertiesPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;

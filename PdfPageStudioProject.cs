@@ -8,6 +8,7 @@ public sealed class PdfPageStudioProject
     public string OutputFolder { get; set; } = "";
     public UnitType UnitType { get; set; } = UnitType.Inch;
     public PreviewApplyMode PreviewApplyMode { get; set; } = PreviewApplyMode.ApplyAll;
+    public Dictionary<PdfActionType, bool> ActionPreviewEnabled { get; set; } = [];
     public List<ProjectAction> Actions { get; set; } = [];
 }
 

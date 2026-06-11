@@ -19,6 +19,9 @@ public sealed partial class MainForm : Form
     private float _zoomFactor = 1f;
     private bool _isDirty;
     private bool _isBinding;
+    private ProjectAction? _previewDraftAction;
+    private int _previewDraftIndex = -1;
+    private bool _previewDraftReplace;
 
     public MainForm()
     {
@@ -558,11 +561,8 @@ public sealed partial class MainForm : Form
         }
 
         var copy = CloneAction(_project.Actions[index]);
-        _project.Actions.Insert(index + 1, copy);
-        MarkDirty();
-        RefreshActions(index + 1);
-        UpdateStatus(TranslationService.T("status.actionDuplicated"));
-        RefreshCurrentPagePreview();
+        copy.Id = Guid.NewGuid().ToString("N");
+        EditActionInDialog(copy, index + 1, replace: false);
     }
 
     private void MoveActionUpButton_Click(object? sender, EventArgs e)
@@ -661,6 +661,25 @@ public sealed partial class MainForm : Form
         {
             DeleteAction(e.RowIndex);
         }
+    }
+
+    private void ActionsGridView_CellDoubleClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex < 0 || e.RowIndex >= _project.Actions.Count)
+        {
+            return;
+        }
+
+        if (e.ColumnIndex == actionEnabledColumn.Index ||
+            e.ColumnIndex == actionMoveUpColumn.Index ||
+            e.ColumnIndex == actionMoveDownColumn.Index ||
+            e.ColumnIndex == actionDuplicateColumn.Index ||
+            e.ColumnIndex == actionDeleteColumn.Index)
+        {
+            return;
+        }
+
+        EditActionInDialog(CloneAction(_project.Actions[e.RowIndex]), e.RowIndex, replace: true);
     }
 
     private void ActionsGridView_CurrentCellDirtyStateChanged(object? sender, EventArgs e)
@@ -1422,11 +1441,101 @@ public sealed partial class MainForm : Form
         var action = new ProjectAction { Type = type };
         ApplyActionDefaults(action, overwriteName: true);
         index = Math.Clamp(index, 0, _project.Actions.Count);
-        _project.Actions.Insert(index, action);
+        EditActionInDialog(action, index, replace: false);
+    }
+
+    private void EditActionInDialog(ProjectAction draftAction, int index, bool replace)
+    {
+        index = replace
+            ? Math.Clamp(index, 0, Math.Max(0, _project.Actions.Count - 1))
+            : Math.Clamp(index, 0, _project.Actions.Count);
+
+        var previewEnabled = GetActionPreviewEnabled(draftAction.Type);
+        using var dialog = new ActionEditForm(draftAction, previewEnabled, _project.UnitType, allowTypeChange: false);
+        dialog.PreviewEnabledChanged += (_, _) =>
+        {
+            SetActionPreviewEnabled(dialog.Action.Type, dialog.PreviewEnabled);
+            if (dialog.PreviewEnabled)
+            {
+                SetPreviewDraft(dialog.Action, index, replace);
+            }
+            else
+            {
+                ClearPreviewDraft(render: true);
+            }
+        };
+        dialog.ActionChanged += (_, _) =>
+        {
+            if (dialog.PreviewEnabled)
+            {
+                SetPreviewDraft(dialog.Action, index, replace);
+            }
+        };
+
+        if (dialog.PreviewEnabled)
+        {
+            SetPreviewDraft(dialog.Action, index, replace);
+        }
+
+        var result = dialog.ShowDialog(this);
+        ClearPreviewDraft(render: false);
+        if (result != DialogResult.OK)
+        {
+            RefreshCurrentPagePreview();
+            return;
+        }
+
+        var applied = CloneAction(dialog.Action);
+        if (replace)
+        {
+            _project.Actions[index] = applied;
+        }
+        else
+        {
+            _project.Actions.Insert(index, applied);
+        }
+
         MarkDirty();
         RefreshActions(index);
-        UpdateStatus(TranslationService.T("status.actionAdded"));
+        UpdateStatus(replace ? TranslationService.T("status.actionUpdated") : TranslationService.T("status.actionAdded"));
         RefreshCurrentPagePreview();
+    }
+
+    private bool GetActionPreviewEnabled(PdfActionType type)
+    {
+        _project.ActionPreviewEnabled ??= [];
+        return !_project.ActionPreviewEnabled.TryGetValue(type, out var enabled) || enabled;
+    }
+
+    private void SetActionPreviewEnabled(PdfActionType type, bool enabled)
+    {
+        _project.ActionPreviewEnabled ??= [];
+        if (_project.ActionPreviewEnabled.TryGetValue(type, out var current) && current == enabled)
+        {
+            return;
+        }
+
+        _project.ActionPreviewEnabled[type] = enabled;
+        MarkDirty();
+    }
+
+    private void SetPreviewDraft(ProjectAction action, int index, bool replace)
+    {
+        _previewDraftAction = CloneAction(action);
+        _previewDraftIndex = index;
+        _previewDraftReplace = replace;
+        RefreshCurrentPagePreview();
+    }
+
+    private void ClearPreviewDraft(bool render)
+    {
+        _previewDraftAction = null;
+        _previewDraftIndex = -1;
+        _previewDraftReplace = false;
+        if (render)
+        {
+            RefreshCurrentPagePreview();
+        }
     }
 
     private void ShowAddActionMenu(Control owner, int insertIndex)
@@ -1454,6 +1563,7 @@ public sealed partial class MainForm : Form
         }
 
         _project.Actions ??= [];
+        _project.ActionPreviewEnabled ??= [];
         foreach (var action in _project.Actions)
         {
             if (string.IsNullOrWhiteSpace(action.Id))
@@ -1633,19 +1743,37 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        var count = _project.Actions.Count(action => action.Enabled);
+        var count = GetPreviewActions().Count(action => action.Enabled);
         var label = TranslationService.T("status.previewApplyAll", count);
         UpdateStatus(label);
     }
 
-    private int GetPreviewActionCount()
+    private IReadOnlyList<ProjectAction> GetPreviewActions()
     {
-        return _project.Actions.Count;
+        if (_previewDraftAction == null)
+        {
+            return _project.Actions;
+        }
+
+        var actions = _project.Actions.ToList();
+        var index = _previewDraftReplace
+            ? Math.Clamp(_previewDraftIndex, 0, Math.Max(0, actions.Count - 1))
+            : Math.Clamp(_previewDraftIndex, 0, actions.Count);
+        if (_previewDraftReplace && actions.Count > 0)
+        {
+            actions[index] = _previewDraftAction;
+        }
+        else
+        {
+            actions.Insert(index, _previewDraftAction);
+        }
+
+        return actions;
     }
 
     private Bitmap ApplyPreviewActions(Image originalImage, SizeF originalPageSizePoints, float dpi, out SizeF previewPageSizePoints)
     {
-        return ApplyActionsForPage(originalImage, originalPageSizePoints, dpi, _pageIndex, GetPreviewActionCount(), includeRulers: true, out previewPageSizePoints);
+        return ApplyActionsForPage(originalImage, originalPageSizePoints, dpi, _pageIndex, GetPreviewActions(), includeRulers: true, out previewPageSizePoints);
     }
 
     private Bitmap ApplyActionsForPage(
@@ -1653,7 +1781,7 @@ public sealed partial class MainForm : Form
         SizeF originalPageSizePoints,
         float dpi,
         int pageIndex,
-        int actionCount,
+        IReadOnlyList<ProjectAction> actions,
         bool includeRulers,
         out SizeF previewPageSizePoints)
     {
@@ -1661,9 +1789,9 @@ public sealed partial class MainForm : Form
         previewPageSizePoints = originalPageSizePoints;
         var pageNumber = pageIndex + 1;
 
-        for (var index = 0; index < actionCount; index++)
+        for (var index = 0; index < actions.Count; index++)
         {
-            var action = _project.Actions[index];
+            var action = actions[index];
             if (!action.Enabled || !PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber))
             {
                 continue;
@@ -1944,7 +2072,7 @@ public sealed partial class MainForm : Form
     {
         return new ProjectAction
         {
-            Id = Guid.NewGuid().ToString("N"),
+            Id = source.Id,
             Enabled = source.Enabled,
             Type = source.Type,
             Name = source.Name,

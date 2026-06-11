@@ -11,6 +11,7 @@
   <data name="common.browse" xml:space="preserve"><value>Обзор...</value></data>
   <data name="common.open" xml:space="preserve"><value>Открыть</value></data>
   <data name="common.remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="common.apply" xml:space="preserve"><value>Применить</value></data>
   <data name="common.cancel" xml:space="preserve"><value>Отмена</value></data>
   <data name="menu.file" xml:space="preserve"><value>&amp;Файл</value></data>
   <data name="menu.openProject" xml:space="preserve"><value>&amp;Открыть проект...</value></data>
@@ -105,6 +106,8 @@
   <data name="field.line" xml:space="preserve"><value>Линия</value></data>
   <data name="field.position" xml:space="preserve"><value>Позиция</value></data>
   <data name="dialog.openProject.title" xml:space="preserve"><value>Открыть проект PDF Page Studio</value></data>
+  <data name="dialog.action.title" xml:space="preserve"><value>Действие: {0}</value></data>
+  <data name="dialog.action.preview" xml:space="preserve"><value>Preview</value></data>
   <data name="dialog.saveProject.title" xml:space="preserve"><value>Сохранить проект PDF Page Studio</value></data>
   <data name="dialog.project.filter" xml:space="preserve"><value>Проект PDF Page Studio (*.ppsproj)|*.ppsproj|Все файлы (*.*)|*.*</value></data>
   <data name="dialog.addPdf.title" xml:space="preserve"><value>Добавить PDF файл</value></data>
@@ -130,6 +133,7 @@
   <data name="status.actionDuplicated" xml:space="preserve"><value>Действие продублировано.</value></data>
   <data name="status.pageFilterUpdated" xml:space="preserve"><value>Фильтр страниц обновлён.</value></data>
   <data name="status.actionAdded" xml:space="preserve"><value>Действие добавлено.</value></data>
+  <data name="status.actionUpdated" xml:space="preserve"><value>Действие обновлено.</value></data>
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>Preview: действия до выбранного ({0})</value></data>
   <data name="status.previewApplyAll" xml:space="preserve"><value>Preview: все действия ({0})</value></data>
   <data name="recent.empty" xml:space="preserve"><value>(Нет недавних проектов)</value></data>

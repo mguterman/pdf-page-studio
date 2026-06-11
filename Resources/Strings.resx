@@ -11,6 +11,7 @@
   <data name="common.browse" xml:space="preserve"><value>Browse...</value></data>
   <data name="common.open" xml:space="preserve"><value>Open</value></data>
   <data name="common.remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="common.apply" xml:space="preserve"><value>Apply</value></data>
   <data name="common.cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="menu.file" xml:space="preserve"><value>&amp;File</value></data>
   <data name="menu.openProject" xml:space="preserve"><value>&amp;Open Project...</value></data>
@@ -105,6 +106,8 @@
   <data name="field.line" xml:space="preserve"><value>Line</value></data>
   <data name="field.position" xml:space="preserve"><value>Position</value></data>
   <data name="dialog.openProject.title" xml:space="preserve"><value>Open PDF Page Studio Project</value></data>
+  <data name="dialog.action.title" xml:space="preserve"><value>{0} Action</value></data>
+  <data name="dialog.action.preview" xml:space="preserve"><value>Preview</value></data>
   <data name="dialog.saveProject.title" xml:space="preserve"><value>Save PDF Page Studio Project</value></data>
   <data name="dialog.project.filter" xml:space="preserve"><value>PDF Page Studio Project (*.ppsproj)|*.ppsproj|All files (*.*)|*.*</value></data>
   <data name="dialog.addPdf.title" xml:space="preserve"><value>Add PDF File</value></data>
@@ -130,6 +133,7 @@
   <data name="status.actionDuplicated" xml:space="preserve"><value>Action duplicated.</value></data>
   <data name="status.pageFilterUpdated" xml:space="preserve"><value>Page filter updated.</value></data>
   <data name="status.actionAdded" xml:space="preserve"><value>Action added.</value></data>
+  <data name="status.actionUpdated" xml:space="preserve"><value>Action updated.</value></data>
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>Preview: actions through selected ({0})</value></data>
   <data name="status.previewApplyAll" xml:space="preserve"><value>Preview: all actions ({0})</value></data>
   <data name="recent.empty" xml:space="preserve"><value>(No recent projects)</value></data>

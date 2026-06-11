@@ -11,6 +11,7 @@
   <data name="common.browse" xml:space="preserve"><value>עיון...</value></data>
   <data name="common.open" xml:space="preserve"><value>פתח</value></data>
   <data name="common.remove" xml:space="preserve"><value>הסר</value></data>
+  <data name="common.apply" xml:space="preserve"><value>החל</value></data>
   <data name="common.cancel" xml:space="preserve"><value>ביטול</value></data>
   <data name="menu.file" xml:space="preserve"><value>&amp;קובץ</value></data>
   <data name="menu.openProject" xml:space="preserve"><value>&amp;פתח פרויקט...</value></data>
@@ -105,6 +106,8 @@
   <data name="field.line" xml:space="preserve"><value>קו</value></data>
   <data name="field.position" xml:space="preserve"><value>מיקום</value></data>
   <data name="dialog.openProject.title" xml:space="preserve"><value>פתח פרויקט PDF Page Studio</value></data>
+  <data name="dialog.action.title" xml:space="preserve"><value>פעולה: {0}</value></data>
+  <data name="dialog.action.preview" xml:space="preserve"><value>תצוגה מקדימה</value></data>
   <data name="dialog.saveProject.title" xml:space="preserve"><value>שמור פרויקט PDF Page Studio</value></data>
   <data name="dialog.project.filter" xml:space="preserve"><value>פרויקט PDF Page Studio (*.ppsproj)|*.ppsproj|כל הקבצים (*.*)|*.*</value></data>
   <data name="dialog.addPdf.title" xml:space="preserve"><value>הוסף קובץ PDF</value></data>
@@ -130,6 +133,7 @@
   <data name="status.actionDuplicated" xml:space="preserve"><value>הפעולה שוכפלה.</value></data>
   <data name="status.pageFilterUpdated" xml:space="preserve"><value>מסנן העמודים עודכן.</value></data>
   <data name="status.actionAdded" xml:space="preserve"><value>הפעולה נוספה.</value></data>
+  <data name="status.actionUpdated" xml:space="preserve"><value>הפעולה עודכנה.</value></data>
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>תצוגה: פעולות עד הבחירה ({0})</value></data>
   <data name="status.previewApplyAll" xml:space="preserve"><value>תצוגה: כל הפעולות ({0})</value></data>
   <data name="recent.empty" xml:space="preserve"><value>(אין פרויקטים אחרונים)</value></data>
