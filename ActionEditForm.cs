@@ -188,7 +188,7 @@ public sealed class ActionEditForm : Form
         AddRow(TranslationService.T("field.range"), _pageFilterRangeTextBox);
 
         var type = Action.Type;
-        if (type is PdfActionType.Trim or PdfActionType.Expand)
+        if (type is PdfActionType.Trim or PdfActionType.Expand or PdfActionType.AddFrame)
         {
             AddRow(TranslationService.T("field.left"), _leftNumericBox);
             AddRow(TranslationService.T("field.top"), _topNumericBox);
@@ -217,6 +217,10 @@ public sealed class ActionEditForm : Form
             AddRow(TranslationService.T("field.line"), _rulerOrientationComboBox);
             AddRow(TranslationService.T("field.position"), _rulerPositionNumericBox);
             AddRow(TranslationService.T("field.mode"), _rulerValueModeComboBox);
+        }
+
+        if (type is PdfActionType.AddRuler or PdfActionType.AddFrame)
+        {
             AddRow(TranslationService.T("field.style"), _rulerStyleComboBox);
             AddRow(TranslationService.T("field.color"), CreateColorPanel());
         }
@@ -605,6 +609,13 @@ public sealed class ActionEditForm : Form
                 action.Color = string.IsNullOrWhiteSpace(action.Color) ? "#FF0000" : action.Color;
                 action.RulerValueMode = action.Position == null ? RulerValueMode.Unit : action.RulerValueMode;
                 action.Position ??= action.RulerValueMode == RulerValueMode.Percent ? 50 : 0;
+                break;
+            case PdfActionType.AddFrame:
+                action.Left ??= 0.25f;
+                action.Top ??= 0.25f;
+                action.Right ??= 0.25f;
+                action.Bottom ??= 0.25f;
+                action.Color = string.IsNullOrWhiteSpace(action.Color) ? "#FF0000" : action.Color;
                 break;
         }
     }

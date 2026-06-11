@@ -375,7 +375,7 @@ public sealed partial class MainForm : Form
         actionToolTip.SetToolTip(addActionButton, TranslationService.T("actions.add.tooltip"));
         actionToolTip.SetToolTip(addLineButton, TranslationService.T("actions.addLine.tooltip"));
         actionToolTip.SetToolTip(addFrameButton, TranslationService.T("actions.addFrame.tooltip"));
-        propertiesTitleLabel.Text = TranslationService.T("properties.title");
+        propertiesTitleLabel.Text = TranslationService.T("actionSummary.title");
 
         actionTypeLabel.Text = TranslationService.T("field.type");
         actionNameLabel.Text = TranslationService.T("field.name");
@@ -532,7 +532,7 @@ public sealed partial class MainForm : Form
 
     private void AddFrameButton_Click(object? sender, EventArgs e)
     {
-        UpdateStatus(TranslationService.T("status.addFrameNotReady"));
+        InsertAction(_project.Actions.Count, PdfActionType.AddFrame);
     }
 
     private void SelectAllActionsCheckBox_Click(object? sender, EventArgs e)
@@ -1552,7 +1552,7 @@ public sealed partial class MainForm : Form
     {
         _actionMenu?.Dispose();
         _actionMenu = new ContextMenuStrip();
-        foreach (var actionType in Enum.GetValues<PdfActionType>().Where(type => type != PdfActionType.AddRuler))
+        foreach (var actionType in Enum.GetValues<PdfActionType>().Where(type => type is not PdfActionType.AddRuler and not PdfActionType.AddFrame))
         {
             var item = new ToolStripMenuItem(GetActionDisplayName(actionType))
             {
@@ -1682,8 +1682,10 @@ public sealed partial class MainForm : Form
         _isBinding = true;
         var action = GetSelectedAction();
         var hasAction = action != null;
-        propertiesTitleLabel.Visible = hasAction;
-        actionPropertiesScrollPanel.Visible = hasAction;
+        propertiesTitleLabel.Visible = true;
+        actionPropertiesScrollPanel.Visible = true;
+        actionPropertiesPanel.Visible = false;
+        actionSummaryTextBox.Text = action == null ? TranslationService.T("actionSummary.empty") : BuildActionSummary(action);
         actionNameTextBox.Enabled = hasAction;
         actionTypeComboBox.Enabled = hasAction;
         pageFilterTypeComboBox.Enabled = hasAction;
@@ -1833,6 +1835,7 @@ public sealed partial class MainForm : Form
             PdfActionType.Zoom => ApplyZoomPreview(source, action),
             PdfActionType.AdjustSize => ApplyAdjustSizePreview(source, action, dpi, ref pageSizePoints),
             PdfActionType.AddRuler => ApplyRulerPreview(source, action, dpi),
+            PdfActionType.AddFrame => ApplyFramePreview(source, action, dpi),
             _ => new Bitmap(source),
         };
     }
@@ -2010,6 +2013,27 @@ public sealed partial class MainForm : Form
         return result;
     }
 
+    private Bitmap ApplyFramePreview(Bitmap source, ProjectAction action, float dpi)
+    {
+        var result = new Bitmap(source);
+        var color = ParseColor(action.Color);
+        using var graphics = Graphics.FromImage(result);
+        using var pen = new Pen(color, 2f);
+        if (action.Style == RulerStyle.Dotted)
+        {
+            pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+        }
+
+        var left = Math.Clamp(ToPixels(action.Left, dpi), 0, Math.Max(0, source.Width - 1));
+        var top = Math.Clamp(ToPixels(action.Top, dpi), 0, Math.Max(0, source.Height - 1));
+        var right = Math.Clamp(ToPixels(action.Right, dpi), 0, Math.Max(0, source.Width - left - 1));
+        var bottom = Math.Clamp(ToPixels(action.Bottom, dpi), 0, Math.Max(0, source.Height - top - 1));
+        var width = Math.Max(1, source.Width - left - right - 1);
+        var height = Math.Max(1, source.Height - top - bottom - 1);
+        graphics.DrawRectangle(pen, left, top, width, height);
+        return result;
+    }
+
     private static int GetAnchorOffset(int canvasSize, int contentSize, AnchorHorizontal anchor)
     {
         return anchor switch
@@ -2124,6 +2148,40 @@ public sealed partial class MainForm : Form
         return filter.Type == PageFilterType.Any ? range : $"{range}, {TranslationService.T("enum.pageFilter." + filter.Type)}";
     }
 
+    private string BuildActionSummary(ProjectAction action)
+    {
+        var unit = TranslationService.T("enum.unit." + _project.UnitType);
+        var pages = FormatPageFilter(action.PageFilter);
+        var summary = action.Type switch
+        {
+            PdfActionType.Trim => TranslationService.T("actionSummary.Trim", FormatValue(action.Left), FormatValue(action.Top), FormatValue(action.Right), FormatValue(action.Bottom), unit),
+            PdfActionType.Expand => TranslationService.T("actionSummary.Expand", FormatValue(action.Left), FormatValue(action.Top), FormatValue(action.Right), FormatValue(action.Bottom), unit),
+            PdfActionType.Resize => TranslationService.T("actionSummary.Resize", FormatOptionalValue(action.TargetedWidth), FormatOptionalValue(action.TargetedHeight), unit, FormatBool(action.Proportional ?? true)),
+            PdfActionType.Zoom => TranslationService.T("actionSummary.Zoom", FormatOptionalValue(action.TargetedWidth), FormatOptionalValue(action.TargetedHeight), FormatBool(action.Proportional ?? true), action.AnchorHorizontal, action.AnchorVertical),
+            PdfActionType.AdjustSize => TranslationService.T("actionSummary.AdjustSize", action.EnableWidth && action.TargetedWidth is > 0 ? FormatValue(action.TargetedWidth) : TranslationService.T("actionSummary.notApplied"), action.EnableHeight && action.TargetedHeight is > 0 ? FormatValue(action.TargetedHeight) : TranslationService.T("actionSummary.notApplied"), unit),
+            PdfActionType.AddRuler => TranslationService.T("actionSummary.AddRuler", TranslationService.T("enum.rulerOrientation." + action.Orientation), FormatOptionalValue(action.Position), action.RulerValueMode == RulerValueMode.Percent ? TranslationService.T("enum.rulerMode.Percent") : unit, TranslationService.T("enum.rulerStyle." + action.Style), action.Color),
+            PdfActionType.AddFrame => TranslationService.T("actionSummary.AddFrame", FormatValue(action.Left), FormatValue(action.Top), FormatValue(action.Right), FormatValue(action.Bottom), unit, TranslationService.T("enum.rulerStyle." + action.Style), action.Color),
+            _ => GetActionDescription(action.Type),
+        };
+
+        return summary + Environment.NewLine + TranslationService.T("actionSummary.pages", pages);
+    }
+
+    private static string FormatValue(float? value)
+    {
+        return (value ?? 0).ToString("0.###", CultureInfo.CurrentCulture);
+    }
+
+    private static string FormatOptionalValue(float? value)
+    {
+        return value is > 0 ? FormatValue(value) : TranslationService.T("actionSummary.notApplied");
+    }
+
+    private static string FormatBool(bool value)
+    {
+        return TranslationService.T(value ? "common.yes" : "common.no");
+    }
+
     private static string FormatPageRanges(IReadOnlyList<PageFilterRange> ranges)
     {
         if (ranges.Count == 0)
@@ -2226,6 +2284,13 @@ public sealed partial class MainForm : Form
                 action.RulerValueMode = action.Position == null ? RulerValueMode.Unit : action.RulerValueMode;
                 action.Orientation = action.Orientation;
                 action.Position ??= action.RulerValueMode == RulerValueMode.Percent ? 50 : 0;
+                break;
+            case PdfActionType.AddFrame:
+                action.Left ??= 0.25f;
+                action.Top ??= 0.25f;
+                action.Right ??= 0.25f;
+                action.Bottom ??= 0.25f;
+                action.Color = string.IsNullOrWhiteSpace(action.Color) ? "#FF0000" : action.Color;
                 break;
         }
     }

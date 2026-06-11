@@ -64,6 +64,7 @@ public enum PdfActionType
     Zoom,
     AdjustSize,
     AddRuler,
+    AddFrame,
 }
 
 public enum PageFilterType

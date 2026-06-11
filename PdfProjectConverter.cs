@@ -1,3 +1,4 @@
+using iText.Kernel.Colors;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
@@ -38,6 +39,7 @@ public static class PdfProjectConverter
                 0, pagePlan.ScaleY,
                 pagePlan.TranslateX,
                 pagePlan.TranslateY);
+            DrawFrames(canvas, pagePlan, actions, unitType, pageNumber);
         }
     }
 
@@ -46,7 +48,9 @@ public static class PdfProjectConverter
         var plan = new PagePlan(sourceWidth, sourceHeight);
         foreach (var action in actions)
         {
-            if (!action.Enabled || !PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber) || action.Type == PdfActionType.AddRuler)
+            if (!action.Enabled ||
+                !PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber) ||
+                action.Type is PdfActionType.AddRuler or PdfActionType.AddFrame)
             {
                 continue;
             }
@@ -76,6 +80,53 @@ public static class PdfProjectConverter
             case PdfActionType.AdjustSize:
                 ApplyAdjustSize(plan, action, unitType);
                 break;
+        }
+    }
+
+    private static void DrawFrames(PdfCanvas canvas, PagePlan pagePlan, IReadOnlyList<ProjectAction> actions, UnitType unitType, int pageNumber)
+    {
+        foreach (var action in actions)
+        {
+            if (!action.Enabled || action.Type != PdfActionType.AddFrame || !PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber))
+            {
+                continue;
+            }
+
+            var left = UnitValueToPoints(action.Left, unitType);
+            var top = UnitValueToPoints(action.Top, unitType);
+            var right = UnitValueToPoints(action.Right, unitType);
+            var bottom = UnitValueToPoints(action.Bottom, unitType);
+            var width = pagePlan.Width - left - right;
+            var height = pagePlan.Height - top - bottom;
+            if (width <= 0 || height <= 0)
+            {
+                continue;
+            }
+
+            canvas.SaveState();
+            canvas.SetStrokeColor(ParsePdfColor(action.Color));
+            canvas.SetLineWidth(1.5f);
+            if (action.Style == RulerStyle.Dotted)
+            {
+                canvas.SetLineDash(2f, 3f);
+            }
+
+            canvas.Rectangle(left, bottom, width, height);
+            canvas.Stroke();
+            canvas.RestoreState();
+        }
+    }
+
+    private static DeviceRgb ParsePdfColor(string color)
+    {
+        try
+        {
+            var drawingColor = ColorTranslator.FromHtml(string.IsNullOrWhiteSpace(color) ? "#FF0000" : color);
+            return new DeviceRgb(drawingColor.R, drawingColor.G, drawingColor.B);
+        }
+        catch
+        {
+            return new DeviceRgb(255, 0, 0);
         }
     }
 

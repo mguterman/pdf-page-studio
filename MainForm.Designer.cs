@@ -75,6 +75,7 @@ partial class MainForm
     private ToolTip actionToolTip;
     private Label propertiesTitleLabel;
     private Panel actionPropertiesScrollPanel;
+    private TextBox actionSummaryTextBox;
     private TableLayoutPanel actionPropertiesPanel;
     private Label actionTypeLabel;
     private ComboBox actionTypeComboBox;
@@ -214,6 +215,7 @@ partial class MainForm
         actionToolTip = new ToolTip(components);
         propertiesTitleLabel = new Label();
         actionPropertiesScrollPanel = new Panel();
+        actionSummaryTextBox = new TextBox();
         actionPropertiesPanel = new TableLayoutPanel();
         actionTypeLabel = new Label();
         actionTypeComboBox = new ComboBox();
@@ -630,9 +632,9 @@ partial class MainForm
         actionsPanel.RowCount = 5;
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 72F));
-        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 0F));
-        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 0F));
+        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 70F));
+        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 30F));
         actionsPanel.TabIndex = 2;
 
         actionsTitleLabel.AutoSize = true;
@@ -781,16 +783,24 @@ partial class MainForm
         propertiesTitleLabel.Font = new Font(propertiesTitleLabel.Font, FontStyle.Bold);
         propertiesTitleLabel.Name = "propertiesTitleLabel";
         propertiesTitleLabel.TabIndex = 3;
-        propertiesTitleLabel.Text = TranslationService.T("properties.title");
+        propertiesTitleLabel.Text = TranslationService.T("actionSummary.title");
         propertiesTitleLabel.TextAlign = ContentAlignment.MiddleLeft;
-        propertiesTitleLabel.Visible = false;
 
         actionPropertiesScrollPanel.AutoScroll = true;
+        actionPropertiesScrollPanel.Controls.Add(actionSummaryTextBox);
         actionPropertiesScrollPanel.Controls.Add(actionPropertiesPanel);
         actionPropertiesScrollPanel.Dock = DockStyle.Fill;
         actionPropertiesScrollPanel.Name = "actionPropertiesScrollPanel";
         actionPropertiesScrollPanel.TabIndex = 4;
-        actionPropertiesScrollPanel.Visible = false;
+
+        actionSummaryTextBox.BackColor = SystemColors.Window;
+        actionSummaryTextBox.BorderStyle = BorderStyle.FixedSingle;
+        actionSummaryTextBox.Dock = DockStyle.Fill;
+        actionSummaryTextBox.Multiline = true;
+        actionSummaryTextBox.Name = "actionSummaryTextBox";
+        actionSummaryTextBox.ReadOnly = true;
+        actionSummaryTextBox.ScrollBars = ScrollBars.Vertical;
+        actionSummaryTextBox.TabIndex = 0;
 
         actionPropertiesPanel.AutoSize = true;
         actionPropertiesPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -835,6 +845,7 @@ partial class MainForm
         actionPropertiesPanel.Controls.Add(rulerEndNumericBox, 1, 17);
         actionPropertiesPanel.Dock = DockStyle.Top;
         actionPropertiesPanel.Name = "actionPropertiesPanel";
+        actionPropertiesPanel.Visible = false;
         actionPropertiesPanel.RowCount = 18;
         for (var rowIndex = 0; rowIndex < 18; rowIndex++)
         {
