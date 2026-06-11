@@ -140,11 +140,17 @@
   <data name="enum.unit.Inch" xml:space="preserve"><value>אינץ'</value></data>
   <data name="enum.unit.Cm" xml:space="preserve"><value>סנטימטרים</value></data>
   <data name="enum.action.Trim" xml:space="preserve"><value>חיתוך</value></data>
+  <data name="enum.action.Trim.description" xml:space="preserve"><value>חותך את קנבס העמוד מהצדדים שנבחרו, בלי להזיז או לשנות את גודל התוכן.</value></data>
   <data name="enum.action.Expand" xml:space="preserve"><value>הרחבה</value></data>
+  <data name="enum.action.Expand.description" xml:space="preserve"><value>מוסיף שטח ריק סביב העמוד, בלי להזיז או לשנות את גודל התוכן.</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>שינוי גודל</value></data>
+  <data name="enum.action.Resize.description" xml:space="preserve"><value>משנה את גודל העמוד ומגדיל או מקטין את התוכן הקיים לפי הרוחב או הגובה החדשים.</value></data>
   <data name="enum.action.Zoom" xml:space="preserve"><value>זום</value></data>
+  <data name="enum.action.Zoom.description" xml:space="preserve"><value>משנה את גודל התוכן בתוך גודל העמוד הקיים, לפי נקודת העיגון שנבחרה.</value></data>
   <data name="enum.action.AdjustSize" xml:space="preserve"><value>התאם גודל</value></data>
+  <data name="enum.action.AdjustSize.description" xml:space="preserve"><value>מוסיף שטח ריק שווה משני צדדים מנוגדים עד שהעמוד מגיע לרוחב או לגובה שנבחרו.</value></data>
   <data name="enum.action.AddRuler" xml:space="preserve"><value>הוסף סרגל</value></data>
+  <data name="enum.action.AddRuler.description" xml:space="preserve"><value>מוסיף קו עזר זמני למדידה וליישור שינויים בעמוד; הוא לא נשמר בקובץ ה-PDF הסופי.</value></data>
   <data name="enum.pageFilter.Any" xml:space="preserve"><value>כל סוג</value></data>
   <data name="enum.pageFilter.Odd" xml:space="preserve"><value>אי זוגיים</value></data>
   <data name="enum.pageFilter.Even" xml:space="preserve"><value>זוגיים</value></data>

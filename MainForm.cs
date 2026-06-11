@@ -2097,6 +2097,11 @@ public sealed partial class MainForm : Form
         return TranslationService.T("enum.action." + type);
     }
 
+    private static string GetActionDescription(PdfActionType type)
+    {
+        return TranslationService.T("enum.action." + type + ".description");
+    }
+
     private void UpdateActionEditorVisibility(ProjectAction? action)
     {
         var type = action?.Type;

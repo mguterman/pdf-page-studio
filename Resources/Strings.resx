@@ -140,11 +140,17 @@
   <data name="enum.unit.Inch" xml:space="preserve"><value>Inch</value></data>
   <data name="enum.unit.Cm" xml:space="preserve"><value>Centimeter</value></data>
   <data name="enum.action.Trim" xml:space="preserve"><value>Trim</value></data>
+  <data name="enum.action.Trim.description" xml:space="preserve"><value>Crops the page canvas from the selected edges without moving or scaling the page content.</value></data>
   <data name="enum.action.Expand" xml:space="preserve"><value>Expand</value></data>
+  <data name="enum.action.Expand.description" xml:space="preserve"><value>Adds blank canvas around the page without moving or scaling the page content.</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>Resize</value></data>
+  <data name="enum.action.Resize.description" xml:space="preserve"><value>Changes the page size and scales the existing content to match the new width or height.</value></data>
   <data name="enum.action.Zoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="enum.action.Zoom.description" xml:space="preserve"><value>Scales the page content inside the existing page size, using the selected anchor point.</value></data>
   <data name="enum.action.AdjustSize" xml:space="preserve"><value>Adjust Size</value></data>
+  <data name="enum.action.AdjustSize.description" xml:space="preserve"><value>Adds equal blank space on opposite sides until the page reaches the selected width or height.</value></data>
   <data name="enum.action.AddRuler" xml:space="preserve"><value>Add Ruler</value></data>
+  <data name="enum.action.AddRuler.description" xml:space="preserve"><value>Adds a temporary guide line for measuring and aligning page changes; it is not written to the final PDF.</value></data>
   <data name="enum.pageFilter.Any" xml:space="preserve"><value>Any</value></data>
   <data name="enum.pageFilter.Odd" xml:space="preserve"><value>Odd</value></data>
   <data name="enum.pageFilter.Even" xml:space="preserve"><value>Even</value></data>

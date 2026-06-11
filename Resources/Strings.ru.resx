@@ -140,11 +140,17 @@
   <data name="enum.unit.Inch" xml:space="preserve"><value>Дюймы</value></data>
   <data name="enum.unit.Cm" xml:space="preserve"><value>Сантиметры</value></data>
   <data name="enum.action.Trim" xml:space="preserve"><value>Обрезать</value></data>
+  <data name="enum.action.Trim.description" xml:space="preserve"><value>Обрезает канвас страницы с выбранных сторон, не двигая и не масштабируя содержимое.</value></data>
   <data name="enum.action.Expand" xml:space="preserve"><value>Расширить</value></data>
+  <data name="enum.action.Expand.description" xml:space="preserve"><value>Добавляет пустое место вокруг страницы, не двигая и не масштабируя содержимое.</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>Изменить размер</value></data>
+  <data name="enum.action.Resize.description" xml:space="preserve"><value>Меняет размер страницы и масштабирует существующее содержимое под новую ширину или высоту.</value></data>
   <data name="enum.action.Zoom" xml:space="preserve"><value>Масштабировать</value></data>
+  <data name="enum.action.Zoom.description" xml:space="preserve"><value>Масштабирует содержимое внутри прежнего размера страницы с учетом выбранной точки привязки.</value></data>
   <data name="enum.action.AdjustSize" xml:space="preserve"><value>Подогнать размер</value></data>
+  <data name="enum.action.AdjustSize.description" xml:space="preserve"><value>Добавляет одинаковое пустое место с противоположных сторон, пока страница не достигнет заданной ширины или высоты.</value></data>
   <data name="enum.action.AddRuler" xml:space="preserve"><value>Добавить линейку</value></data>
+  <data name="enum.action.AddRuler.description" xml:space="preserve"><value>Добавляет временную направляющую линию для измерения и выравнивания; в итоговый PDF она не сохраняется.</value></data>
   <data name="enum.pageFilter.Any" xml:space="preserve"><value>Любые</value></data>
   <data name="enum.pageFilter.Odd" xml:space="preserve"><value>Нечётные</value></data>
   <data name="enum.pageFilter.Even" xml:space="preserve"><value>Чётные</value></data>
