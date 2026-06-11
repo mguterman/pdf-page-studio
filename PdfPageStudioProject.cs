@@ -14,6 +14,7 @@ public sealed class PdfPageStudioProject
 public sealed class ProjectAction
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public bool Enabled { get; set; } = true;
     public PdfActionType Type { get; set; } = PdfActionType.Trim;
     public string Name { get; set; } = "Trim";
     public bool? UseDefaultName { get; set; }

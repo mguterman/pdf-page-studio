@@ -241,7 +241,7 @@ public sealed partial class MainForm : Form
         _settings.Save();
         ApplyTranslations();
         RefreshRecentProjectsMenu();
-        RefreshActions(actionsListBox.SelectedIndex);
+        RefreshActions(GetSelectedActionIndex());
         UpdateTitle();
         if (_pdfDocument != null)
         {
@@ -359,15 +359,10 @@ public sealed partial class MainForm : Form
         convertMultiplePdfMenuItem.Text = TranslationService.T("convert.menu.multiple");
 
         actionsTitleLabel.Text = TranslationService.T("actions.title");
-        applyAllRadioButton.Text = TranslationService.T("actions.applyAll");
-        untilCurrentRadioButton.Text = TranslationService.T("actions.untilCurrent");
         addActionButton.Text = TranslationService.T("actions.add");
         insertBeforeActionButton.Text = TranslationService.T("actions.insertBefore");
         insertAfterActionButton.Text = TranslationService.T("actions.insertAfter");
         duplicateActionButton.Text = TranslationService.T("actions.duplicate");
-        deleteActionButton.Text = TranslationService.T("actions.delete");
-        moveActionUpButton.Text = TranslationService.T("actions.up");
-        moveActionDownButton.Text = TranslationService.T("actions.down");
         propertiesTitleLabel.Text = TranslationService.T("properties.title");
 
         actionTypeLabel.Text = TranslationService.T("field.type");
@@ -520,34 +515,26 @@ public sealed partial class MainForm : Form
 
     private void InsertBeforeActionButton_Click(object? sender, EventArgs e)
     {
-        var index = actionsListBox.SelectedIndex >= 0 ? actionsListBox.SelectedIndex : 0;
+        var selectedIndex = GetSelectedActionIndex();
+        var index = selectedIndex >= 0 ? selectedIndex : 0;
         ShowAddActionMenu(insertBeforeActionButton, index);
     }
 
     private void InsertAfterActionButton_Click(object? sender, EventArgs e)
     {
-        var index = actionsListBox.SelectedIndex >= 0 ? actionsListBox.SelectedIndex + 1 : _project.Actions.Count;
+        var selectedIndex = GetSelectedActionIndex();
+        var index = selectedIndex >= 0 ? selectedIndex + 1 : _project.Actions.Count;
         ShowAddActionMenu(insertAfterActionButton, index);
     }
 
     private void DeleteActionButton_Click(object? sender, EventArgs e)
     {
-        var index = actionsListBox.SelectedIndex;
-        if (index < 0 || index >= _project.Actions.Count)
-        {
-            return;
-        }
-
-        _project.Actions.RemoveAt(index);
-        MarkDirty();
-        RefreshActions(Math.Min(index, _project.Actions.Count - 1));
-        UpdateStatus(TranslationService.T("status.actionDeleted"));
-        RefreshCurrentPagePreview();
+        DeleteAction(GetSelectedActionIndex());
     }
 
     private void DuplicateActionButton_Click(object? sender, EventArgs e)
     {
-        var index = actionsListBox.SelectedIndex;
+        var index = GetSelectedActionIndex();
         if (index < 0 || index >= _project.Actions.Count)
         {
             return;
@@ -563,58 +550,110 @@ public sealed partial class MainForm : Form
 
     private void MoveActionUpButton_Click(object? sender, EventArgs e)
     {
-        var index = actionsListBox.SelectedIndex;
-        if (index <= 0 || index >= _project.Actions.Count)
-        {
-            return;
-        }
-
-        (_project.Actions[index - 1], _project.Actions[index]) = (_project.Actions[index], _project.Actions[index - 1]);
-        MarkDirty();
-        RefreshActions(index - 1);
-        UpdateStatus(TranslationService.T("status.actionMovedUp"));
-        RefreshCurrentPagePreview();
+        var index = GetSelectedActionIndex();
+        MoveAction(index, -1);
     }
 
     private void MoveActionDownButton_Click(object? sender, EventArgs e)
     {
-        var index = actionsListBox.SelectedIndex;
-        if (index < 0 || index >= _project.Actions.Count - 1)
+        var index = GetSelectedActionIndex();
+        MoveAction(index, 1);
+    }
+
+    private void DeleteAction(int index)
+    {
+        if (index < 0 || index >= _project.Actions.Count)
         {
             return;
         }
 
-        (_project.Actions[index + 1], _project.Actions[index]) = (_project.Actions[index], _project.Actions[index + 1]);
+        _project.Actions.RemoveAt(index);
         MarkDirty();
-        RefreshActions(index + 1);
-        UpdateStatus(TranslationService.T("status.actionMovedDown"));
+        RefreshActions(Math.Min(index, _project.Actions.Count - 1));
+        UpdateStatus(TranslationService.T("status.actionDeleted"));
         RefreshCurrentPagePreview();
     }
 
-    private void ActionsListBox_SelectedIndexChanged(object? sender, EventArgs e)
+    private void MoveAction(int index, int direction)
+    {
+        var newIndex = index + direction;
+        if (index < 0 || index >= _project.Actions.Count || newIndex < 0 || newIndex >= _project.Actions.Count)
+        {
+            return;
+        }
+
+        (_project.Actions[newIndex], _project.Actions[index]) = (_project.Actions[index], _project.Actions[newIndex]);
+        MarkDirty();
+        RefreshActions(newIndex);
+        UpdateStatus(direction < 0
+            ? TranslationService.T("status.actionMovedUp")
+            : TranslationService.T("status.actionMovedDown"));
+        RefreshCurrentPagePreview();
+    }
+
+    private void ActionsGridView_SelectionChanged(object? sender, EventArgs e)
     {
         BindSelectedAction();
         UpdateActionButtons();
-        if (!_isBinding && _project.PreviewApplyMode == PreviewApplyMode.UntilCurrent)
+        if (!_isBinding)
         {
             RefreshCurrentPagePreview();
         }
     }
 
-    private void PreviewModeRadioButton_CheckedChanged(object? sender, EventArgs e)
+    private void ActionsGridView_CellClick(object? sender, DataGridViewCellEventArgs e)
     {
-        if (_isBinding)
+        if (e.RowIndex < 0 || e.RowIndex >= _project.Actions.Count)
         {
             return;
         }
 
-        var mode = untilCurrentRadioButton.Checked ? PreviewApplyMode.UntilCurrent : PreviewApplyMode.ApplyAll;
-        if (_project.PreviewApplyMode == mode)
+        actionsGridView.Rows[e.RowIndex].Selected = true;
+    }
+
+    private void ActionsGridView_CellContentClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (_isBinding || e.RowIndex < 0 || e.RowIndex >= _project.Actions.Count)
         {
             return;
         }
 
-        _project.PreviewApplyMode = mode;
+        if (e.ColumnIndex == actionMoveUpColumn.Index)
+        {
+            MoveAction(e.RowIndex, -1);
+        }
+        else if (e.ColumnIndex == actionMoveDownColumn.Index)
+        {
+            MoveAction(e.RowIndex, 1);
+        }
+        else if (e.ColumnIndex == actionDeleteColumn.Index)
+        {
+            DeleteAction(e.RowIndex);
+        }
+    }
+
+    private void ActionsGridView_CurrentCellDirtyStateChanged(object? sender, EventArgs e)
+    {
+        if (actionsGridView.IsCurrentCellDirty)
+        {
+            actionsGridView.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        }
+    }
+
+    private void ActionsGridView_CellValueChanged(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (_isBinding || e.RowIndex < 0 || e.RowIndex >= _project.Actions.Count || e.ColumnIndex != actionEnabledColumn.Index)
+        {
+            return;
+        }
+
+        var enabled = actionsGridView.Rows[e.RowIndex].Cells[actionEnabledColumn.Index].Value is true;
+        if (_project.Actions[e.RowIndex].Enabled == enabled)
+        {
+            return;
+        }
+
+        _project.Actions[e.RowIndex].Enabled = enabled;
         MarkDirty();
         RefreshCurrentPagePreview();
     }
@@ -629,7 +668,7 @@ public sealed partial class MainForm : Form
         action.Name = actionNameTextBox.Text;
         action.UseDefaultName = false;
         MarkDirty();
-        RefreshActions(actionsListBox.SelectedIndex);
+        RefreshActions(GetSelectedActionIndex());
         RefreshCurrentPagePreview();
     }
 
@@ -676,7 +715,7 @@ public sealed partial class MainForm : Form
             action.Type = type;
             ApplyActionDefaults(action, overwriteName: true);
             MarkDirty();
-            RefreshActions(actionsListBox.SelectedIndex);
+            RefreshActions(GetSelectedActionIndex());
             RefreshCurrentPagePreview();
         }
     }
@@ -692,7 +731,7 @@ public sealed partial class MainForm : Form
         {
             action.PageFilter.Type = type;
             MarkDirty();
-            RefreshActions(actionsListBox.SelectedIndex);
+            RefreshActions(GetSelectedActionIndex());
             RefreshCurrentPagePreview();
         }
     }
@@ -713,7 +752,7 @@ public sealed partial class MainForm : Form
         action.PageFilter.Range = ranges;
         MarkDirty();
         UpdateStatus(TranslationService.T("status.pageFilterUpdated"));
-        RefreshActions(actionsListBox.SelectedIndex);
+        RefreshActions(GetSelectedActionIndex());
         RefreshCurrentPagePreview();
     }
 
@@ -766,10 +805,16 @@ public sealed partial class MainForm : Form
 
         action.EnableWidth = targetedWidthEnabledCheckBox.Checked;
         targetedWidthNumericBox.Enabled = action.EnableWidth;
-        if (!action.EnableWidth)
+        if (action.EnableWidth)
+        {
+            action.TargetedWidth ??= GetDefaultAdjustSizeTarget(action, horizontal: true);
+            targetedWidthNumericBox.Value = FloatToDecimal(action.TargetedWidth);
+        }
+        else
         {
             action.TargetedWidth = null;
             targetedWidthNumericBox.Value = 0;
+            ClearNumericText(targetedWidthNumericBox);
         }
 
         MarkDirty();
@@ -789,10 +834,16 @@ public sealed partial class MainForm : Form
 
         action.EnableHeight = targetedHeightEnabledCheckBox.Checked;
         targetedHeightNumericBox.Enabled = action.EnableHeight;
-        if (!action.EnableHeight)
+        if (action.EnableHeight)
+        {
+            action.TargetedHeight ??= GetDefaultAdjustSizeTarget(action, horizontal: false);
+            targetedHeightNumericBox.Value = FloatToDecimal(action.TargetedHeight);
+        }
+        else
         {
             action.TargetedHeight = null;
             targetedHeightNumericBox.Value = 0;
+            ClearNumericText(targetedHeightNumericBox);
         }
 
         MarkDirty();
@@ -1096,10 +1147,8 @@ public sealed partial class MainForm : Form
         projectDescriptionTextBox.Text = _project.Description;
         outputFolderTextBox.Text = _project.OutputFolder;
         SyncUnitCombos();
-        applyAllRadioButton.Checked = _project.PreviewApplyMode == PreviewApplyMode.ApplyAll;
-        untilCurrentRadioButton.Checked = _project.PreviewApplyMode == PreviewApplyMode.UntilCurrent;
         _isBinding = false;
-        RefreshActions(actionsListBox.SelectedIndex);
+        RefreshActions(GetSelectedActionIndex());
     }
 
     private void InitializePdfRendering()
@@ -1404,15 +1453,23 @@ public sealed partial class MainForm : Form
     private void RefreshActions(int selectedIndex)
     {
         _isBinding = true;
-        actionsListBox.Items.Clear();
+        actionsGridView.Rows.Clear();
         for (var index = 0; index < _project.Actions.Count; index++)
         {
-            actionsListBox.Items.Add(FormatActionListItem(index, _project.Actions[index]));
+            var action = _project.Actions[index];
+            actionsGridView.Rows.Add(action.Enabled, FormatActionListItem(index, action), "▲", "▼", "X");
         }
 
         if (_project.Actions.Count > 0)
         {
-            actionsListBox.SelectedIndex = Math.Clamp(selectedIndex, 0, _project.Actions.Count - 1);
+            var index = Math.Clamp(selectedIndex, 0, _project.Actions.Count - 1);
+            actionsGridView.ClearSelection();
+            actionsGridView.Rows[index].Selected = true;
+            actionsGridView.CurrentCell = actionsGridView.Rows[index].Cells[actionNameColumn.Index];
+        }
+        else
+        {
+            actionsGridView.ClearSelection();
         }
 
         _isBinding = false;
@@ -1462,6 +1519,14 @@ public sealed partial class MainForm : Form
         targetedHeightEnabledCheckBox.Checked = usesOptionalTargetSize && action.EnableHeight;
         targetedWidthNumericBox.Enabled = !usesOptionalTargetSize || action.EnableWidth;
         targetedHeightNumericBox.Enabled = !usesOptionalTargetSize || action.EnableHeight;
+        if (usesOptionalTargetSize && !action.EnableWidth)
+        {
+            ClearNumericText(targetedWidthNumericBox);
+        }
+        if (usesOptionalTargetSize && !action.EnableHeight)
+        {
+            ClearNumericText(targetedHeightNumericBox);
+        }
         proportionalCheckBox.Checked = action.Proportional ?? true;
         rulerColorTextBox.Text = action.Color;
         SelectEnum(rulerStyleComboBox, action.Style);
@@ -1475,14 +1540,11 @@ public sealed partial class MainForm : Form
 
     private void UpdateActionButtons()
     {
-        var selectedIndex = actionsListBox.SelectedIndex;
+        var selectedIndex = GetSelectedActionIndex();
         var hasSelection = selectedIndex >= 0 && selectedIndex < _project.Actions.Count;
         insertBeforeActionButton.Enabled = hasSelection || _project.Actions.Count == 0;
         insertAfterActionButton.Enabled = hasSelection || _project.Actions.Count == 0;
         duplicateActionButton.Enabled = hasSelection;
-        deleteActionButton.Enabled = hasSelection;
-        moveActionUpButton.Enabled = hasSelection && selectedIndex > 0;
-        moveActionDownButton.Enabled = hasSelection && selectedIndex < _project.Actions.Count - 1;
     }
 
     private void UpdatePreviewStatus()
@@ -1492,22 +1554,14 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        var count = GetPreviewActionCount();
-        var label = _project.PreviewApplyMode == PreviewApplyMode.UntilCurrent
-            ? TranslationService.T("status.previewUntilCurrent", count)
-            : TranslationService.T("status.previewApplyAll", count);
+        var count = _project.Actions.Count(action => action.Enabled);
+        var label = TranslationService.T("status.previewApplyAll", count);
         UpdateStatus(label);
     }
 
     private int GetPreviewActionCount()
     {
-        if (_project.PreviewApplyMode == PreviewApplyMode.ApplyAll)
-        {
-            return _project.Actions.Count;
-        }
-
-        var selectedIndex = actionsListBox.SelectedIndex;
-        return selectedIndex < 0 ? 0 : Math.Min(selectedIndex + 1, _project.Actions.Count);
+        return _project.Actions.Count;
     }
 
     private Bitmap ApplyPreviewActions(Image originalImage, SizeF originalPageSizePoints, float dpi, out SizeF previewPageSizePoints)
@@ -1531,7 +1585,7 @@ public sealed partial class MainForm : Form
         for (var index = 0; index < actionCount; index++)
         {
             var action = _project.Actions[index];
-            if (!PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber))
+            if (!action.Enabled || !PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber))
             {
                 continue;
             }
@@ -1788,8 +1842,18 @@ public sealed partial class MainForm : Form
 
     private ProjectAction? GetSelectedAction()
     {
-        var index = actionsListBox.SelectedIndex;
+        var index = GetSelectedActionIndex();
         return index >= 0 && index < _project.Actions.Count ? _project.Actions[index] : null;
+    }
+
+    private int GetSelectedActionIndex()
+    {
+        if (actionsGridView.SelectedRows.Count > 0)
+        {
+            return actionsGridView.SelectedRows[0].Index;
+        }
+
+        return actionsGridView.CurrentCell?.RowIndex ?? -1;
     }
 
     private static string FormatActionListItem(int index, ProjectAction action)
@@ -1802,6 +1866,7 @@ public sealed partial class MainForm : Form
         return new ProjectAction
         {
             Id = Guid.NewGuid().ToString("N"),
+            Enabled = source.Enabled,
             Type = source.Type,
             Name = source.Name,
             UseDefaultName = source.UseDefaultName,
@@ -2037,6 +2102,8 @@ public sealed partial class MainForm : Form
         targetedHeightEnabledCheckBox.Checked = false;
         targetedWidthNumericBox.Enabled = false;
         targetedHeightNumericBox.Enabled = false;
+        ClearNumericText(targetedWidthNumericBox);
+        ClearNumericText(targetedHeightNumericBox);
         proportionalCheckBox.Checked = true;
         rulerColorTextBox.Text = "";
         rulerStyleComboBox.SelectedIndex = -1;
@@ -2160,6 +2227,19 @@ public sealed partial class MainForm : Form
         return _project.UnitType == UnitType.Cm ? dimensionInches * 2.54f : dimensionInches;
     }
 
+    private float GetDefaultAdjustSizeTarget(ProjectAction action, bool horizontal)
+    {
+        var pageSizePoints = GetPageSizeBeforeAction(action);
+        var dimensionPoints = horizontal ? pageSizePoints.Width : pageSizePoints.Height;
+        if (dimensionPoints <= 0)
+        {
+            return 1;
+        }
+
+        var dimensionInches = dimensionPoints / 72f;
+        return Round(_project.UnitType == UnitType.Cm ? dimensionInches * 2.54f : dimensionInches);
+    }
+
     private SizeF GetPageSizeBeforeAction(ProjectAction targetAction)
     {
         if (_pdfDocument == null)
@@ -2176,7 +2256,7 @@ public sealed partial class MainForm : Form
                 break;
             }
 
-            if (!PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber))
+            if (!action.Enabled || !PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber))
             {
                 continue;
             }
@@ -2384,6 +2464,15 @@ public sealed partial class MainForm : Form
     private static decimal FloatToDecimal(float? value)
     {
         return (decimal)Round(value ?? 0);
+    }
+
+    private static void ClearNumericText(NumericUpDown numericBox)
+    {
+        var textBox = numericBox.Controls.OfType<TextBox>().FirstOrDefault();
+        if (textBox != null)
+        {
+            textBox.Text = "";
+        }
     }
 
     private static float Round(float value)

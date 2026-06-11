@@ -46,7 +46,7 @@ public static class PdfProjectConverter
         var plan = new PagePlan(sourceWidth, sourceHeight);
         foreach (var action in actions)
         {
-            if (!PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber) || action.Type == PdfActionType.AddRuler)
+            if (!action.Enabled || !PageFilterEvaluator.AppliesToPage(action.PageFilter, pageNumber) || action.Type == PdfActionType.AddRuler)
             {
                 continue;
             }
