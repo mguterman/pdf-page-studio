@@ -672,12 +672,14 @@ partial class MainForm
         addLineButton.TabIndex = 2;
         addLineButton.Text = TranslationService.T("actions.addLine");
         addLineButton.UseVisualStyleBackColor = true;
+        addLineButton.Click += AddLineButton_Click;
 
         addFrameButton.Name = "addFrameButton";
         addFrameButton.Size = new Size(82, 28);
         addFrameButton.TabIndex = 3;
         addFrameButton.Text = TranslationService.T("actions.addFrame");
         addFrameButton.UseVisualStyleBackColor = true;
+        addFrameButton.Click += AddFrameButton_Click;
 
         actionsGridView.AllowUserToAddRows = false;
         actionsGridView.AllowUserToDeleteRows = false;

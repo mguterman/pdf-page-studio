@@ -134,6 +134,7 @@
   <data name="status.pageFilterUpdated" xml:space="preserve"><value>מסנן העמודים עודכן.</value></data>
   <data name="status.actionAdded" xml:space="preserve"><value>הפעולה נוספה.</value></data>
   <data name="status.actionUpdated" xml:space="preserve"><value>הפעולה עודכנה.</value></data>
+  <data name="status.addFrameNotReady" xml:space="preserve"><value>הוספת מסגרת תהיה זמינה לאחר הגדרת פעולת המסגרת.</value></data>
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>תצוגה: פעולות עד הבחירה ({0})</value></data>
   <data name="status.previewApplyAll" xml:space="preserve"><value>תצוגה: כל הפעולות ({0})</value></data>
   <data name="recent.empty" xml:space="preserve"><value>(אין פרויקטים אחרונים)</value></data>

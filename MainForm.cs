@@ -525,6 +525,16 @@ public sealed partial class MainForm : Form
         ShowAddActionMenu(addActionButton, _project.Actions.Count);
     }
 
+    private void AddLineButton_Click(object? sender, EventArgs e)
+    {
+        InsertAction(_project.Actions.Count, PdfActionType.AddRuler);
+    }
+
+    private void AddFrameButton_Click(object? sender, EventArgs e)
+    {
+        UpdateStatus(TranslationService.T("status.addFrameNotReady"));
+    }
+
     private void SelectAllActionsCheckBox_Click(object? sender, EventArgs e)
     {
         if (_isBinding || _project.Actions.Count == 0)
@@ -1542,7 +1552,7 @@ public sealed partial class MainForm : Form
     {
         _actionMenu?.Dispose();
         _actionMenu = new ContextMenuStrip();
-        foreach (var actionType in Enum.GetValues<PdfActionType>())
+        foreach (var actionType in Enum.GetValues<PdfActionType>().Where(type => type != PdfActionType.AddRuler))
         {
             var item = new ToolStripMenuItem(GetActionDisplayName(actionType))
             {

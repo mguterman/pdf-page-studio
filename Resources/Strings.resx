@@ -134,6 +134,7 @@
   <data name="status.pageFilterUpdated" xml:space="preserve"><value>Page filter updated.</value></data>
   <data name="status.actionAdded" xml:space="preserve"><value>Action added.</value></data>
   <data name="status.actionUpdated" xml:space="preserve"><value>Action updated.</value></data>
+  <data name="status.addFrameNotReady" xml:space="preserve"><value>Add Frame will be available after the frame action is defined.</value></data>
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>Preview: actions through selected ({0})</value></data>
   <data name="status.previewApplyAll" xml:space="preserve"><value>Preview: all actions ({0})</value></data>
   <data name="recent.empty" xml:space="preserve"><value>(No recent projects)</value></data>

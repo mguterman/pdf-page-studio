@@ -134,6 +134,7 @@
   <data name="status.pageFilterUpdated" xml:space="preserve"><value>Фильтр страниц обновлён.</value></data>
   <data name="status.actionAdded" xml:space="preserve"><value>Действие добавлено.</value></data>
   <data name="status.actionUpdated" xml:space="preserve"><value>Действие обновлено.</value></data>
+  <data name="status.addFrameNotReady" xml:space="preserve"><value>Add Frame станет доступна после описания действия рамки.</value></data>
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>Preview: действия до выбранного ({0})</value></data>
   <data name="status.previewApplyAll" xml:space="preserve"><value>Preview: все действия ({0})</value></data>
   <data name="recent.empty" xml:space="preserve"><value>(Нет недавних проектов)</value></data>
