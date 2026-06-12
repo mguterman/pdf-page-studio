@@ -6,6 +6,7 @@ partial class MainForm
 
     private MenuStrip mainMenuStrip;
     private ToolStripMenuItem fileMenuItem;
+    private ToolStripMenuItem newProjectMenuItem;
     private ToolStripMenuItem openProjectMenuItem;
     private ToolStripMenuItem saveProjectMenuItem;
     private ToolStripMenuItem saveProjectAsMenuItem;
@@ -24,6 +25,12 @@ partial class MainForm
     private ToolStripMenuItem inchUnitMenuItem;
     private ToolStripMenuItem centimeterUnitMenuItem;
     private Panel mainContentPanel;
+    private TableLayoutPanel startPanel;
+    private Button createProjectButton;
+    private Label recentProjectsLabel;
+    private FlowLayoutPanel recentProjectsPanel;
+    private TableLayoutPanel noPdfPanel;
+    private Button addPdfStartButton;
     private TableLayoutPanel projectInfoPanel;
     private Label projectNameLabel;
     private TextBox projectNameTextBox;
@@ -31,6 +38,7 @@ partial class MainForm
     private ComboBox projectUnitTypeComboBox;
     private Label projectDescriptionLabel;
     private TextBox projectDescriptionTextBox;
+    private SplitContainer workspaceSplitContainer;
     private TableLayoutPanel pdfWorkspacePanel;
     private ToolStrip pdfNavigationToolStrip;
     private ToolStripButton firstPageButton;
@@ -68,8 +76,6 @@ partial class MainForm
     private DataGridViewTextBoxColumn actionNameColumn;
     private DataGridViewTextBoxColumn actionTypeColumn;
     private DataGridViewTextBoxColumn actionPagesColumn;
-    private DataGridViewButtonColumn actionMoveUpColumn;
-    private DataGridViewButtonColumn actionMoveDownColumn;
     private DataGridViewButtonColumn actionDuplicateColumn;
     private DataGridViewButtonColumn actionDeleteColumn;
     private ToolTip actionToolTip;
@@ -146,6 +152,7 @@ partial class MainForm
         components = new System.ComponentModel.Container();
         mainMenuStrip = new MenuStrip();
         fileMenuItem = new ToolStripMenuItem();
+        newProjectMenuItem = new ToolStripMenuItem();
         openProjectMenuItem = new ToolStripMenuItem();
         saveProjectMenuItem = new ToolStripMenuItem();
         saveProjectAsMenuItem = new ToolStripMenuItem();
@@ -164,6 +171,12 @@ partial class MainForm
         inchUnitMenuItem = new ToolStripMenuItem();
         centimeterUnitMenuItem = new ToolStripMenuItem();
         mainContentPanel = new Panel();
+        startPanel = new TableLayoutPanel();
+        createProjectButton = new Button();
+        recentProjectsLabel = new Label();
+        recentProjectsPanel = new FlowLayoutPanel();
+        noPdfPanel = new TableLayoutPanel();
+        addPdfStartButton = new Button();
         projectInfoPanel = new TableLayoutPanel();
         projectNameLabel = new Label();
         projectNameTextBox = new TextBox();
@@ -171,6 +184,7 @@ partial class MainForm
         projectUnitTypeComboBox = new ComboBox();
         projectDescriptionLabel = new Label();
         projectDescriptionTextBox = new TextBox();
+        workspaceSplitContainer = new SplitContainer();
         pdfWorkspacePanel = new TableLayoutPanel();
         pdfNavigationToolStrip = new ToolStrip();
         firstPageButton = new ToolStripButton();
@@ -208,8 +222,6 @@ partial class MainForm
         actionNameColumn = new DataGridViewTextBoxColumn();
         actionTypeColumn = new DataGridViewTextBoxColumn();
         actionPagesColumn = new DataGridViewTextBoxColumn();
-        actionMoveUpColumn = new DataGridViewButtonColumn();
-        actionMoveDownColumn = new DataGridViewButtonColumn();
         actionDuplicateColumn = new DataGridViewButtonColumn();
         actionDeleteColumn = new DataGridViewButtonColumn();
         actionToolTip = new ToolTip(components);
@@ -226,20 +238,20 @@ partial class MainForm
         pageFilterRangeLabel = new Label();
         pageFilterRangeTextBox = new TextBox();
         leftLabel = new Label();
-        leftNumericBox = new NumericUpDown();
+        leftNumericBox = new SmartNumericUpDown();
         topLabel = new Label();
-        topNumericBox = new NumericUpDown();
+        topNumericBox = new SmartNumericUpDown();
         rightLabel = new Label();
-        rightNumericBox = new NumericUpDown();
+        rightNumericBox = new SmartNumericUpDown();
         bottomLabel = new Label();
-        bottomNumericBox = new NumericUpDown();
+        bottomNumericBox = new SmartNumericUpDown();
         targetedWidthLabel = new Label();
         targetedWidthPanel = new FlowLayoutPanel();
-        targetedWidthNumericBox = new NumericUpDown();
+        targetedWidthNumericBox = new SmartNumericUpDown();
         targetedWidthEnabledCheckBox = new CheckBox();
         targetedHeightLabel = new Label();
         targetedHeightPanel = new FlowLayoutPanel();
-        targetedHeightNumericBox = new NumericUpDown();
+        targetedHeightNumericBox = new SmartNumericUpDown();
         targetedHeightEnabledCheckBox = new CheckBox();
         proportionalLabel = new Label();
         proportionalCheckBox = new CheckBox();
@@ -265,14 +277,19 @@ partial class MainForm
         rulerOrientationLabel = new Label();
         rulerOrientationComboBox = new ComboBox();
         rulerPositionLabel = new Label();
-        rulerPositionNumericBox = new NumericUpDown();
+        rulerPositionNumericBox = new SmartNumericUpDown();
         rulerEndLabel = new Label();
-        rulerEndNumericBox = new NumericUpDown();
+        rulerEndNumericBox = new SmartNumericUpDown();
         mainStatusStrip = new StatusStrip();
         statusLabel = new ToolStripStatusLabel();
         mainMenuStrip.SuspendLayout();
         mainContentPanel.SuspendLayout();
+        startPanel.SuspendLayout();
+        noPdfPanel.SuspendLayout();
         projectInfoPanel.SuspendLayout();
+        workspaceSplitContainer.Panel1.SuspendLayout();
+        workspaceSplitContainer.Panel2.SuspendLayout();
+        workspaceSplitContainer.SuspendLayout();
         pdfWorkspacePanel.SuspendLayout();
         pdfNavigationToolStrip.SuspendLayout();
         actionsPanel.SuspendLayout();
@@ -291,6 +308,7 @@ partial class MainForm
 
         fileMenuItem.DropDownItems.AddRange(new ToolStripItem[]
         {
+            newProjectMenuItem,
             openProjectMenuItem,
             saveProjectMenuItem,
             saveProjectAsMenuItem,
@@ -303,6 +321,12 @@ partial class MainForm
         fileMenuItem.Name = "fileMenuItem";
         fileMenuItem.Size = new Size(37, 20);
         fileMenuItem.Text = TranslationService.T("menu.file");
+
+        newProjectMenuItem.Name = "newProjectMenuItem";
+        newProjectMenuItem.ShortcutKeys = Keys.Control | Keys.N;
+        newProjectMenuItem.Size = new Size(211, 22);
+        newProjectMenuItem.Text = TranslationService.T("menu.newProject");
+        newProjectMenuItem.Click += NewProjectMenuItem_Click;
 
         openProjectMenuItem.Name = "openProjectMenuItem";
         openProjectMenuItem.ShortcutKeys = Keys.Control | Keys.O;
@@ -373,10 +397,10 @@ partial class MainForm
         hebrewLanguageMenuItem.Text = TranslationService.T("language.hebrew");
         hebrewLanguageMenuItem.Click += HebrewLanguageMenuItem_Click;
 
-        settingsMenuItem.DropDownItems.AddRange(new ToolStripItem[] { inchUnitMenuItem, centimeterUnitMenuItem });
         settingsMenuItem.Name = "settingsMenuItem";
         settingsMenuItem.Size = new Size(61, 20);
         settingsMenuItem.Text = TranslationService.T("menu.settings");
+        settingsMenuItem.Click += ProjectSettingsMenuItem_Click;
 
         inchUnitMenuItem.Name = "inchUnitMenuItem";
         inchUnitMenuItem.Size = new Size(180, 22);
@@ -388,13 +412,79 @@ partial class MainForm
         centimeterUnitMenuItem.Text = TranslationService.T("enum.unit.Cm");
         centimeterUnitMenuItem.Click += CentimeterUnitMenuItem_Click;
 
-        mainContentPanel.Controls.Add(pdfWorkspacePanel);
+        mainContentPanel.Controls.Add(startPanel);
+        mainContentPanel.Controls.Add(noPdfPanel);
+        mainContentPanel.Controls.Add(workspaceSplitContainer);
         mainContentPanel.Controls.Add(projectInfoPanel);
         mainContentPanel.Dock = DockStyle.Fill;
         mainContentPanel.Location = new Point(0, 24);
         mainContentPanel.Name = "mainContentPanel";
         mainContentPanel.Size = new Size(1100, 676);
         mainContentPanel.TabIndex = 1;
+
+        startPanel.BackColor = SystemColors.Window;
+        startPanel.ColumnCount = 3;
+        startPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        startPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 460F));
+        startPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        startPanel.Controls.Add(createProjectButton, 1, 1);
+        startPanel.Controls.Add(recentProjectsLabel, 1, 2);
+        startPanel.Controls.Add(recentProjectsPanel, 1, 3);
+        startPanel.Dock = DockStyle.Fill;
+        startPanel.Name = "startPanel";
+        startPanel.RowCount = 5;
+        startPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+        startPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
+        startPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        startPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 180F));
+        startPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+        startPanel.TabIndex = 2;
+
+        createProjectButton.Anchor = AnchorStyles.None;
+        createProjectButton.Name = "createProjectButton";
+        createProjectButton.Size = new Size(180, 34);
+        createProjectButton.TabIndex = 0;
+        createProjectButton.Text = TranslationService.T("start.createProject");
+        createProjectButton.UseVisualStyleBackColor = true;
+        createProjectButton.Click += CreateProjectButton_Click;
+
+        recentProjectsLabel.AutoSize = true;
+        recentProjectsLabel.Dock = DockStyle.Fill;
+        recentProjectsLabel.Font = new Font(recentProjectsLabel.Font, FontStyle.Bold);
+        recentProjectsLabel.Name = "recentProjectsLabel";
+        recentProjectsLabel.TabIndex = 1;
+        recentProjectsLabel.Text = TranslationService.T("start.recentProjects") + ":";
+        recentProjectsLabel.TextAlign = ContentAlignment.MiddleLeft;
+
+        recentProjectsPanel.AutoScroll = true;
+        recentProjectsPanel.Dock = DockStyle.Fill;
+        recentProjectsPanel.FlowDirection = FlowDirection.TopDown;
+        recentProjectsPanel.Name = "recentProjectsPanel";
+        recentProjectsPanel.TabIndex = 2;
+        recentProjectsPanel.WrapContents = false;
+
+        noPdfPanel.BackColor = SystemColors.Window;
+        noPdfPanel.ColumnCount = 3;
+        noPdfPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        noPdfPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 280F));
+        noPdfPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        noPdfPanel.Controls.Add(addPdfStartButton, 1, 1);
+        noPdfPanel.Dock = DockStyle.Fill;
+        noPdfPanel.Name = "noPdfPanel";
+        noPdfPanel.RowCount = 3;
+        noPdfPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+        noPdfPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
+        noPdfPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+        noPdfPanel.TabIndex = 3;
+        noPdfPanel.Visible = false;
+
+        addPdfStartButton.Anchor = AnchorStyles.None;
+        addPdfStartButton.Name = "addPdfStartButton";
+        addPdfStartButton.Size = new Size(240, 34);
+        addPdfStartButton.TabIndex = 0;
+        addPdfStartButton.Text = TranslationService.T("start.addPdf");
+        addPdfStartButton.UseVisualStyleBackColor = true;
+        addPdfStartButton.Click += AddPdfStartButton_Click;
 
         projectInfoPanel.ColumnCount = 2;
         projectInfoPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
@@ -458,21 +548,16 @@ partial class MainForm
         projectDescriptionTextBox.TabIndex = 5;
         projectDescriptionTextBox.TextChanged += ProjectDescriptionTextBox_TextChanged;
 
-        pdfWorkspacePanel.ColumnCount = 2;
+        pdfWorkspacePanel.ColumnCount = 1;
         pdfWorkspacePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        pdfWorkspacePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 480F));
         pdfWorkspacePanel.Controls.Add(pdfNavigationToolStrip, 0, 0);
         pdfWorkspacePanel.Controls.Add(pdfPageViewer, 0, 1);
-        pdfWorkspacePanel.Controls.Add(actionsPanel, 1, 0);
         pdfWorkspacePanel.Dock = DockStyle.Fill;
         pdfWorkspacePanel.Name = "pdfWorkspacePanel";
         pdfWorkspacePanel.RowCount = 2;
         pdfWorkspacePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 31F));
         pdfWorkspacePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        pdfWorkspacePanel.SetRowSpan(actionsPanel, 2);
-        pdfWorkspacePanel.Size = new Size(1100, 676);
-        pdfWorkspacePanel.TabIndex = 1;
-        pdfWorkspacePanel.Visible = false;
+        pdfWorkspacePanel.TabIndex = 0;
 
         pdfNavigationToolStrip.GripStyle = ToolStripGripStyle.Hidden;
         pdfNavigationToolStrip.Items.AddRange(new ToolStripItem[]
@@ -619,6 +704,21 @@ partial class MainForm
         pdfPageViewer.TabIndex = 1;
         pdfPageViewer.ZoomMode = PdfZoomMode.FitPage;
 
+        workspaceSplitContainer.BackColor = SystemColors.ControlLight;
+        workspaceSplitContainer.BorderStyle = BorderStyle.None;
+        workspaceSplitContainer.Dock = DockStyle.Fill;
+        workspaceSplitContainer.FixedPanel = FixedPanel.None;
+        workspaceSplitContainer.Name = "workspaceSplitContainer";
+        workspaceSplitContainer.Orientation = Orientation.Vertical;
+        workspaceSplitContainer.Panel1.Controls.Add(pdfWorkspacePanel);
+        workspaceSplitContainer.Panel2.Controls.Add(actionsPanel);
+        workspaceSplitContainer.Panel1.BackColor = SystemColors.Control;
+        workspaceSplitContainer.Panel2.BackColor = SystemColors.Window;
+        workspaceSplitContainer.SplitterWidth = 6;
+        workspaceSplitContainer.TabIndex = 1;
+        workspaceSplitContainer.Visible = false;
+
+        actionsPanel.BackColor = SystemColors.Window;
         actionsPanel.ColumnCount = 1;
         actionsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         actionsPanel.Controls.Add(actionsTitleLabel, 0, 0);
@@ -631,7 +731,7 @@ partial class MainForm
         actionsPanel.Padding = new Padding(12);
         actionsPanel.RowCount = 5;
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
-        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 72F));
+        actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 70F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
         actionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 30F));
@@ -686,13 +786,13 @@ partial class MainForm
         actionsGridView.AllowUserToAddRows = false;
         actionsGridView.AllowUserToDeleteRows = false;
         actionsGridView.AllowUserToResizeRows = false;
-        actionsGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+        actionsGridView.AllowDrop = true;
         actionsGridView.BackgroundColor = SystemColors.Window;
         actionsGridView.BorderStyle = BorderStyle.FixedSingle;
         actionsGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
         actionsGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         actionsGridView.ColumnHeadersVisible = true;
-        actionsGridView.Columns.AddRange(new DataGridViewColumn[] { actionEnabledColumn, actionIndexColumn, actionNameColumn, actionTypeColumn, actionPagesColumn, actionMoveUpColumn, actionMoveDownColumn, actionDuplicateColumn, actionDeleteColumn });
+        actionsGridView.Columns.AddRange(new DataGridViewColumn[] { actionEnabledColumn, actionIndexColumn, actionNameColumn, actionTypeColumn, actionPagesColumn, actionDuplicateColumn, actionDeleteColumn });
         actionsGridView.DefaultCellStyle.BackColor = Color.White;
         actionsGridView.DefaultCellStyle.ForeColor = SystemColors.ControlText;
         actionsGridView.DefaultCellStyle.Padding = new Padding(4, 2, 4, 2);
@@ -713,13 +813,31 @@ partial class MainForm
         actionsGridView.CellDoubleClick += ActionsGridView_CellDoubleClick;
         actionsGridView.CellValueChanged += ActionsGridView_CellValueChanged;
         actionsGridView.CurrentCellDirtyStateChanged += ActionsGridView_CurrentCellDirtyStateChanged;
+        actionsGridView.DragDrop += ActionsGridView_DragDrop;
+        actionsGridView.DragLeave += ActionsGridView_DragLeave;
+        actionsGridView.DragOver += ActionsGridView_DragOver;
+        actionsGridView.MouseDown += ActionsGridView_MouseDown;
+        actionsGridView.MouseMove += ActionsGridView_MouseMove;
+        actionsGridView.MouseUp += ActionsGridView_MouseUp;
+        actionsGridView.Paint += ActionsGridView_Paint;
         actionsGridView.SelectionChanged += ActionsGridView_SelectionChanged;
 
         actionEnabledColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        actionEnabledColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+        actionEnabledColumn.DefaultCellStyle.Padding = Padding.Empty;
+        actionEnabledColumn.FalseValue = false;
+        actionEnabledColumn.FlatStyle = FlatStyle.Standard;
         actionEnabledColumn.HeaderText = "";
+        actionEnabledColumn.IndeterminateValue = false;
+        actionEnabledColumn.MinimumWidth = 44;
         actionEnabledColumn.Name = "actionEnabledColumn";
+        actionEnabledColumn.ReadOnly = false;
         actionEnabledColumn.Resizable = DataGridViewTriState.False;
-        actionEnabledColumn.Width = 36;
+        actionEnabledColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+        actionEnabledColumn.ThreeState = false;
+        actionEnabledColumn.TrueValue = true;
+        actionEnabledColumn.ValueType = typeof(bool);
+        actionEnabledColumn.Width = 48;
 
         actionIndexColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         actionIndexColumn.HeaderText = "#";
@@ -745,22 +863,6 @@ partial class MainForm
         actionPagesColumn.Name = "actionPagesColumn";
         actionPagesColumn.ReadOnly = true;
         actionPagesColumn.Width = 82;
-
-        actionMoveUpColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-        actionMoveUpColumn.HeaderText = "";
-        actionMoveUpColumn.Name = "actionMoveUpColumn";
-        actionMoveUpColumn.ReadOnly = true;
-        actionMoveUpColumn.Text = "^";
-        actionMoveUpColumn.UseColumnTextForButtonValue = false;
-        actionMoveUpColumn.Width = 34;
-
-        actionMoveDownColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-        actionMoveDownColumn.HeaderText = "";
-        actionMoveDownColumn.Name = "actionMoveDownColumn";
-        actionMoveDownColumn.ReadOnly = true;
-        actionMoveDownColumn.Text = "v";
-        actionMoveDownColumn.UseColumnTextForButtonValue = false;
-        actionMoveDownColumn.Width = 34;
 
         actionDuplicateColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         actionDuplicateColumn.HeaderText = "";
@@ -1013,6 +1115,13 @@ partial class MainForm
         mainMenuStrip.ResumeLayout(false);
         mainMenuStrip.PerformLayout();
         mainContentPanel.ResumeLayout(false);
+        startPanel.ResumeLayout(false);
+        startPanel.PerformLayout();
+        noPdfPanel.ResumeLayout(false);
+        workspaceSplitContainer.Panel1.ResumeLayout(false);
+        workspaceSplitContainer.Panel2.ResumeLayout(false);
+        workspaceSplitContainer.ResumeLayout(false);
+        workspaceSplitContainer.PerformLayout();
         projectInfoPanel.ResumeLayout(false);
         projectInfoPanel.PerformLayout();
         pdfWorkspacePanel.ResumeLayout(false);
@@ -1055,9 +1164,10 @@ partial class MainForm
         numericBox.Maximum = 100000M;
         numericBox.Minimum = 0M;
         numericBox.ThousandsSeparator = true;
-        numericBox.KeyDown += NumericBox_KeyDown;
-        numericBox.MouseDown += NumericBox_MouseDown;
-        numericBox.ValueChanged += handler;
+        if (numericBox is SmartNumericUpDown smartNumericBox)
+        {
+            smartNumericBox.SmartValueChanged += (_, _) => handler(numericBox, EventArgs.Empty);
+        }
     }
 
     private static void ConfigureTargetParameterPanel(FlowLayoutPanel panel, NumericUpDown numericBox, CheckBox checkBox)

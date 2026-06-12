@@ -13,13 +13,15 @@
   <data name="common.remove" xml:space="preserve"><value>Удалить</value></data>
   <data name="common.apply" xml:space="preserve"><value>Применить</value></data>
   <data name="common.cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="common.create" xml:space="preserve"><value>Создать</value></data>
   <data name="menu.file" xml:space="preserve"><value>&amp;Файл</value></data>
+  <data name="menu.newProject" xml:space="preserve"><value>&amp;Новый проект...</value></data>
   <data name="menu.openProject" xml:space="preserve"><value>&amp;Открыть проект...</value></data>
   <data name="menu.save" xml:space="preserve"><value>&amp;Сохранить</value></data>
   <data name="menu.saveAs" xml:space="preserve"><value>Сохранить &amp;как...</value></data>
   <data name="menu.addPdf" xml:space="preserve"><value>Добавить &amp;PDF файл...</value></data>
   <data name="menu.openRecent" xml:space="preserve"><value>Открыть &amp;недавний проект</value></data>
-  <data name="menu.settings" xml:space="preserve"><value>&amp;Настройки</value></data>
+  <data name="menu.settings" xml:space="preserve"><value>&amp;Настройки проекта...</value></data>
   <data name="menu.language" xml:space="preserve"><value>&amp;Язык</value></data>
   <data name="language.english" xml:space="preserve"><value>Английский</value></data>
   <data name="language.russian" xml:space="preserve"><value>Русский</value></data>
@@ -58,6 +60,7 @@
   <data name="status.batchConverted" xml:space="preserve"><value>Converted {0} файлов в: {1}</value></data>
   <data name="message.convertFailed.title" xml:space="preserve"><value>Convert failed</value></data>
   <data name="actions.title" xml:space="preserve"><value>Действия</value></data>
+  <data name="actions.titleWithDragHint" xml:space="preserve"><value>Действия (чтобы изменить порядок, перетащите мышкой)</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>Все</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>До текущего</value></data>
   <data name="actions.selectAll" xml:space="preserve"><value>Все</value></data>
@@ -100,6 +103,27 @@
   <data name="field.height" xml:space="preserve"><value>Высота</value></data>
   <data name="field.proportional" xml:space="preserve"><value>Пропорции</value></data>
   <data name="field.anchor" xml:space="preserve"><value>Якорь</value></data>
+  <data name="field.x" xml:space="preserve"><value>X</value></data>
+  <data name="field.y" xml:space="preserve"><value>Y</value></data>
+  <data name="group.zoom" xml:space="preserve"><value>Масштаб</value></data>
+  <data name="group.shift" xml:space="preserve"><value>Сдвиг</value></data>
+  <data name="actionSummary.Zoom.OneDimension" xml:space="preserve"><value>Масштабировать содержимое до {0}% от {1}.</value></data>
+  <data name="actionSummary.Zoom.WidthHeight" xml:space="preserve"><value>Масштабировать содержимое до ширины {0}% и высоты {1}% от {2}.</value></data>
+  <data name="actionSummary.Zoom.NoZoom" xml:space="preserve"><value>Масштаб не задан.</value></data>
+  <data name="actionSummary.Shift.Left" xml:space="preserve"><value>Сдвинуть содержимое влево на {0} {1}.</value></data>
+  <data name="actionSummary.Shift.Right" xml:space="preserve"><value>Сдвинуть содержимое вправо на {0} {1}.</value></data>
+  <data name="actionSummary.Shift.Up" xml:space="preserve"><value>Сдвинуть содержимое вверх на {0} {1}.</value></data>
+  <data name="actionSummary.Shift.Down" xml:space="preserve"><value>Сдвинуть содержимое вниз на {0} {1}.</value></data>
+  <data name="actionSummary.Shift.NoShift" xml:space="preserve"><value>Сдвиг не задан.</value></data>
+  <data name="anchor.Left.Top" xml:space="preserve"><value>левого верхнего угла</value></data>
+  <data name="anchor.Center.Top" xml:space="preserve"><value>верхнего края</value></data>
+  <data name="anchor.Right.Top" xml:space="preserve"><value>правого верхнего угла</value></data>
+  <data name="anchor.Left.Center" xml:space="preserve"><value>левого края</value></data>
+  <data name="anchor.Center.Center" xml:space="preserve"><value>центра</value></data>
+  <data name="anchor.Right.Center" xml:space="preserve"><value>правого края</value></data>
+  <data name="anchor.Left.Bottom" xml:space="preserve"><value>левого нижнего угла</value></data>
+  <data name="anchor.Center.Bottom" xml:space="preserve"><value>нижнего края</value></data>
+  <data name="anchor.Right.Bottom" xml:space="preserve"><value>правого нижнего угла</value></data>
   <data name="field.color" xml:space="preserve"><value>Цвет</value></data>
   <data name="field.style" xml:space="preserve"><value>Стиль</value></data>
   <data name="field.mode" xml:space="preserve"><value>Режим</value></data>
@@ -110,6 +134,8 @@
   <data name="dialog.action.preview" xml:space="preserve"><value>Preview</value></data>
   <data name="dialog.saveProject.title" xml:space="preserve"><value>Сохранить проект PDF Page Studio</value></data>
   <data name="dialog.project.filter" xml:space="preserve"><value>Проект PDF Page Studio (*.ppsproj)|*.ppsproj|Все файлы (*.*)|*.*</value></data>
+  <data name="dialog.newProject.title" xml:space="preserve"><value>Новый проект</value></data>
+  <data name="dialog.projectSettings.title" xml:space="preserve"><value>Настройки проекта</value></data>
   <data name="dialog.addPdf.title" xml:space="preserve"><value>Добавить PDF файл</value></data>
   <data name="dialog.pdf.filter" xml:space="preserve"><value>PDF файлы (*.pdf)|*.pdf|Все файлы (*.*)|*.*</value></data>
   <data name="message.openProjectFailed.title" xml:space="preserve"><value>Не удалось открыть проект</value></data>
@@ -138,6 +164,11 @@
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>Preview: действия до выбранного ({0})</value></data>
   <data name="status.previewApplyAll" xml:space="preserve"><value>Preview: все действия ({0})</value></data>
   <data name="recent.empty" xml:space="preserve"><value>(Нет недавних проектов)</value></data>
+  <data name="start.createProject" xml:space="preserve"><value>Создать проект</value></data>
+  <data name="start.recentProjects" xml:space="preserve"><value>Недавние проекты</value></data>
+  <data name="start.addPdf" xml:space="preserve"><value>Добавьте PDF для начала работы</value></data>
+  <data name="status.newProjectCreated" xml:space="preserve"><value>Новый проект создан.</value></data>
+  <data name="status.projectSettingsUpdated" xml:space="preserve"><value>Настройки проекта обновлены.</value></data>
   <data name="pageFilter.all" xml:space="preserve"><value>Все страницы</value></data>
   <data name="error.pageRangePositive" xml:space="preserve"><value>Диапазон должен использовать положительные номера страниц.</value></data>
   <data name="error.pageRangeStart" xml:space="preserve"><value>Начало диапазона должно быть положительным номером страницы.</value></data>
@@ -150,11 +181,14 @@
   <data name="enum.action.Expand.description" xml:space="preserve"><value>Добавляет пустое место вокруг страницы, не двигая и не масштабируя содержимое.</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>Изменить размер</value></data>
   <data name="enum.action.Resize.description" xml:space="preserve"><value>Меняет размер страницы и масштабирует существующее содержимое под новую ширину или высоту.</value></data>
-  <data name="enum.action.Zoom" xml:space="preserve"><value>Масштабировать</value></data>
-  <data name="enum.action.Zoom.description" xml:space="preserve"><value>Масштабирует содержимое внутри прежнего размера страницы с учетом выбранной точки привязки.</value></data>
-  <data name="enum.action.AdjustSize" xml:space="preserve"><value>Подогнать размер</value></data>
-  <data name="enum.action.AdjustSize.description" xml:space="preserve"><value>Добавляет одинаковое пустое место с противоположных сторон, пока страница не достигнет заданной ширины или высоты.</value></data>
-  <data name="enum.action.AddRuler" xml:space="preserve"><value>Добавить линейку</value></data>
+  <data name="enum.action.Zoom" xml:space="preserve"><value>Масштаб и сдвиг</value></data>
+  <data name="enum.action.Zoom.description" xml:space="preserve"><value>Масштабирует или сдвигает содержимое страницы</value></data>
+  <data name="enum.action.AdjustSize" xml:space="preserve"><value>Размер страницы</value></data>
+  <data name="actionSummary.PageSize.Width" xml:space="preserve"><value>Задать ширину {0} {1}.</value></data>
+  <data name="actionSummary.PageSize.Height" xml:space="preserve"><value>Задать высоту {0} {1}.</value></data>
+  <data name="actionSummary.PageSize.NoTargets" xml:space="preserve"><value>Размер страницы не задан.</value></data>
+  <data name="enum.action.AdjustSize.description" xml:space="preserve"><value>Устанавливает выбранную ширину или высоту страницы, расширяя или обрезая её от центра.</value></data>
+  <data name="enum.action.AddRuler" xml:space="preserve"><value>Добавить линию</value></data>
   <data name="enum.action.AddRuler.description" xml:space="preserve"><value>Добавляет временную направляющую линию для измерения и выравнивания; в итоговый PDF она не сохраняется.</value></data>
   <data name="enum.pageFilter.Any" xml:space="preserve"><value>Любые</value></data>
   <data name="enum.pageFilter.Odd" xml:space="preserve"><value>Нечётные</value></data>

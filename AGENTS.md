@@ -109,6 +109,8 @@ Claude Code should write results to `.agent-handoff\results`.
 
 For tasks expected to take more than a couple of minutes, the brief should also require a progress file in `.agent-handoff\results` with brief status updates at least every two minutes. The progress file should include the current phase, files being inspected or changed, commands currently running, and blockers.
 
+Every Claude Code brief should require a progress file in `.agent-handoff\results`, even for short tasks. Claude should write the first progress update before starting inspection or edits, and update it whenever the phase changes.
+
 ## Claude CLI Control Workflow
 
 Codex may run Claude Code through the local `claude` CLI when a task is prepared as a handoff brief.
@@ -160,4 +162,3 @@ When this happens, Codex should:
 5. Tighten the brief before retrying.
 
 Use follow-up fixes on the same branch only when the issue is small, local, and consistent with the original brief.
-

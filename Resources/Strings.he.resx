@@ -13,13 +13,15 @@
   <data name="common.remove" xml:space="preserve"><value>הסר</value></data>
   <data name="common.apply" xml:space="preserve"><value>החל</value></data>
   <data name="common.cancel" xml:space="preserve"><value>ביטול</value></data>
+  <data name="common.create" xml:space="preserve"><value>צור</value></data>
   <data name="menu.file" xml:space="preserve"><value>&amp;קובץ</value></data>
+  <data name="menu.newProject" xml:space="preserve"><value>פרויקט &amp;חדש...</value></data>
   <data name="menu.openProject" xml:space="preserve"><value>&amp;פתח פרויקט...</value></data>
   <data name="menu.save" xml:space="preserve"><value>&amp;שמור</value></data>
   <data name="menu.saveAs" xml:space="preserve"><value>שמור &amp;בשם...</value></data>
   <data name="menu.addPdf" xml:space="preserve"><value>הוסף קובץ &amp;PDF...</value></data>
   <data name="menu.openRecent" xml:space="preserve"><value>פתח פרויקט &amp;אחרון</value></data>
-  <data name="menu.settings" xml:space="preserve"><value>&amp;הגדרות</value></data>
+  <data name="menu.settings" xml:space="preserve"><value>הגדרות &amp;פרויקט...</value></data>
   <data name="menu.language" xml:space="preserve"><value>&amp;שפה</value></data>
   <data name="language.english" xml:space="preserve"><value>אנגלית</value></data>
   <data name="language.russian" xml:space="preserve"><value>רוסית</value></data>
@@ -58,6 +60,7 @@
   <data name="status.batchConverted" xml:space="preserve"><value>הומרו {0} קבצים אל: {1}</value></data>
   <data name="message.convertFailed.title" xml:space="preserve"><value>ההמרה נכשלה</value></data>
   <data name="actions.title" xml:space="preserve"><value>פעולות</value></data>
+  <data name="actions.titleWithDragHint" xml:space="preserve"><value>פעולות (כדי לשנות סדר, גרור עם העכבר)</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>הכל</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>עד הנוכחי</value></data>
   <data name="actions.selectAll" xml:space="preserve"><value>בחר הכל</value></data>
@@ -100,6 +103,27 @@
   <data name="field.height" xml:space="preserve"><value>גובה</value></data>
   <data name="field.proportional" xml:space="preserve"><value>יחסי</value></data>
   <data name="field.anchor" xml:space="preserve"><value>עוגן</value></data>
+  <data name="field.x" xml:space="preserve"><value>X</value></data>
+  <data name="field.y" xml:space="preserve"><value>Y</value></data>
+  <data name="group.zoom" xml:space="preserve"><value>זום</value></data>
+  <data name="group.shift" xml:space="preserve"><value>הזזה</value></data>
+  <data name="actionSummary.Zoom.OneDimension" xml:space="preserve"><value>שנה את התוכן ל-{0}% מ-{1}.</value></data>
+  <data name="actionSummary.Zoom.WidthHeight" xml:space="preserve"><value>שנה את התוכן לרוחב {0}% ולגובה {1}% מ-{2}.</value></data>
+  <data name="actionSummary.Zoom.NoZoom" xml:space="preserve"><value>לא הוגדר זום.</value></data>
+  <data name="actionSummary.Shift.Left" xml:space="preserve"><value>הזז תוכן שמאלה ב-{0} {1}.</value></data>
+  <data name="actionSummary.Shift.Right" xml:space="preserve"><value>הזז תוכן ימינה ב-{0} {1}.</value></data>
+  <data name="actionSummary.Shift.Up" xml:space="preserve"><value>הזז תוכן למעלה ב-{0} {1}.</value></data>
+  <data name="actionSummary.Shift.Down" xml:space="preserve"><value>הזז תוכן למטה ב-{0} {1}.</value></data>
+  <data name="actionSummary.Shift.NoShift" xml:space="preserve"><value>לא הוגדרה הזזה.</value></data>
+  <data name="anchor.Left.Top" xml:space="preserve"><value>פינה שמאלית עליונה</value></data>
+  <data name="anchor.Center.Top" xml:space="preserve"><value>למעלה</value></data>
+  <data name="anchor.Right.Top" xml:space="preserve"><value>פינה ימנית עליונה</value></data>
+  <data name="anchor.Left.Center" xml:space="preserve"><value>שמאל</value></data>
+  <data name="anchor.Center.Center" xml:space="preserve"><value>מרכז</value></data>
+  <data name="anchor.Right.Center" xml:space="preserve"><value>ימין</value></data>
+  <data name="anchor.Left.Bottom" xml:space="preserve"><value>פינה שמאלית תחתונה</value></data>
+  <data name="anchor.Center.Bottom" xml:space="preserve"><value>למטה</value></data>
+  <data name="anchor.Right.Bottom" xml:space="preserve"><value>פינה ימנית תחתונה</value></data>
   <data name="field.color" xml:space="preserve"><value>צבע</value></data>
   <data name="field.style" xml:space="preserve"><value>סגנון</value></data>
   <data name="field.mode" xml:space="preserve"><value>מצב</value></data>
@@ -110,6 +134,8 @@
   <data name="dialog.action.preview" xml:space="preserve"><value>תצוגה מקדימה</value></data>
   <data name="dialog.saveProject.title" xml:space="preserve"><value>שמור פרויקט PDF Page Studio</value></data>
   <data name="dialog.project.filter" xml:space="preserve"><value>פרויקט PDF Page Studio (*.ppsproj)|*.ppsproj|כל הקבצים (*.*)|*.*</value></data>
+  <data name="dialog.newProject.title" xml:space="preserve"><value>פרויקט חדש</value></data>
+  <data name="dialog.projectSettings.title" xml:space="preserve"><value>הגדרות פרויקט</value></data>
   <data name="dialog.addPdf.title" xml:space="preserve"><value>הוסף קובץ PDF</value></data>
   <data name="dialog.pdf.filter" xml:space="preserve"><value>קבצי PDF (*.pdf)|*.pdf|כל הקבצים (*.*)|*.*</value></data>
   <data name="message.openProjectFailed.title" xml:space="preserve"><value>פתיחת הפרויקט נכשלה</value></data>
@@ -138,6 +164,11 @@
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>תצוגה: פעולות עד הבחירה ({0})</value></data>
   <data name="status.previewApplyAll" xml:space="preserve"><value>תצוגה: כל הפעולות ({0})</value></data>
   <data name="recent.empty" xml:space="preserve"><value>(אין פרויקטים אחרונים)</value></data>
+  <data name="start.createProject" xml:space="preserve"><value>צור פרויקט</value></data>
+  <data name="start.recentProjects" xml:space="preserve"><value>פרויקטים אחרונים</value></data>
+  <data name="start.addPdf" xml:space="preserve"><value>הוסף PDF כדי להתחיל</value></data>
+  <data name="status.newProjectCreated" xml:space="preserve"><value>נוצר פרויקט חדש.</value></data>
+  <data name="status.projectSettingsUpdated" xml:space="preserve"><value>הגדרות הפרויקט עודכנו.</value></data>
   <data name="pageFilter.all" xml:space="preserve"><value>כל העמודים</value></data>
   <data name="error.pageRangePositive" xml:space="preserve"><value>טווח העמודים חייב להשתמש במספרי עמודים חיוביים.</value></data>
   <data name="error.pageRangeStart" xml:space="preserve"><value>תחילת הטווח חייבת להיות מספר עמוד חיובי.</value></data>
@@ -150,11 +181,14 @@
   <data name="enum.action.Expand.description" xml:space="preserve"><value>מוסיף שטח ריק סביב העמוד, בלי להזיז או לשנות את גודל התוכן.</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>שינוי גודל</value></data>
   <data name="enum.action.Resize.description" xml:space="preserve"><value>משנה את גודל העמוד ומגדיל או מקטין את התוכן הקיים לפי הרוחב או הגובה החדשים.</value></data>
-  <data name="enum.action.Zoom" xml:space="preserve"><value>זום</value></data>
-  <data name="enum.action.Zoom.description" xml:space="preserve"><value>משנה את גודל התוכן בתוך גודל העמוד הקיים, לפי נקודת העיגון שנבחרה.</value></data>
-  <data name="enum.action.AdjustSize" xml:space="preserve"><value>התאם גודל</value></data>
-  <data name="enum.action.AdjustSize.description" xml:space="preserve"><value>מוסיף שטח ריק שווה משני צדדים מנוגדים עד שהעמוד מגיע לרוחב או לגובה שנבחרו.</value></data>
-  <data name="enum.action.AddRuler" xml:space="preserve"><value>הוסף סרגל</value></data>
+  <data name="enum.action.Zoom" xml:space="preserve"><value>זום והזזה</value></data>
+  <data name="enum.action.Zoom.description" xml:space="preserve"><value>שינוי זום או הזזת תוכן העמוד</value></data>
+  <data name="enum.action.AdjustSize" xml:space="preserve"><value>גודל עמוד</value></data>
+  <data name="actionSummary.PageSize.Width" xml:space="preserve"><value>קבע רוחב ל-{0} {1}.</value></data>
+  <data name="actionSummary.PageSize.Height" xml:space="preserve"><value>קבע גובה ל-{0} {1}.</value></data>
+  <data name="actionSummary.PageSize.NoTargets" xml:space="preserve"><value>לא הוגדר יעד לגודל העמוד.</value></data>
+  <data name="enum.action.AdjustSize.description" xml:space="preserve"><value>קובע את העמוד לרוחב או לגובה שנבחרו, עם הרחבה או חיתוך מהמרכז לפי הצורך.</value></data>
+  <data name="enum.action.AddRuler" xml:space="preserve"><value>הוסף קו</value></data>
   <data name="enum.action.AddRuler.description" xml:space="preserve"><value>מוסיף קו עזר זמני למדידה וליישור שינויים בעמוד; הוא לא נשמר בקובץ ה-PDF הסופי.</value></data>
   <data name="enum.pageFilter.Any" xml:space="preserve"><value>כל סוג</value></data>
   <data name="enum.pageFilter.Odd" xml:space="preserve"><value>אי זוגיים</value></data>

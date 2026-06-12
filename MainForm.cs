@@ -15,6 +15,8 @@ public sealed partial class MainForm : Form
     private PdfDocument? _pdfDocument;
     private ContextMenuStrip? _actionMenu;
     private string? _projectPath;
+    private bool _hasProject;
+    private bool _pdfRenderingAvailable = true;
     private int _pageIndex;
     private float _zoomFactor = 1f;
     private bool _isDirty;
@@ -22,6 +24,9 @@ public sealed partial class MainForm : Form
     private ProjectAction? _previewDraftAction;
     private int _previewDraftIndex = -1;
     private bool _previewDraftReplace;
+    private int _actionDragSourceIndex = -1;
+    private int _actionDragInsertIndex = -1;
+    private Point _actionDragStartPoint;
 
     public MainForm()
     {
@@ -31,10 +36,96 @@ public sealed partial class MainForm : Form
         ApplyTranslations();
         InitializePdfRendering();
         RefreshRecentProjectsMenu();
-        BindProject();
-        LoadPdfFromProject();
+        ShowStartScreen();
+        UpdateCommandState();
         UpdateTitle();
         UpdateStatus(TranslationService.T("status.ready"));
+    }
+
+    private void CreateNewProject()
+    {
+        if (!ConfirmSaveChanges())
+        {
+            return;
+        }
+
+        using var dialog = new ProjectSetupForm(new PdfPageStudioProject(), isNewProject: true);
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        _pdfDocument?.Dispose();
+        _pdfDocument = null;
+        _project = new PdfPageStudioProject
+        {
+            Name = dialog.ProjectName,
+            Description = dialog.ProjectDescription,
+            UnitType = dialog.UnitType,
+        };
+        _projectPath = null;
+        _hasProject = true;
+        _isDirty = true;
+        BindProject();
+        LoadPdfFromProject();
+        UpdateCommandState();
+        UpdateTitle();
+        UpdateStatus(TranslationService.T("status.newProjectCreated"));
+    }
+
+    private void CreateProjectButton_Click(object? sender, EventArgs e)
+    {
+        CreateNewProject();
+    }
+
+    private void AddPdfStartButton_Click(object? sender, EventArgs e)
+    {
+        AddPdfFile();
+    }
+
+    private void ProjectSettingsMenuItem_Click(object? sender, EventArgs e)
+    {
+        if (!_hasProject)
+        {
+            return;
+        }
+
+        using var dialog = new ProjectSetupForm(_project, isNewProject: false);
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        var oldUnit = _project.UnitType;
+        _project.Name = dialog.ProjectName;
+        _project.Description = dialog.ProjectDescription;
+        _project.UnitType = dialog.UnitType;
+        ConvertProjectUnits(oldUnit, _project.UnitType);
+        MarkDirty();
+        BindProject();
+        RefreshCurrentPagePreview();
+        UpdateTitle();
+        UpdateStatus(TranslationService.T("status.projectSettingsUpdated"));
+    }
+
+    private void RecentProjectLink_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
+    {
+        if (sender is not LinkLabel { Tag: string path })
+        {
+            return;
+        }
+
+        if (!ConfirmSaveChanges())
+        {
+            return;
+        }
+
+        OpenRecentProject(path);
+    }
+
+    private void NewProjectMenuItem_Click(object? sender, EventArgs e)
+    {
+        CreateNewProject();
     }
 
     private void OpenProjectMenuItem_Click(object? sender, EventArgs e)
@@ -98,6 +189,16 @@ public sealed partial class MainForm : Form
 
     private void AddPdfFileMenuItem_Click(object? sender, EventArgs e)
     {
+        AddPdfFile();
+    }
+
+    private void AddPdfFile()
+    {
+        if (!_hasProject)
+        {
+            return;
+        }
+
         using var dialog = new OpenFileDialog
         {
             Title = TranslationService.T("dialog.addPdf.title"),
@@ -300,6 +401,9 @@ public sealed partial class MainForm : Form
                 yield return "זום";
                 break;
             case PdfActionType.AdjustSize:
+                yield return "Page Size";
+                yield return "Размер страницы";
+                yield return "גודל עמוד";
                 yield return "Adjust Size";
                 yield return "Подогнать размер";
                 yield return "התאם גודל";
@@ -317,6 +421,7 @@ public sealed partial class MainForm : Form
         _isBinding = true;
 
         fileMenuItem.Text = TranslationService.T("menu.file");
+        newProjectMenuItem.Text = TranslationService.T("menu.newProject");
         openProjectMenuItem.Text = TranslationService.T("menu.openProject");
         saveProjectMenuItem.Text = TranslationService.T("menu.save");
         saveProjectAsMenuItem.Text = TranslationService.T("menu.saveAs");
@@ -361,7 +466,11 @@ public sealed partial class MainForm : Form
         convertCurrentPdfMenuItem.Text = TranslationService.T("convert.menu.current");
         convertMultiplePdfMenuItem.Text = TranslationService.T("convert.menu.multiple");
 
-        actionsTitleLabel.Text = TranslationService.T("actions.title");
+        createProjectButton.Text = TranslationService.T("start.createProject");
+        recentProjectsLabel.Text = TranslationService.T("start.recentProjects") + ":";
+        addPdfStartButton.Text = TranslationService.T("start.addPdf");
+
+        actionsTitleLabel.Text = TranslationService.T("actions.titleWithDragHint");
         selectAllActionsCheckBox.Text = TranslationService.T("actions.selectAll");
         addActionButton.Text = TranslationService.T("actions.add");
         addLineButton.Text = TranslationService.T("actions.addLine");
@@ -618,6 +727,31 @@ public sealed partial class MainForm : Form
         RefreshCurrentPagePreview();
     }
 
+    private void MoveActionToInsertIndex(int sourceIndex, int insertIndex)
+    {
+        if (sourceIndex < 0 || sourceIndex >= _project.Actions.Count || insertIndex < 0 || insertIndex > _project.Actions.Count)
+        {
+            return;
+        }
+
+        if (insertIndex == sourceIndex || insertIndex == sourceIndex + 1)
+        {
+            return;
+        }
+
+        var action = _project.Actions[sourceIndex];
+        _project.Actions.RemoveAt(sourceIndex);
+        var targetIndex = sourceIndex < insertIndex ? insertIndex - 1 : insertIndex;
+        _project.Actions.Insert(targetIndex, action);
+
+        MarkDirty();
+        RefreshActions(targetIndex);
+        UpdateStatus(targetIndex < sourceIndex
+            ? TranslationService.T("status.actionMovedUp")
+            : TranslationService.T("status.actionMovedDown"));
+        RefreshCurrentPagePreview();
+    }
+
     private void ActionsGridView_SelectionChanged(object? sender, EventArgs e)
     {
         BindSelectedAction();
@@ -645,25 +779,7 @@ public sealed partial class MainForm : Form
             return;
         }
 
-        if (e.ColumnIndex == actionMoveUpColumn.Index)
-        {
-            if (e.RowIndex == 0)
-            {
-                return;
-            }
-
-            MoveAction(e.RowIndex, -1);
-        }
-        else if (e.ColumnIndex == actionMoveDownColumn.Index)
-        {
-            if (e.RowIndex == _project.Actions.Count - 1)
-            {
-                return;
-            }
-
-            MoveAction(e.RowIndex, 1);
-        }
-        else if (e.ColumnIndex == actionDuplicateColumn.Index)
+        if (e.ColumnIndex == actionDuplicateColumn.Index)
         {
             DuplicateAction(e.RowIndex);
         }
@@ -681,8 +797,6 @@ public sealed partial class MainForm : Form
         }
 
         if (e.ColumnIndex == actionEnabledColumn.Index ||
-            e.ColumnIndex == actionMoveUpColumn.Index ||
-            e.ColumnIndex == actionMoveDownColumn.Index ||
             e.ColumnIndex == actionDuplicateColumn.Index ||
             e.ColumnIndex == actionDeleteColumn.Index)
         {
@@ -715,7 +829,161 @@ public sealed partial class MainForm : Form
 
         _project.Actions[e.RowIndex].Enabled = enabled;
         MarkDirty();
+        RefreshActionSelectAllCheckBox();
         RefreshCurrentPagePreview();
+    }
+
+    private void ActionsGridView_MouseDown(object? sender, MouseEventArgs e)
+    {
+        _actionDragSourceIndex = -1;
+        _actionDragInsertIndex = -1;
+        _actionDragStartPoint = e.Location;
+
+        if (e.Button != MouseButtons.Left)
+        {
+            return;
+        }
+
+        var hit = actionsGridView.HitTest(e.X, e.Y);
+        if (hit.RowIndex < 0 || hit.RowIndex >= _project.Actions.Count || IsActionGridInteractiveColumn(hit.ColumnIndex))
+        {
+            return;
+        }
+
+        _actionDragSourceIndex = hit.RowIndex;
+    }
+
+    private void ActionsGridView_MouseMove(object? sender, MouseEventArgs e)
+    {
+        if (e.Button != MouseButtons.Left || _actionDragSourceIndex < 0)
+        {
+            return;
+        }
+
+        var dragSize = SystemInformation.DragSize;
+        var dragRectangle = new Rectangle(
+            _actionDragStartPoint.X - dragSize.Width / 2,
+            _actionDragStartPoint.Y - dragSize.Height / 2,
+            dragSize.Width,
+            dragSize.Height);
+
+        if (dragRectangle.Contains(e.Location))
+        {
+            return;
+        }
+
+        actionsGridView.DoDragDrop(_actionDragSourceIndex, DragDropEffects.Move);
+    }
+
+    private void ActionsGridView_MouseUp(object? sender, MouseEventArgs e)
+    {
+        _actionDragSourceIndex = -1;
+    }
+
+    private void ActionsGridView_DragOver(object? sender, DragEventArgs e)
+    {
+        if (!e.Data?.GetDataPresent(typeof(int)) == true)
+        {
+            e.Effect = DragDropEffects.None;
+            return;
+        }
+
+        e.Effect = DragDropEffects.Move;
+        var clientPoint = actionsGridView.PointToClient(new Point(e.X, e.Y));
+        SetActionDragInsertIndex(GetActionDragInsertIndex(clientPoint));
+    }
+
+    private void ActionsGridView_DragDrop(object? sender, DragEventArgs e)
+    {
+        if (e.Data?.GetData(typeof(int)) is not int sourceIndex)
+        {
+            ClearActionDragInsertLine();
+            return;
+        }
+
+        var insertIndex = _actionDragInsertIndex;
+        ClearActionDragInsertLine();
+        MoveActionToInsertIndex(sourceIndex, insertIndex);
+    }
+
+    private void ActionsGridView_DragLeave(object? sender, EventArgs e)
+    {
+        ClearActionDragInsertLine();
+    }
+
+    private void ActionsGridView_Paint(object? sender, PaintEventArgs e)
+    {
+        if (_actionDragInsertIndex < 0 || _actionDragInsertIndex > actionsGridView.Rows.Count)
+        {
+            return;
+        }
+
+        var y = GetActionDragInsertLineY(_actionDragInsertIndex);
+        using var pen = new Pen(Color.FromArgb(0, 120, 215), 2);
+        e.Graphics.DrawLine(pen, 0, y, actionsGridView.ClientSize.Width, y);
+    }
+
+    private void SetActionDragInsertIndex(int insertIndex)
+    {
+        insertIndex = Math.Clamp(insertIndex, 0, _project.Actions.Count);
+        if (_actionDragInsertIndex == insertIndex)
+        {
+            return;
+        }
+
+        _actionDragInsertIndex = insertIndex;
+        actionsGridView.Invalidate();
+    }
+
+    private void ClearActionDragInsertLine()
+    {
+        if (_actionDragInsertIndex < 0)
+        {
+            return;
+        }
+
+        _actionDragInsertIndex = -1;
+        actionsGridView.Invalidate();
+    }
+
+    private int GetActionDragInsertIndex(Point clientPoint)
+    {
+        var hit = actionsGridView.HitTest(clientPoint.X, clientPoint.Y);
+        if (hit.RowIndex < 0)
+        {
+            return clientPoint.Y < actionsGridView.ColumnHeadersHeight ? 0 : _project.Actions.Count;
+        }
+
+        var rowBounds = actionsGridView.GetRowDisplayRectangle(hit.RowIndex, false);
+        return clientPoint.Y < rowBounds.Top + rowBounds.Height / 2 ? hit.RowIndex : hit.RowIndex + 1;
+    }
+
+    private int GetActionDragInsertLineY(int insertIndex)
+    {
+        if (actionsGridView.Rows.Count == 0)
+        {
+            return actionsGridView.ColumnHeadersHeight;
+        }
+
+        if (insertIndex <= 0)
+        {
+            return actionsGridView.GetRowDisplayRectangle(0, false).Top;
+        }
+
+        if (insertIndex >= actionsGridView.Rows.Count)
+        {
+            var lastRowBounds = actionsGridView.GetRowDisplayRectangle(actionsGridView.Rows.Count - 1, false);
+            return lastRowBounds.Bottom;
+        }
+
+        return actionsGridView.GetRowDisplayRectangle(insertIndex, false).Top;
+    }
+
+    private bool IsActionGridInteractiveColumn(int columnIndex)
+    {
+        return columnIndex == actionEnabledColumn.Index ||
+            columnIndex == actionDuplicateColumn.Index ||
+            columnIndex == actionDeleteColumn.Index;
     }
 
     private void ActionNameTextBox_TextChanged(object? sender, EventArgs e)
@@ -1093,26 +1361,6 @@ public sealed partial class MainForm : Form
         return Round(Math.Max(0, maxValue - endValue));
     }
 
-    private static void NumericBox_KeyDown(object? sender, KeyEventArgs e)
-    {
-        if (sender is not NumericUpDown numericBox || e.KeyCode is not (Keys.Up or Keys.Down))
-        {
-            return;
-        }
-
-        numericBox.Increment = GetNumericStep(numericBox.Value, GetNumericCaretPosition(numericBox), GetNumericText(numericBox));
-    }
-
-    private static void NumericBox_MouseDown(object? sender, MouseEventArgs e)
-    {
-        if (sender is not NumericUpDown numericBox)
-        {
-            return;
-        }
-
-        numericBox.Increment = GetNumericStep(numericBox.Value, GetNumericCaretPosition(numericBox), GetNumericText(numericBox));
-    }
-
     private void OpenProject(string path)
     {
         try
@@ -1121,12 +1369,14 @@ public sealed partial class MainForm : Form
             _project = JsonSerializer.Deserialize<PdfPageStudioProject>(json, _jsonOptions) ?? new PdfPageStudioProject();
             NormalizeProject();
             _projectPath = path;
+            _hasProject = true;
             _isDirty = false;
             _settings.AddRecentProject(path);
             _settings.Save();
             BindProject();
             LoadPdfFromProject();
             RefreshRecentProjectsMenu();
+            UpdateCommandState();
             UpdateTitle();
             UpdateStatus(TranslationService.T("status.opened", path));
         }
@@ -1219,7 +1469,8 @@ public sealed partial class MainForm : Form
         }
         catch (Exception ex)
         {
-            addPdfFileMenuItem.Enabled = false;
+            _pdfRenderingAvailable = false;
+            UpdateCommandState();
             SetPdfToolbarEnabled(false);
             MessageBox.Show(this, ex.Message, TranslationService.T("message.previewInitFailed.title"), MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
@@ -1235,15 +1486,17 @@ public sealed partial class MainForm : Form
 
         if (string.IsNullOrWhiteSpace(_project.PdfFilePath))
         {
-            ShowProjectInfo();
+            ShowNoPdfScreen();
+            UpdateCommandState();
             UpdateOutputFolderToolbarState();
             return;
         }
 
         if (!File.Exists(_project.PdfFilePath))
         {
-            ShowProjectInfo();
+            ShowNoPdfScreen();
             UpdateStatus(TranslationService.T("status.pdfNotFound", _project.PdfFilePath));
+            UpdateCommandState();
             UpdateOutputFolderToolbarState();
             return;
         }
@@ -1256,13 +1509,15 @@ public sealed partial class MainForm : Form
             FitPageButton_Click(this, EventArgs.Empty);
             RenderCurrentPage();
             UpdateStatus(TranslationService.T("status.pdfLoaded", _project.PdfFilePath));
+            UpdateCommandState();
             UpdateOutputFolderToolbarState();
         }
         catch (Exception ex)
         {
-            ShowProjectInfo();
+            ShowNoPdfScreen();
             MessageBox.Show(this, ex.Message, TranslationService.T("message.pdfLoadFailed.title"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             UpdateStatus(TranslationService.T("status.pdfLoadFailed"));
+            UpdateCommandState();
             UpdateOutputFolderToolbarState();
         }
     }
@@ -1364,18 +1619,56 @@ public sealed partial class MainForm : Form
         pageSizeLabel.Text = TranslationService.T("page.size", width, height, unit);
     }
 
-    private void ShowProjectInfo()
+    private void ShowStartScreen()
     {
-        pdfWorkspacePanel.Visible = false;
-        projectInfoPanel.Visible = true;
-        projectInfoPanel.BringToFront();
+        workspaceSplitContainer.Visible = false;
+        projectInfoPanel.Visible = false;
+        noPdfPanel.Visible = false;
+        startPanel.Visible = true;
+        startPanel.BringToFront();
+        RefreshStartRecentProjects();
+    }
+
+    private void ShowNoPdfScreen()
+    {
+        startPanel.Visible = false;
+        workspaceSplitContainer.Visible = false;
+        projectInfoPanel.Visible = false;
+        noPdfPanel.Visible = true;
+        noPdfPanel.BringToFront();
     }
 
     private void ShowPdfWorkspace()
     {
+        startPanel.Visible = false;
+        noPdfPanel.Visible = false;
         projectInfoPanel.Visible = false;
-        pdfWorkspacePanel.Visible = true;
-        pdfWorkspacePanel.BringToFront();
+        workspaceSplitContainer.Visible = true;
+        SetDefaultWorkspaceSplitterDistance();
+        workspaceSplitContainer.BringToFront();
+    }
+
+    private void SetDefaultWorkspaceSplitterDistance()
+    {
+        var availableWidth = workspaceSplitContainer.Width - workspaceSplitContainer.SplitterWidth;
+        if (availableWidth <= 0)
+        {
+            return;
+        }
+
+        var panelMinSize = availableWidth >= 600 ? 300 : 50;
+        workspaceSplitContainer.Panel1MinSize = panelMinSize;
+        workspaceSplitContainer.Panel2MinSize = panelMinSize;
+
+        var rightPanelWidth = 528;
+        var minDistance = workspaceSplitContainer.Panel1MinSize;
+        var maxDistance = availableWidth - workspaceSplitContainer.Panel2MinSize;
+        if (maxDistance < minDistance)
+        {
+            return;
+        }
+
+        workspaceSplitContainer.SplitterDistance = Math.Clamp(availableWidth - rightPanelWidth, minDistance, maxDistance);
     }
 
     private void UpdateOutputFolderFromToolbar()
@@ -1413,12 +1706,24 @@ public sealed partial class MainForm : Form
     private void UpdateOutputFolderToolbarState()
     {
         openOutputFolderButton.Enabled = !string.IsNullOrWhiteSpace(_project.OutputFolder);
-        var hasProject = !string.IsNullOrWhiteSpace(_projectPath);
+        var hasSavedProject = !string.IsNullOrWhiteSpace(_projectPath);
         convertDropDownButton.Enabled = true;
         convertCurrentPdfMenuItem.Enabled = !string.IsNullOrWhiteSpace(_project.PdfFilePath) && File.Exists(_project.PdfFilePath);
-        convertMultiplePdfMenuItem.Enabled = hasProject;
+        convertMultiplePdfMenuItem.Enabled = hasSavedProject;
         convertCurrentPdfFileMenuItem.Enabled = convertCurrentPdfMenuItem.Enabled;
-        convertMultiplePdfFilesMenuItem.Enabled = hasProject;
+        convertMultiplePdfFilesMenuItem.Enabled = hasSavedProject;
+        UpdateCommandState();
+    }
+
+    private void UpdateCommandState()
+    {
+        newProjectMenuItem.Enabled = true;
+        openProjectMenuItem.Enabled = true;
+        saveProjectMenuItem.Enabled = _hasProject;
+        saveProjectAsMenuItem.Enabled = _hasProject;
+        addPdfFileMenuItem.Enabled = _hasProject && _pdfRenderingAvailable;
+        settingsMenuItem.Enabled = _hasProject;
+        convertMenuItem.Enabled = _hasProject;
     }
 
     private string GetOutputFolderOrDefault()
@@ -1552,7 +1857,13 @@ public sealed partial class MainForm : Form
     {
         _actionMenu?.Dispose();
         _actionMenu = new ContextMenuStrip();
-        foreach (var actionType in Enum.GetValues<PdfActionType>().Where(type => type is not PdfActionType.AddRuler and not PdfActionType.AddFrame))
+        var actionTypes = new[]
+        {
+            PdfActionType.AdjustSize,
+            PdfActionType.Zoom,
+        };
+
+        foreach (var actionType in actionTypes)
         {
             var item = new ToolStripMenuItem(GetActionDisplayName(actionType))
             {
@@ -1615,8 +1926,6 @@ public sealed partial class MainForm : Form
                 action.Name,
                 GetActionDisplayName(action.Type),
                 FormatPageFilter(action.PageFilter),
-                index == 0 ? "" : "^",
-                index == _project.Actions.Count - 1 ? "" : "v",
                 "+",
                 "X");
 
@@ -1625,22 +1934,8 @@ public sealed partial class MainForm : Form
             row.Cells[actionNameColumn.Index].ToolTipText = action.Name;
             row.Cells[actionTypeColumn.Index].ToolTipText = GetActionDisplayName(action.Type);
             row.Cells[actionPagesColumn.Index].ToolTipText = FormatPageFilter(action.PageFilter);
-            row.Cells[actionMoveUpColumn.Index].ToolTipText = index == 0 ? "" : TranslationService.T("actions.up.tooltip");
-            row.Cells[actionMoveDownColumn.Index].ToolTipText = index == _project.Actions.Count - 1 ? "" : TranslationService.T("actions.down.tooltip");
             row.Cells[actionDuplicateColumn.Index].ToolTipText = TranslationService.T("actions.duplicate.tooltip");
             row.Cells[actionDeleteColumn.Index].ToolTipText = TranslationService.T("actions.delete.tooltip");
-
-            if (index == 0)
-            {
-                row.Cells[actionMoveUpColumn.Index].Style.ForeColor = SystemColors.GrayText;
-                row.Cells[actionMoveUpColumn.Index].Style.SelectionForeColor = SystemColors.GrayText;
-            }
-
-            if (index == _project.Actions.Count - 1)
-            {
-                row.Cells[actionMoveDownColumn.Index].Style.ForeColor = SystemColors.GrayText;
-                row.Cells[actionMoveDownColumn.Index].Style.SelectionForeColor = SystemColors.GrayText;
-            }
         }
 
         if (_project.Actions.Count > 0)
@@ -1921,14 +2216,17 @@ public sealed partial class MainForm : Form
 
     private Bitmap ApplyZoomPreview(Bitmap source, ProjectAction action)
     {
-        var widthPercent = action.TargetedWidth;
-        var heightPercent = action.TargetedHeight;
-        if ((widthPercent == null || widthPercent <= 0) && (heightPercent == null || heightPercent <= 0))
+        var widthPercent = action.EnableWidth ? action.TargetedWidth : null;
+        var heightPercent = action.EnableHeight ? action.TargetedHeight : null;
+        var shiftX = action.EnableShiftX ? action.ShiftX ?? 0 : 0;
+        var shiftY = action.EnableShiftY ? action.ShiftY ?? 0 : 0;
+        if ((widthPercent == null || widthPercent <= 0) && (heightPercent == null || heightPercent <= 0) &&
+            Math.Abs(shiftX) < 0.0001f && Math.Abs(shiftY) < 0.0001f)
         {
             return new Bitmap(source);
         }
 
-        if (action.Proportional != false)
+        if (action.Proportional != false && !(widthPercent is > 0 && heightPercent is > 0))
         {
             if ((widthPercent == null || widthPercent <= 0) && heightPercent > 0)
             {
@@ -1946,6 +2244,8 @@ public sealed partial class MainForm : Form
         var contentHeight = Math.Max(1, (int)Math.Round(source.Height * scaleY));
         var x = GetAnchorOffset(source.Width, contentWidth, action.AnchorHorizontal);
         var y = GetAnchorOffset(source.Height, contentHeight, action.AnchorVertical);
+        x += ToSignedPixels(shiftX, 144f);
+        y += ToSignedPixels(shiftY, 144f);
         var result = CreateCanvas(source.Width, source.Height);
         using var graphics = Graphics.FromImage(result);
         ConfigureHighQuality(graphics);
@@ -1958,10 +2258,10 @@ public sealed partial class MainForm : Form
         var currentWidthInches = pageSizePoints.Width / 72f;
         var currentHeightInches = pageSizePoints.Height / 72f;
         var targetWidthInches = action.EnableWidth && action.TargetedWidth is > 0
-            ? Math.Max(currentWidthInches, UnitValueToInches(action.TargetedWidth.Value))
+            ? UnitValueToInches(action.TargetedWidth.Value)
             : currentWidthInches;
         var targetHeightInches = action.EnableHeight && action.TargetedHeight is > 0
-            ? Math.Max(currentHeightInches, UnitValueToInches(action.TargetedHeight.Value))
+            ? UnitValueToInches(action.TargetedHeight.Value)
             : currentHeightInches;
         if (Math.Abs(targetWidthInches - currentWidthInches) < 0.0001f &&
             Math.Abs(targetHeightInches - currentHeightInches) < 0.0001f)
@@ -1969,8 +2269,8 @@ public sealed partial class MainForm : Form
             return new Bitmap(source);
         }
 
-        var width = Math.Max(source.Width, (int)Math.Round(targetWidthInches * dpi));
-        var height = Math.Max(source.Height, (int)Math.Round(targetHeightInches * dpi));
+        var width = Math.Max(1, (int)Math.Round(targetWidthInches * dpi));
+        var height = Math.Max(1, (int)Math.Round(targetHeightInches * dpi));
         var x = (width - source.Width) / 2;
         var y = (height - source.Height) / 2;
         var result = CreateCanvas(width, height);
@@ -2129,6 +2429,10 @@ public sealed partial class MainForm : Form
             Proportional = source.Proportional,
             AnchorHorizontal = source.AnchorHorizontal,
             AnchorVertical = source.AnchorVertical,
+            EnableShiftX = source.EnableShiftX,
+            EnableShiftY = source.EnableShiftY,
+            ShiftX = source.ShiftX,
+            ShiftY = source.ShiftY,
             Color = source.Color,
             Style = source.Style,
             RulerValueMode = source.RulerValueMode,
@@ -2157,14 +2461,88 @@ public sealed partial class MainForm : Form
             PdfActionType.Trim => TranslationService.T("actionSummary.Trim", FormatValue(action.Left), FormatValue(action.Top), FormatValue(action.Right), FormatValue(action.Bottom), unit),
             PdfActionType.Expand => TranslationService.T("actionSummary.Expand", FormatValue(action.Left), FormatValue(action.Top), FormatValue(action.Right), FormatValue(action.Bottom), unit),
             PdfActionType.Resize => TranslationService.T("actionSummary.Resize", FormatOptionalValue(action.TargetedWidth), FormatOptionalValue(action.TargetedHeight), unit, FormatBool(action.Proportional ?? true)),
-            PdfActionType.Zoom => TranslationService.T("actionSummary.Zoom", FormatOptionalValue(action.TargetedWidth), FormatOptionalValue(action.TargetedHeight), FormatBool(action.Proportional ?? true), action.AnchorHorizontal, action.AnchorVertical),
-            PdfActionType.AdjustSize => TranslationService.T("actionSummary.AdjustSize", action.EnableWidth && action.TargetedWidth is > 0 ? FormatValue(action.TargetedWidth) : TranslationService.T("actionSummary.notApplied"), action.EnableHeight && action.TargetedHeight is > 0 ? FormatValue(action.TargetedHeight) : TranslationService.T("actionSummary.notApplied"), unit),
+            PdfActionType.Zoom => BuildZoomAndShiftSummary(action, unit),
+            PdfActionType.AdjustSize => BuildPageSizeSummary(action, unit),
             PdfActionType.AddRuler => TranslationService.T("actionSummary.AddRuler", TranslationService.T("enum.rulerOrientation." + action.Orientation), FormatOptionalValue(action.Position), action.RulerValueMode == RulerValueMode.Percent ? TranslationService.T("enum.rulerMode.Percent") : unit, TranslationService.T("enum.rulerStyle." + action.Style), action.Color),
             PdfActionType.AddFrame => TranslationService.T("actionSummary.AddFrame", FormatValue(action.Left), FormatValue(action.Top), FormatValue(action.Right), FormatValue(action.Bottom), unit, TranslationService.T("enum.rulerStyle." + action.Style), action.Color),
             _ => GetActionDescription(action.Type),
         };
 
         return summary + Environment.NewLine + TranslationService.T("actionSummary.pages", pages);
+    }
+
+    private static string BuildPageSizeSummary(ProjectAction action, string unit)
+    {
+        var parts = new List<string>();
+        if (action.EnableWidth && action.TargetedWidth is > 0)
+        {
+            parts.Add(TranslationService.T("actionSummary.PageSize.Width", FormatValue(action.TargetedWidth), unit));
+        }
+
+        if (action.EnableHeight && action.TargetedHeight is > 0)
+        {
+            parts.Add(TranslationService.T("actionSummary.PageSize.Height", FormatValue(action.TargetedHeight), unit));
+        }
+
+        return parts.Count == 0
+            ? TranslationService.T("actionSummary.PageSize.NoTargets")
+            : string.Join(Environment.NewLine, parts);
+    }
+
+    private static string BuildZoomAndShiftSummary(ProjectAction action, string unit)
+    {
+        var parts = new List<string> { BuildZoomSummary(action) };
+        var shift = BuildShiftSummary(action, unit);
+        if (!string.IsNullOrWhiteSpace(shift))
+        {
+            parts.Add(shift);
+        }
+
+        return string.Join(Environment.NewLine, parts.Where(part => !string.IsNullOrWhiteSpace(part)));
+    }
+
+    private static string BuildZoomSummary(ProjectAction action)
+    {
+        var anchor = FormatAnchor(action);
+        if (action.EnableWidth && action.TargetedWidth is > 0 && action.EnableHeight && action.TargetedHeight is > 0)
+        {
+            return TranslationService.T("actionSummary.Zoom.WidthHeight", FormatValue(action.TargetedWidth), FormatValue(action.TargetedHeight), anchor);
+        }
+
+        if (action.EnableWidth && action.TargetedWidth is > 0)
+        {
+            return TranslationService.T("actionSummary.Zoom.OneDimension", FormatValue(action.TargetedWidth), anchor);
+        }
+
+        if (action.EnableHeight && action.TargetedHeight is > 0)
+        {
+            return TranslationService.T("actionSummary.Zoom.OneDimension", FormatValue(action.TargetedHeight), anchor);
+        }
+
+        return "";
+    }
+
+    private static string BuildShiftSummary(ProjectAction action, string unit)
+    {
+        var parts = new List<string>();
+        if (action.EnableShiftX && Math.Abs(action.ShiftX ?? 0) > 0.0001f)
+        {
+            var value = action.ShiftX!.Value;
+            parts.Add(TranslationService.T(value < 0 ? "actionSummary.Shift.Left" : "actionSummary.Shift.Right", FormatValue(Math.Abs(value)), unit));
+        }
+
+        if (action.EnableShiftY && Math.Abs(action.ShiftY ?? 0) > 0.0001f)
+        {
+            var value = action.ShiftY!.Value;
+            parts.Add(TranslationService.T(value < 0 ? "actionSummary.Shift.Up" : "actionSummary.Shift.Down", FormatValue(Math.Abs(value)), unit));
+        }
+
+        return string.Join(Environment.NewLine, parts);
+    }
+
+    private static string FormatAnchor(ProjectAction action)
+    {
+        return TranslationService.T($"anchor.{action.AnchorHorizontal}.{action.AnchorVertical}");
     }
 
     private static string FormatValue(float? value)
@@ -2271,6 +2649,12 @@ public sealed partial class MainForm : Form
                 break;
             case PdfActionType.Zoom:
                 action.Proportional ??= true;
+                action.EnableWidth = action.EnableWidth || action.TargetedWidth is > 0;
+                action.EnableHeight = action.EnableHeight || action.TargetedHeight is > 0;
+                action.EnableShiftX = action.EnableShiftX || Math.Abs(action.ShiftX ?? 0) > 0.0001f;
+                action.EnableShiftY = action.EnableShiftY || Math.Abs(action.ShiftY ?? 0) > 0.0001f;
+                action.ShiftX ??= 0;
+                action.ShiftY ??= 0;
                 action.AnchorHorizontal = action.AnchorHorizontal;
                 action.AnchorVertical = action.AnchorVertical;
                 break;
@@ -2438,6 +2822,8 @@ public sealed partial class MainForm : Form
             action.Bottom = ConvertUnitValue(action.Bottom, factor);
             action.TargetedWidth = ConvertUnitValue(action.TargetedWidth, factor);
             action.TargetedHeight = ConvertUnitValue(action.TargetedHeight, factor);
+            action.ShiftX = ConvertUnitValue(action.ShiftX, factor);
+            action.ShiftY = ConvertUnitValue(action.ShiftY, factor);
             if (action.Type == PdfActionType.AddRuler && action.RulerValueMode == RulerValueMode.Unit)
             {
                 action.Position = ConvertUnitValue(action.Position, factor);
@@ -2611,8 +2997,8 @@ public sealed partial class MainForm : Form
         var targetWidth = action.EnableWidth && action.TargetedWidth is > 0 ? UnitValueToPoints(action.TargetedWidth.Value) : pageSizePoints.Width;
         var targetHeight = action.EnableHeight && action.TargetedHeight is > 0 ? UnitValueToPoints(action.TargetedHeight.Value) : pageSizePoints.Height;
         pageSizePoints = new SizeF(
-            Math.Max(pageSizePoints.Width, targetWidth),
-            Math.Max(pageSizePoints.Height, targetHeight));
+            Math.Max(1, targetWidth),
+            Math.Max(1, targetHeight));
     }
 
     private static bool TryGetSelectedEnum<TEnum>(ComboBox comboBox, out TEnum value)
@@ -2658,6 +3044,11 @@ public sealed partial class MainForm : Form
         return Math.Max(0, (int)Math.Round(UnitValueToInches(value) * dpi));
     }
 
+    private int ToSignedPixels(float value, float dpi)
+    {
+        return (int)Math.Round(UnitValueToInches(value) * dpi);
+    }
+
     private float UnitValueToPoints(float? value)
     {
         return UnitValueToInches(value) * 72f;
@@ -2671,76 +3062,6 @@ public sealed partial class MainForm : Form
     private float UnitValueToInches(float value)
     {
         return _project.UnitType == UnitType.Cm ? value / 2.54f : value;
-    }
-
-    private static decimal GetNumericStep(decimal value, int cursorPosition)
-    {
-        return GetNumericStep(value, cursorPosition, null);
-    }
-
-    private static decimal GetNumericStep(decimal value, int cursorPosition, string? text)
-    {
-        text = string.IsNullOrWhiteSpace(text)
-            ? value.ToString("0.###", CultureInfo.CurrentCulture)
-            : text;
-        cursorPosition = Math.Clamp(cursorPosition, 0, text.Length);
-        var digitIndex = FindNumericStepDigit(text, cursorPosition);
-        if (digitIndex < 0)
-        {
-            return 1M;
-        }
-
-        var decimalIndex = text.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
-        if (decimalIndex < 0)
-        {
-            decimalIndex = text.IndexOf('.', StringComparison.Ordinal);
-        }
-
-        var exponent = 0;
-        if (decimalIndex < 0 || digitIndex < decimalIndex)
-        {
-            exponent = text.Take(digitIndex).Count(char.IsDigit);
-            var integerDigits = text.Take(decimalIndex < 0 ? text.Length : decimalIndex).Count(char.IsDigit);
-            exponent = integerDigits - exponent - 1;
-        }
-        else
-        {
-            exponent = -text.Skip(decimalIndex + 1).Take(digitIndex - decimalIndex).Count(char.IsDigit);
-        }
-
-        var step = (decimal)Math.Pow(10, exponent);
-        return Math.Max(0.001M, step);
-    }
-
-    private static int FindNumericStepDigit(string text, int cursorPosition)
-    {
-        for (var index = cursorPosition - 1; index >= 0; index--)
-        {
-            if (char.IsDigit(text[index]))
-            {
-                return index;
-            }
-        }
-
-        for (var index = cursorPosition; index < text.Length; index++)
-        {
-            if (char.IsDigit(text[index]))
-            {
-                return index;
-            }
-        }
-
-        return -1;
-    }
-
-    private static string GetNumericText(NumericUpDown numericBox)
-    {
-        return numericBox.Controls.OfType<TextBox>().FirstOrDefault()?.Text ?? numericBox.Text;
-    }
-
-    private static int GetNumericCaretPosition(NumericUpDown numericBox)
-    {
-        return numericBox.Controls.OfType<TextBox>().FirstOrDefault()?.SelectionStart ?? 0;
     }
 
     private static float? ZeroToNull(float value)
@@ -2777,6 +3098,7 @@ public sealed partial class MainForm : Form
     private void RefreshRecentProjectsMenu()
     {
         openRecentProjectMenuItem.DropDownItems.Clear();
+        RefreshStartRecentProjects();
 
         if (_settings.RecentProjects.Count == 0)
         {
@@ -2813,6 +3135,11 @@ public sealed partial class MainForm : Form
             return;
         }
 
+        OpenRecentProject(path);
+    }
+
+    private void OpenRecentProject(string path)
+    {
         if (!File.Exists(path))
         {
             _settings.RemoveRecentProject(path);
@@ -2823,6 +3150,28 @@ public sealed partial class MainForm : Form
         }
 
         OpenProject(path);
+    }
+
+    private void RefreshStartRecentProjects()
+    {
+        recentProjectsPanel.Controls.Clear();
+        foreach (var recentPath in _settings.RecentProjects)
+        {
+            var link = new LinkLabel
+            {
+                AutoEllipsis = true,
+                AutoSize = false,
+                LinkBehavior = LinkBehavior.HoverUnderline,
+                Margin = new Padding(0, 0, 0, 8),
+                Size = new Size(Math.Max(120, recentProjectsPanel.ClientSize.Width - 20), 24),
+                TabStop = true,
+                Tag = recentPath,
+                Text = recentPath,
+                TextAlign = ContentAlignment.MiddleLeft,
+            };
+            link.LinkClicked += RecentProjectLink_LinkClicked;
+            recentProjectsPanel.Controls.Add(link);
+        }
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
@@ -2851,6 +3200,12 @@ public sealed partial class MainForm : Form
 
     private void UpdateTitle()
     {
+        if (!_hasProject)
+        {
+            Text = TranslationService.T("app.title");
+            return;
+        }
+
         var name = string.IsNullOrWhiteSpace(_project.Name) ? TranslationService.T("common.untitled") : _project.Name.Trim();
         Text = TranslationService.T("app.titleWithProject", name, _isDirty ? TranslationService.T("app.dirtyMark") : "");
     }

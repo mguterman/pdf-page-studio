@@ -75,7 +75,7 @@ public static class PdfProjectConverter
                 ApplyResize(plan, action, unitType);
                 break;
             case PdfActionType.Zoom:
-                ApplyZoom(plan, action);
+                ApplyZoom(plan, action, unitType);
                 break;
             case PdfActionType.AdjustSize:
                 ApplyAdjustSize(plan, action, unitType);
@@ -192,16 +192,19 @@ public static class PdfProjectConverter
         plan.Height = Math.Max(MinimumPageSize, targetHeight.Value);
     }
 
-    private static void ApplyZoom(PagePlan plan, ProjectAction action)
+    private static void ApplyZoom(PagePlan plan, ProjectAction action, UnitType unitType)
     {
-        var widthPercent = action.TargetedWidth;
-        var heightPercent = action.TargetedHeight;
-        if ((widthPercent == null || widthPercent <= 0) && (heightPercent == null || heightPercent <= 0))
+        var widthPercent = action.EnableWidth ? action.TargetedWidth : null;
+        var heightPercent = action.EnableHeight ? action.TargetedHeight : null;
+        var shiftX = action.EnableShiftX ? action.ShiftX ?? 0 : 0;
+        var shiftY = action.EnableShiftY ? action.ShiftY ?? 0 : 0;
+        if ((widthPercent == null || widthPercent <= 0) && (heightPercent == null || heightPercent <= 0) &&
+            Math.Abs(shiftX) < 0.0001f && Math.Abs(shiftY) < 0.0001f)
         {
             return;
         }
 
-        if (action.Proportional != false)
+        if (action.Proportional != false && !(widthPercent is > 0 && heightPercent is > 0))
         {
             if ((widthPercent == null || widthPercent <= 0) && heightPercent > 0)
             {
@@ -219,20 +222,22 @@ public static class PdfProjectConverter
         var contentHeight = plan.Height * scaleY;
         var offsetX = GetAnchorOffset(plan.Width, contentWidth, action.AnchorHorizontal);
         var offsetY = GetAnchorOffset(plan.Height, contentHeight, action.AnchorVertical);
+        offsetX += UnitValueToPoints(shiftX, unitType);
+        offsetY -= UnitValueToPoints(shiftY, unitType);
         ScaleAboutBottomLeft(plan, scaleX, scaleY, offsetX, offsetY);
     }
 
     private static void ApplyAdjustSize(PagePlan plan, ProjectAction action, UnitType unitType)
     {
         var targetWidth = action.EnableWidth && action.TargetedWidth is > 0
-            ? Math.Max(plan.Width, UnitValueToPoints(action.TargetedWidth.Value, unitType))
+            ? UnitValueToPoints(action.TargetedWidth.Value, unitType)
             : plan.Width;
         var targetHeight = action.EnableHeight && action.TargetedHeight is > 0
-            ? Math.Max(plan.Height, UnitValueToPoints(action.TargetedHeight.Value, unitType))
+            ? UnitValueToPoints(action.TargetedHeight.Value, unitType)
             : plan.Height;
         var addWidth = targetWidth - plan.Width;
         var addHeight = targetHeight - plan.Height;
-        if (addWidth <= 0 && addHeight <= 0)
+        if (Math.Abs(addWidth) < 0.001f && Math.Abs(addHeight) < 0.001f)
         {
             return;
         }

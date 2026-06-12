@@ -13,15 +13,17 @@
   <data name="common.remove" xml:space="preserve"><value>Remove</value></data>
   <data name="common.apply" xml:space="preserve"><value>Apply</value></data>
   <data name="common.cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="common.create" xml:space="preserve"><value>Create</value></data>
   <data name="common.yes" xml:space="preserve"><value>Yes</value></data>
   <data name="common.no" xml:space="preserve"><value>No</value></data>
   <data name="menu.file" xml:space="preserve"><value>&amp;File</value></data>
+  <data name="menu.newProject" xml:space="preserve"><value>&amp;New Project...</value></data>
   <data name="menu.openProject" xml:space="preserve"><value>&amp;Open Project...</value></data>
   <data name="menu.save" xml:space="preserve"><value>&amp;Save</value></data>
   <data name="menu.saveAs" xml:space="preserve"><value>Save &amp;As...</value></data>
   <data name="menu.addPdf" xml:space="preserve"><value>Add &amp;PDF File...</value></data>
   <data name="menu.openRecent" xml:space="preserve"><value>Open &amp;Recent Project</value></data>
-  <data name="menu.settings" xml:space="preserve"><value>&amp;Settings</value></data>
+  <data name="menu.settings" xml:space="preserve"><value>Project &amp;Settings...</value></data>
   <data name="menu.language" xml:space="preserve"><value>&amp;Language</value></data>
   <data name="language.english" xml:space="preserve"><value>English</value></data>
   <data name="language.russian" xml:space="preserve"><value>Russian</value></data>
@@ -60,6 +62,7 @@
   <data name="status.batchConverted" xml:space="preserve"><value>Converted {0} files to: {1}</value></data>
   <data name="message.convertFailed.title" xml:space="preserve"><value>Convert failed</value></data>
   <data name="actions.title" xml:space="preserve"><value>Actions</value></data>
+  <data name="actions.titleWithDragHint" xml:space="preserve"><value>Actions (drag with the mouse to change order)</value></data>
   <data name="actions.applyAll" xml:space="preserve"><value>Apply All</value></data>
   <data name="actions.untilCurrent" xml:space="preserve"><value>Until Current</value></data>
   <data name="actions.selectAll" xml:space="preserve"><value>Select all</value></data>
@@ -96,8 +99,19 @@
   <data name="actionSummary.Trim" xml:space="preserve"><value>Trim canvas: left {0} {4}, top {1} {4}, right {2} {4}, bottom {3} {4}. Content is not scaled.</value></data>
   <data name="actionSummary.Expand" xml:space="preserve"><value>Expand canvas: add left {0} {4}, top {1} {4}, right {2} {4}, bottom {3} {4}. Content is not scaled.</value></data>
   <data name="actionSummary.Resize" xml:space="preserve"><value>Resize page to width {0} and height {1} {2}. Proportional: {3}. Content is scaled with the page.</value></data>
-  <data name="actionSummary.Zoom" xml:space="preserve"><value>Zoom content to width {0}% and height {1}%. Proportional: {2}. Anchor: {3}/{4}. Page size is unchanged.</value></data>
-  <data name="actionSummary.AdjustSize" xml:space="preserve"><value>Make Width equal {0} {2}. Make Height equal {1} {2}. Empty targets are not applied.</value></data>
+  <data name="actionSummary.Zoom" xml:space="preserve"><value>Zoom or shift content.</value></data>
+  <data name="actionSummary.Zoom.OneDimension" xml:space="preserve"><value>Zoom content to {0}% from {1}.</value></data>
+  <data name="actionSummary.Zoom.WidthHeight" xml:space="preserve"><value>Zoom content to width {0}% and height {1}% from {2}.</value></data>
+  <data name="actionSummary.Zoom.NoZoom" xml:space="preserve"><value>No zoom is set.</value></data>
+  <data name="actionSummary.Shift.Left" xml:space="preserve"><value>Move content to left by {0} {1}.</value></data>
+  <data name="actionSummary.Shift.Right" xml:space="preserve"><value>Move content to right by {0} {1}.</value></data>
+  <data name="actionSummary.Shift.Up" xml:space="preserve"><value>Move content up by {0} {1}.</value></data>
+  <data name="actionSummary.Shift.Down" xml:space="preserve"><value>Move content down by {0} {1}.</value></data>
+  <data name="actionSummary.Shift.NoShift" xml:space="preserve"><value>No shift is set.</value></data>
+  <data name="actionSummary.AdjustSize" xml:space="preserve"><value>Set page size.</value></data>
+  <data name="actionSummary.PageSize.Width" xml:space="preserve"><value>Set Width to {0} {1}.</value></data>
+  <data name="actionSummary.PageSize.Height" xml:space="preserve"><value>Set Height to {0} {1}.</value></data>
+  <data name="actionSummary.PageSize.NoTargets" xml:space="preserve"><value>No page size target is set.</value></data>
   <data name="actionSummary.AddRuler" xml:space="preserve"><value>Show a temporary {0} {3} line at {1} {2}, color {4}. It is not written to the final PDF.</value></data>
   <data name="actionSummary.AddFrame" xml:space="preserve"><value>Draw a {5} frame in color {6}: left {0} {4}, top {1} {4}, right {2} {4}, bottom {3} {4}.</value></data>
   <data name="field.type" xml:space="preserve"><value>Type</value></data>
@@ -113,6 +127,19 @@
   <data name="field.height" xml:space="preserve"><value>Height</value></data>
   <data name="field.proportional" xml:space="preserve"><value>Proportional</value></data>
   <data name="field.anchor" xml:space="preserve"><value>Anchor</value></data>
+  <data name="field.x" xml:space="preserve"><value>X</value></data>
+  <data name="field.y" xml:space="preserve"><value>Y</value></data>
+  <data name="group.zoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="group.shift" xml:space="preserve"><value>Shift</value></data>
+  <data name="anchor.Left.Top" xml:space="preserve"><value>Left-Top corner</value></data>
+  <data name="anchor.Center.Top" xml:space="preserve"><value>Top</value></data>
+  <data name="anchor.Right.Top" xml:space="preserve"><value>Right-Top corner</value></data>
+  <data name="anchor.Left.Center" xml:space="preserve"><value>Left</value></data>
+  <data name="anchor.Center.Center" xml:space="preserve"><value>Center</value></data>
+  <data name="anchor.Right.Center" xml:space="preserve"><value>Right</value></data>
+  <data name="anchor.Left.Bottom" xml:space="preserve"><value>Left-Bottom corner</value></data>
+  <data name="anchor.Center.Bottom" xml:space="preserve"><value>Bottom</value></data>
+  <data name="anchor.Right.Bottom" xml:space="preserve"><value>Right-Bottom corner</value></data>
   <data name="field.color" xml:space="preserve"><value>Color</value></data>
   <data name="field.style" xml:space="preserve"><value>Style</value></data>
   <data name="field.mode" xml:space="preserve"><value>Mode</value></data>
@@ -123,6 +150,8 @@
   <data name="dialog.action.preview" xml:space="preserve"><value>Preview</value></data>
   <data name="dialog.saveProject.title" xml:space="preserve"><value>Save PDF Page Studio Project</value></data>
   <data name="dialog.project.filter" xml:space="preserve"><value>PDF Page Studio Project (*.ppsproj)|*.ppsproj|All files (*.*)|*.*</value></data>
+  <data name="dialog.newProject.title" xml:space="preserve"><value>New Project</value></data>
+  <data name="dialog.projectSettings.title" xml:space="preserve"><value>Project Settings</value></data>
   <data name="dialog.addPdf.title" xml:space="preserve"><value>Add PDF File</value></data>
   <data name="dialog.pdf.filter" xml:space="preserve"><value>PDF files (*.pdf)|*.pdf|All files (*.*)|*.*</value></data>
   <data name="message.openProjectFailed.title" xml:space="preserve"><value>Open project failed</value></data>
@@ -151,6 +180,11 @@
   <data name="status.previewUntilCurrent" xml:space="preserve"><value>Preview: actions through selected ({0})</value></data>
   <data name="status.previewApplyAll" xml:space="preserve"><value>Preview: all actions ({0})</value></data>
   <data name="recent.empty" xml:space="preserve"><value>(No recent projects)</value></data>
+  <data name="start.createProject" xml:space="preserve"><value>Create Project</value></data>
+  <data name="start.recentProjects" xml:space="preserve"><value>Recent projects</value></data>
+  <data name="start.addPdf" xml:space="preserve"><value>Add PDF to get started</value></data>
+  <data name="status.newProjectCreated" xml:space="preserve"><value>New project created.</value></data>
+  <data name="status.projectSettingsUpdated" xml:space="preserve"><value>Project settings updated.</value></data>
   <data name="pageFilter.all" xml:space="preserve"><value>All pages</value></data>
   <data name="error.pageRangePositive" xml:space="preserve"><value>Page range must use positive page numbers.</value></data>
   <data name="error.pageRangeStart" xml:space="preserve"><value>Page range start must be a positive page number.</value></data>
@@ -163,11 +197,11 @@
   <data name="enum.action.Expand.description" xml:space="preserve"><value>Adds blank canvas around the page without moving or scaling the page content.</value></data>
   <data name="enum.action.Resize" xml:space="preserve"><value>Resize</value></data>
   <data name="enum.action.Resize.description" xml:space="preserve"><value>Changes the page size and scales the existing content to match the new width or height.</value></data>
-  <data name="enum.action.Zoom" xml:space="preserve"><value>Zoom</value></data>
-  <data name="enum.action.Zoom.description" xml:space="preserve"><value>Scales the page content inside the existing page size, using the selected anchor point.</value></data>
-  <data name="enum.action.AdjustSize" xml:space="preserve"><value>Adjust Size</value></data>
-  <data name="enum.action.AdjustSize.description" xml:space="preserve"><value>Adds equal blank space on opposite sides until the page reaches the selected width or height.</value></data>
-  <data name="enum.action.AddRuler" xml:space="preserve"><value>Add Ruler</value></data>
+  <data name="enum.action.Zoom" xml:space="preserve"><value>Zoom and Shift</value></data>
+  <data name="enum.action.Zoom.description" xml:space="preserve"><value>Zoom or Shift content of the page</value></data>
+  <data name="enum.action.AdjustSize" xml:space="preserve"><value>Page Size</value></data>
+  <data name="enum.action.AdjustSize.description" xml:space="preserve"><value>Sets the page to the selected width or height, expanding or cropping from the center as needed.</value></data>
+  <data name="enum.action.AddRuler" xml:space="preserve"><value>Add Line</value></data>
   <data name="enum.action.AddRuler.description" xml:space="preserve"><value>Adds a temporary guide line for measuring and aligning page changes; it is not written to the final PDF.</value></data>
   <data name="enum.action.AddFrame" xml:space="preserve"><value>Add Frame</value></data>
   <data name="enum.action.AddFrame.description" xml:space="preserve"><value>Draws a visible frame on the final PDF using edge offsets, color, and line style.</value></data>

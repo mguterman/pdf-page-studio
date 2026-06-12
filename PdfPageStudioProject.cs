@@ -31,6 +31,10 @@ public sealed class ProjectAction
     public bool? Proportional { get; set; }
     public AnchorHorizontal AnchorHorizontal { get; set; } = AnchorHorizontal.Center;
     public AnchorVertical AnchorVertical { get; set; } = AnchorVertical.Center;
+    public bool EnableShiftX { get; set; }
+    public bool EnableShiftY { get; set; }
+    public float? ShiftX { get; set; }
+    public float? ShiftY { get; set; }
     public string Color { get; set; } = "#FF0000";
     public RulerStyle Style { get; set; } = RulerStyle.Solid;
     public RulerValueMode RulerValueMode { get; set; } = RulerValueMode.Percent;

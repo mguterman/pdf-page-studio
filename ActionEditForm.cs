@@ -22,6 +22,12 @@ public sealed class ActionEditForm : Form
     private readonly NumericUpDown _targetedHeightNumericBox = CreateNumericBox();
     private readonly CheckBox _proportionalCheckBox = new();
     private readonly TableLayoutPanel _anchorPanel = new();
+    private readonly Label _zoomSummaryLabel = new();
+    private readonly CheckBox _enableShiftXCheckBox = new();
+    private readonly NumericUpDown _shiftXNumericBox = CreateNumericBox();
+    private readonly CheckBox _enableShiftYCheckBox = new();
+    private readonly NumericUpDown _shiftYNumericBox = CreateNumericBox();
+    private readonly Label _shiftSummaryLabel = new();
     private readonly ComboBox _rulerOrientationComboBox = new();
     private readonly NumericUpDown _rulerPositionNumericBox = CreateNumericBox();
     private readonly ComboBox _rulerValueModeComboBox = new();
@@ -55,8 +61,8 @@ public sealed class ActionEditForm : Form
         MinimizeBox = false;
         MaximizeBox = false;
         ShowInTaskbar = false;
-        Size = new Size(520, 650);
-        MinimumSize = new Size(500, 520);
+        Size = new Size(760, 620);
+        MinimumSize = new Size(720, 560);
 
         var root = new TableLayoutPanel
         {
@@ -66,27 +72,28 @@ public sealed class ActionEditForm : Form
             Padding = new Padding(14),
         };
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
         _descriptionLabel.Dock = DockStyle.Top;
         _descriptionLabel.AutoSize = true;
-        _descriptionLabel.MaximumSize = new Size(470, 0);
+        _descriptionLabel.MaximumSize = new Size(700, 0);
         _descriptionLabel.Margin = new Padding(0, 0, 0, 12);
 
-        _parametersPanel.Dock = DockStyle.Fill;
-        _parametersPanel.AutoScroll = true;
+        _parametersPanel.AutoSize = true;
+        _parametersPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         _parametersPanel.ColumnCount = 2;
         _parametersPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
         _parametersPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        _parametersPanel.Dock = DockStyle.Top;
 
         var footerPanel = new FlowLayoutPanel
         {
-            Dock = DockStyle.Fill,
+            Dock = DockStyle.Top,
             AutoSize = true,
             FlowDirection = FlowDirection.LeftToRight,
-            Padding = new Padding(0, 8, 0, 0),
+            Padding = new Padding(0, 6, 0, 0),
         };
         _previewCheckBox.AutoSize = true;
         _previewCheckBox.Text = TranslationService.T("dialog.action.preview");
@@ -95,10 +102,10 @@ public sealed class ActionEditForm : Form
 
         var buttonPanel = new FlowLayoutPanel
         {
-            Dock = DockStyle.Fill,
+            Dock = DockStyle.Top,
             AutoSize = true,
             FlowDirection = FlowDirection.RightToLeft,
-            Padding = new Padding(0, 12, 0, 0),
+            Padding = new Padding(0, 10, 0, 0),
         };
         var applyButton = new Button
         {
@@ -115,7 +122,6 @@ public sealed class ActionEditForm : Form
         };
         buttonPanel.Controls.Add(applyButton);
         buttonPanel.Controls.Add(cancelButton);
-        AcceptButton = applyButton;
         CancelButton = cancelButton;
 
         root.Controls.Add(_descriptionLabel, 0, 0);
@@ -142,19 +148,43 @@ public sealed class ActionEditForm : Form
         ConfigureNumeric(_targetedWidthNumericBox);
         ConfigureNumeric(_targetedHeightNumericBox);
         ConfigureNumeric(_rulerPositionNumericBox);
+        ConfigureNumeric(_shiftXNumericBox);
+        ConfigureNumeric(_shiftYNumericBox);
 
         _enableWidthCheckBox.CheckedChanged += (_, _) =>
         {
             _targetedWidthNumericBox.Enabled = _enableWidthCheckBox.Checked;
+            if (!_isBinding && Action.Type == PdfActionType.Zoom && _enableWidthCheckBox.Checked && _targetedWidthNumericBox.Value == 0)
+            {
+                _targetedWidthNumericBox.Value = 100;
+            }
+
+            UpdateZoomProportionalState();
             UpdateActionFromInputs();
         };
         _enableHeightCheckBox.CheckedChanged += (_, _) =>
         {
             _targetedHeightNumericBox.Enabled = _enableHeightCheckBox.Checked;
+            if (!_isBinding && Action.Type == PdfActionType.Zoom && _enableHeightCheckBox.Checked && _targetedHeightNumericBox.Value == 0)
+            {
+                _targetedHeightNumericBox.Value = 100;
+            }
+
+            UpdateZoomProportionalState();
             UpdateActionFromInputs();
         };
         _proportionalCheckBox.AutoSize = true;
         _proportionalCheckBox.CheckedChanged += (_, _) => UpdateActionFromInputs();
+        _enableShiftXCheckBox.CheckedChanged += (_, _) =>
+        {
+            _shiftXNumericBox.Enabled = _enableShiftXCheckBox.Checked;
+            UpdateActionFromInputs();
+        };
+        _enableShiftYCheckBox.CheckedChanged += (_, _) =>
+        {
+            _shiftYNumericBox.Enabled = _enableShiftYCheckBox.Checked;
+            UpdateActionFromInputs();
+        };
 
         ConfigureAnchorPanel();
         ConfigureEnumCombo(_rulerOrientationComboBox, "enum.rulerOrientation.", Action.Orientation);
@@ -196,20 +226,19 @@ public sealed class ActionEditForm : Form
             AddRow(TranslationService.T("field.bottom"), _bottomNumericBox);
         }
 
-        if (type is PdfActionType.Resize or PdfActionType.Zoom or PdfActionType.AdjustSize)
+        if (type == PdfActionType.Zoom)
+        {
+            AddFullWidthRow(CreateZoomAndShiftPanel());
+        }
+        else if (type is PdfActionType.Resize or PdfActionType.AdjustSize)
         {
             AddRow(TranslationService.T("field.width"), CreateOptionalPanel(_enableWidthCheckBox, _targetedWidthNumericBox, type == PdfActionType.AdjustSize));
             AddRow(TranslationService.T("field.height"), CreateOptionalPanel(_enableHeightCheckBox, _targetedHeightNumericBox, type == PdfActionType.AdjustSize));
         }
 
-        if (type is PdfActionType.Resize or PdfActionType.Zoom)
+        if (type == PdfActionType.Resize)
         {
             AddRow(TranslationService.T("field.proportional"), _proportionalCheckBox);
-        }
-
-        if (type == PdfActionType.Zoom)
-        {
-            AddRow(TranslationService.T("field.anchor"), _anchorPanel);
         }
 
         if (type == PdfActionType.AddRuler)
@@ -233,14 +262,23 @@ public sealed class ActionEditForm : Form
         _topNumericBox.Value = FloatToDecimal(Action.Top);
         _rightNumericBox.Value = FloatToDecimal(Action.Right);
         _bottomNumericBox.Value = FloatToDecimal(Action.Bottom);
-        _enableWidthCheckBox.Checked = type != PdfActionType.AdjustSize || Action.EnableWidth;
-        _enableHeightCheckBox.Checked = type != PdfActionType.AdjustSize || Action.EnableHeight;
-        _targetedWidthNumericBox.Enabled = type != PdfActionType.AdjustSize || Action.EnableWidth;
-        _targetedHeightNumericBox.Enabled = type != PdfActionType.AdjustSize || Action.EnableHeight;
+        var usesOptionalTarget = type is PdfActionType.AdjustSize or PdfActionType.Zoom;
+        _enableWidthCheckBox.Checked = !usesOptionalTarget || Action.EnableWidth;
+        _enableHeightCheckBox.Checked = !usesOptionalTarget || Action.EnableHeight;
+        _targetedWidthNumericBox.Enabled = !usesOptionalTarget || Action.EnableWidth;
+        _targetedHeightNumericBox.Enabled = !usesOptionalTarget || Action.EnableHeight;
         _targetedWidthNumericBox.Value = FloatToDecimal(Action.TargetedWidth);
         _targetedHeightNumericBox.Value = FloatToDecimal(Action.TargetedHeight);
         _proportionalCheckBox.Checked = Action.Proportional ?? true;
         SelectAnchorButton(Action.AnchorHorizontal, Action.AnchorVertical);
+        _enableShiftXCheckBox.Checked = Action.EnableShiftX;
+        _enableShiftYCheckBox.Checked = Action.EnableShiftY;
+        _shiftXNumericBox.Enabled = Action.EnableShiftX;
+        _shiftYNumericBox.Enabled = Action.EnableShiftY;
+        _shiftXNumericBox.Value = FloatToDecimal(Action.ShiftX);
+        _shiftYNumericBox.Value = FloatToDecimal(Action.ShiftY);
+        UpdateZoomProportionalState();
+        UpdateInlineSummaries();
         SelectEnum(_rulerOrientationComboBox, Action.Orientation);
         SelectEnum(_rulerValueModeComboBox, Action.RulerValueMode);
         SelectEnum(_rulerStyleComboBox, Action.Style);
@@ -269,16 +307,139 @@ public sealed class ActionEditForm : Form
         _parametersPanel.Controls.Add(editor, 1, rowIndex);
     }
 
-    private static Panel CreateOptionalPanel(CheckBox checkBox, NumericUpDown numericBox, bool useCheckBox)
+    private void AddFullWidthRow(Control editor)
+    {
+        var rowIndex = _parametersPanel.RowCount++;
+        _parametersPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        editor.Dock = DockStyle.Top;
+        editor.Margin = new Padding(0, 6, 0, 6);
+        _parametersPanel.Controls.Add(editor, 0, rowIndex);
+        _parametersPanel.SetColumnSpan(editor, 2);
+    }
+
+    private GroupBox CreateZoomPanel()
+    {
+        var group = new GroupBox
+        {
+            AutoSize = true,
+            Dock = DockStyle.Top,
+            Text = TranslationService.T("group.zoom"),
+        };
+        var panel = new TableLayoutPanel
+        {
+            AutoSize = true,
+            ColumnCount = 2,
+            Dock = DockStyle.Top,
+            Padding = new Padding(8, 6, 8, 8),
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        group.Controls.Add(panel);
+
+        AddGroupSummary(panel, _zoomSummaryLabel);
+        AddGroupRow(panel, TranslationService.T("field.width"), CreateOptionalPanel(_enableWidthCheckBox, _targetedWidthNumericBox, useCheckBox: true, suffix: "%"));
+        AddGroupRow(panel, TranslationService.T("field.height"), CreateOptionalPanel(_enableHeightCheckBox, _targetedHeightNumericBox, useCheckBox: true, suffix: "%"));
+        AddGroupRow(panel, TranslationService.T("field.proportional"), _proportionalCheckBox);
+        AddGroupRow(panel, TranslationService.T("field.anchor"), _anchorPanel);
+        return group;
+    }
+
+    private TableLayoutPanel CreateZoomAndShiftPanel()
+    {
+        var panel = new TableLayoutPanel
+        {
+            AutoSize = true,
+            ColumnCount = 2,
+            Dock = DockStyle.Top,
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+
+        var zoomPanel = CreateZoomPanel();
+        var shiftPanel = CreateShiftPanel();
+        zoomPanel.Dock = DockStyle.Fill;
+        shiftPanel.Dock = DockStyle.Fill;
+        zoomPanel.Margin = new Padding(0, 0, 8, 0);
+        shiftPanel.Margin = new Padding(8, 0, 0, 0);
+        panel.Controls.Add(zoomPanel, 0, 0);
+        panel.Controls.Add(shiftPanel, 1, 0);
+        return panel;
+    }
+
+    private GroupBox CreateShiftPanel()
+    {
+        var group = new GroupBox
+        {
+            AutoSize = true,
+            Dock = DockStyle.Top,
+            Text = TranslationService.T("group.shift"),
+        };
+        var panel = new TableLayoutPanel
+        {
+            AutoSize = true,
+            ColumnCount = 2,
+            Dock = DockStyle.Top,
+            Padding = new Padding(8, 6, 8, 8),
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        group.Controls.Add(panel);
+
+        AddGroupSummary(panel, _shiftSummaryLabel);
+        AddGroupRow(panel, TranslationService.T("field.x"), CreateOptionalPanel(_enableShiftXCheckBox, _shiftXNumericBox, useCheckBox: true, suffix: TranslationService.T("enum.unit." + _unitType)));
+        AddGroupRow(panel, TranslationService.T("field.y"), CreateOptionalPanel(_enableShiftYCheckBox, _shiftYNumericBox, useCheckBox: true, suffix: TranslationService.T("enum.unit." + _unitType)));
+        return group;
+    }
+
+    private static void AddGroupSummary(TableLayoutPanel panel, Label summaryLabel)
+    {
+        var rowIndex = panel.RowCount++;
+        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        summaryLabel.AutoSize = true;
+        summaryLabel.Dock = DockStyle.Fill;
+        summaryLabel.Margin = new Padding(0, 2, 0, 8);
+        panel.Controls.Add(summaryLabel, 0, rowIndex);
+        panel.SetColumnSpan(summaryLabel, 2);
+    }
+
+    private static void AddGroupRow(TableLayoutPanel panel, string labelText, Control editor)
+    {
+        var rowIndex = panel.RowCount++;
+        panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        var label = new Label
+        {
+            AutoSize = true,
+            Dock = DockStyle.Fill,
+            Margin = new Padding(0, 4, 8, 4),
+            Text = labelText,
+            TextAlign = ContentAlignment.MiddleLeft,
+        };
+        editor.Dock = DockStyle.Fill;
+        editor.Margin = new Padding(0, 4, 0, 4);
+        panel.Controls.Add(label, 0, rowIndex);
+        panel.Controls.Add(editor, 1, rowIndex);
+    }
+
+    private static Panel CreateOptionalPanel(CheckBox checkBox, NumericUpDown numericBox, bool useCheckBox, string? suffix = null)
     {
         var panel = new Panel { Height = 28 };
         checkBox.AutoSize = true;
         checkBox.Visible = useCheckBox;
         checkBox.Location = new Point(0, 5);
         numericBox.Location = new Point(useCheckBox ? 24 : 0, 0);
-        numericBox.Width = 180;
+        numericBox.Width = suffix == null ? 180 : 140;
         panel.Controls.Add(checkBox);
         panel.Controls.Add(numericBox);
+        if (suffix != null)
+        {
+            panel.Controls.Add(new Label
+            {
+                AutoSize = true,
+                Location = new Point(numericBox.Right + 6, 5),
+                Text = suffix,
+            });
+        }
+
         return panel;
     }
 
@@ -298,12 +459,14 @@ public sealed class ActionEditForm : Form
     {
         _anchorPanel.ColumnCount = 3;
         _anchorPanel.RowCount = 3;
+        _anchorPanel.AutoSize = false;
+        _anchorPanel.Dock = DockStyle.None;
         _anchorPanel.Width = 90;
-        _anchorPanel.Height = 78;
+        _anchorPanel.Height = 90;
         for (var index = 0; index < 3; index++)
         {
             _anchorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
-            _anchorPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+            _anchorPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
         }
 
         AddAnchorButton(AnchorHorizontal.Left, AnchorVertical.Top, 0, 0);
@@ -322,8 +485,10 @@ public sealed class ActionEditForm : Form
         var button = new RadioButton
         {
             Appearance = Appearance.Button,
-            Dock = DockStyle.Fill,
+            AutoSize = false,
+            Dock = DockStyle.None,
             Margin = new Padding(1),
+            Size = new Size(28, 28),
             Text = "",
             Tag = (horizontal, vertical),
         };
@@ -373,9 +538,18 @@ public sealed class ActionEditForm : Form
         Action.Bottom = (float)_bottomNumericBox.Value;
         Action.EnableWidth = _enableWidthCheckBox.Checked;
         Action.EnableHeight = _enableHeightCheckBox.Checked;
-        Action.TargetedWidth = Action.Type == PdfActionType.AdjustSize && !Action.EnableWidth ? null : ZeroToNull((float)_targetedWidthNumericBox.Value);
-        Action.TargetedHeight = Action.Type == PdfActionType.AdjustSize && !Action.EnableHeight ? null : ZeroToNull((float)_targetedHeightNumericBox.Value);
+        Action.TargetedWidth = Action.Type is PdfActionType.AdjustSize or PdfActionType.Zoom && !Action.EnableWidth ? null : ZeroToNull((float)_targetedWidthNumericBox.Value);
+        Action.TargetedHeight = Action.Type is PdfActionType.AdjustSize or PdfActionType.Zoom && !Action.EnableHeight ? null : ZeroToNull((float)_targetedHeightNumericBox.Value);
         Action.Proportional = _proportionalCheckBox.Checked;
+        if (Action.Type == PdfActionType.Zoom && Action.EnableWidth && Action.EnableHeight)
+        {
+            Action.Proportional = false;
+        }
+
+        Action.EnableShiftX = _enableShiftXCheckBox.Checked;
+        Action.EnableShiftY = _enableShiftYCheckBox.Checked;
+        Action.ShiftX = Action.EnableShiftX ? (float)_shiftXNumericBox.Value : null;
+        Action.ShiftY = Action.EnableShiftY ? (float)_shiftYNumericBox.Value : null;
         if (_anchorButtons.FirstOrDefault(pair => pair.Value.Checked).Key is var anchor)
         {
             Action.AnchorHorizontal = anchor.Horizontal;
@@ -399,7 +573,37 @@ public sealed class ActionEditForm : Form
 
         Action.Position = (float)_rulerPositionNumericBox.Value;
         Action.Color = _rulerColorTextBox.Text;
+        UpdateZoomProportionalState();
+        UpdateInlineSummaries();
         RaiseActionChanged();
+    }
+
+    private void UpdateZoomProportionalState()
+    {
+        if (Action.Type != PdfActionType.Zoom)
+        {
+            _proportionalCheckBox.Enabled = true;
+            return;
+        }
+
+        var bothDimensions = _enableWidthCheckBox.Checked && _enableHeightCheckBox.Checked;
+        if (bothDimensions)
+        {
+            _proportionalCheckBox.Checked = false;
+        }
+
+        _proportionalCheckBox.Enabled = !bothDimensions;
+    }
+
+    private void UpdateInlineSummaries()
+    {
+        if (Action.Type != PdfActionType.Zoom)
+        {
+            return;
+        }
+
+        _zoomSummaryLabel.Text = BuildZoomSummary(Action);
+        _shiftSummaryLabel.Text = BuildShiftSummary(Action, TranslationService.T("enum.unit." + _unitType));
     }
 
     private void RaiseActionChanged()
@@ -460,7 +664,7 @@ public sealed class ActionEditForm : Form
 
     private static NumericUpDown CreateNumericBox()
     {
-        return new NumericUpDown
+        return new SmartNumericUpDown
         {
             DecimalPlaces = 3,
             Minimum = -1000,
@@ -472,9 +676,14 @@ public sealed class ActionEditForm : Form
 
     private static void ConfigureNumeric(NumericUpDown numericBox)
     {
-        numericBox.ValueChanged += (_, _) =>
+        if (numericBox is not SmartNumericUpDown smartNumericBox)
         {
-            if (numericBox.FindForm() is ActionEditForm form)
+            return;
+        }
+
+        smartNumericBox.SmartValueChanged += (_, _) =>
+        {
+            if (smartNumericBox.FindForm() is ActionEditForm form)
             {
                 form.UpdateActionFromInputs();
             }
@@ -568,6 +777,54 @@ public sealed class ActionEditForm : Form
         return (float)Math.Round(value, 3, MidpointRounding.AwayFromZero);
     }
 
+    private static string BuildZoomSummary(ProjectAction action)
+    {
+        if (action.EnableWidth && action.TargetedWidth is > 0 && action.EnableHeight && action.TargetedHeight is > 0)
+        {
+            return TranslationService.T("actionSummary.Zoom.WidthHeight", FormatValue(action.TargetedWidth), FormatValue(action.TargetedHeight), FormatAnchor(action));
+        }
+
+        if (action.EnableWidth && action.TargetedWidth is > 0)
+        {
+            return TranslationService.T("actionSummary.Zoom.OneDimension", FormatValue(action.TargetedWidth), FormatAnchor(action));
+        }
+
+        if (action.EnableHeight && action.TargetedHeight is > 0)
+        {
+            return TranslationService.T("actionSummary.Zoom.OneDimension", FormatValue(action.TargetedHeight), FormatAnchor(action));
+        }
+
+        return TranslationService.T("actionSummary.Zoom.NoZoom");
+    }
+
+    private static string BuildShiftSummary(ProjectAction action, string unit)
+    {
+        var parts = new List<string>();
+        if (action.EnableShiftX && Math.Abs(action.ShiftX ?? 0) > 0.0001f)
+        {
+            var value = action.ShiftX!.Value;
+            parts.Add(TranslationService.T(value < 0 ? "actionSummary.Shift.Left" : "actionSummary.Shift.Right", FormatValue(Math.Abs(value)), unit));
+        }
+
+        if (action.EnableShiftY && Math.Abs(action.ShiftY ?? 0) > 0.0001f)
+        {
+            var value = action.ShiftY!.Value;
+            parts.Add(TranslationService.T(value < 0 ? "actionSummary.Shift.Up" : "actionSummary.Shift.Down", FormatValue(Math.Abs(value)), unit));
+        }
+
+        return parts.Count == 0 ? TranslationService.T("actionSummary.Shift.NoShift") : string.Join(" ", parts);
+    }
+
+    private static string FormatAnchor(ProjectAction action)
+    {
+        return TranslationService.T($"anchor.{action.AnchorHorizontal}.{action.AnchorVertical}");
+    }
+
+    private static string FormatValue(float? value)
+    {
+        return (value ?? 0).ToString("0.###", CultureInfo.CurrentCulture);
+    }
+
     private static string GetActionDisplayName(PdfActionType type)
     {
         return TranslationService.T("enum.action." + type);
@@ -598,8 +855,16 @@ public sealed class ActionEditForm : Form
                 action.Bottom ??= 0;
                 break;
             case PdfActionType.Resize:
+                action.Proportional ??= true;
+                break;
             case PdfActionType.Zoom:
                 action.Proportional ??= true;
+                action.EnableWidth = action.EnableWidth || action.TargetedWidth is > 0;
+                action.EnableHeight = action.EnableHeight || action.TargetedHeight is > 0;
+                action.EnableShiftX = action.EnableShiftX || Math.Abs(action.ShiftX ?? 0) > 0.0001f;
+                action.EnableShiftY = action.EnableShiftY || Math.Abs(action.ShiftY ?? 0) > 0.0001f;
+                action.ShiftX ??= 0;
+                action.ShiftY ??= 0;
                 break;
             case PdfActionType.AdjustSize:
                 action.EnableWidth = action.EnableWidth || action.TargetedWidth is > 0;
@@ -647,6 +912,10 @@ public sealed class ActionEditForm : Form
             Proportional = source.Proportional,
             AnchorHorizontal = source.AnchorHorizontal,
             AnchorVertical = source.AnchorVertical,
+            EnableShiftX = source.EnableShiftX,
+            EnableShiftY = source.EnableShiftY,
+            ShiftX = source.ShiftX,
+            ShiftY = source.ShiftY,
             Color = source.Color,
             Style = source.Style,
             RulerValueMode = source.RulerValueMode,
